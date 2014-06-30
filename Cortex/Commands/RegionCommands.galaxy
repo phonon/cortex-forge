@@ -10,6 +10,17 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
+bool[libcrtx_max_players] libcrtx_rgn_event_select_on;
+bool[libcrtx_max_players] libcrtx_rgn_event_plant_on;
+
+bool[libcrtx_max_players] libcrtx_isSelectingRegion_start;
+bool[libcrtx_max_players] libcrtx_isSelectingRegion_end;
+bool[libcrtx_max_players] libcrtx_rgn_selected;
+bool[libcrtx_max_players] libcrtx_rgn_is_rect;
+point[libcrtx_max_players] libcrtx_rgn_selection_start;
+point[libcrtx_max_players] libcrtx_rgn_selection_end;
+const string libcrtx_rgn_marker_model = "ShapeCone";
+
 bool libcrtx_command_regioncreate(bool checkConds, bool runActions)
 {
 	region r;
@@ -17,22 +28,57 @@ bool libcrtx_command_regioncreate(bool checkConds, bool runActions)
 	string name;
 	
 	name = StringWord(libcrtx_chat_get_parse_line(EventPlayer()), 2);
-	radius = StringToFixed(StringWord(libcrtx_chat_get_parse_line(EventPlayer()), 3));
-	if( radius == 0.0 ) {
-		radius = 2;
+	
+	if(libcrtx_rgn_selected[EventPlayer()]) {
+		if(libcrtx_rgn_is_rect[EventPlayer()]) {
+			if( DataTableGetRegion( true, libcrtx_command_region_buildidentifier(name) ) ) {
+				libcrtx_write_error("A region with that name already exists!");
+				return true;
+			}
+			r = RegionRect(PointGetX(libcrtx_rgn_selection_start[EventPlayer()]), PointGetY(libcrtx_rgn_selection_start[EventPlayer()]),
+							PointGetX(libcrtx_rgn_selection_end[EventPlayer()]), PointGetY(libcrtx_rgn_selection_end[EventPlayer()]));
+			
+			DataTableSetRegion( true, libcrtx_command_region_buildidentifier(name), r );
+			
+			libcrtx_write_success("Region (rectangle) \"" + name + "\" has been created.");	
+			return true;
+		}
+		else { //region is circle
+			radius = DistanceBetweenPoints(libcrtx_rgn_selection_start[EventPlayer()],libcrtx_rgn_selection_end[EventPlayer()]);
+			
+			if( DataTableGetRegion( true, libcrtx_command_region_buildidentifier(name) ) ) {
+				libcrtx_write_error("A region with that name already exists!");
+				return true;
+			}
+
+			r = RegionCircle( libcrtx_rgn_selection_start[EventPlayer()], radius );
+		
+			// and save it
+			DataTableSetRegion( true, libcrtx_command_region_buildidentifier(name), r );
+			
+			libcrtx_write_success("Region (circle) \"" + name + "\" has been created.");
+			return true;
+		}
 	}
+	else {
+		radius = StringToFixed(StringWord(libcrtx_chat_get_parse_line(EventPlayer()), 3));
+		if( radius == 0.0 ) {
+			radius = 2;
+		}
 
-	if( DataTableGetRegion( true, libcrtx_command_region_buildidentifier(name) ) ) {
-		libcrtx_write_error("A region with that name already exists!");
-		return true;
+		if( DataTableGetRegion( true, libcrtx_command_region_buildidentifier(name) ) ) {
+			libcrtx_write_error("A region with that name already exists!");
+			return true;
+		}
+
+		r = RegionCircle( libcrtx_spawn_position(), radius );
+		
+		// and save it
+		DataTableSetRegion( true, libcrtx_command_region_buildidentifier(name), r );
+		libcrtx_write_success("Region (circle) \"" + name + "\" has been created.");
+
 	}
-
-	r = RegionCircle( libcrtx_spawn_position(), radius );
-
-	// and save it…
-	DataTableSetRegion( true, libcrtx_command_region_buildidentifier(name), r );
-
-	libcrtx_write_success("Region \"" + name + "\" has been created.");
+	
 	return true;
 }
 
@@ -208,6 +254,8 @@ bool libcrtx_command_teleport(bool checkConds, bool runActions)
 	TriggerAddEventUnitRegion( t, null, r1, false );
 	TriggerAddEventUnitRegion( t, null, r2, true );
 	TriggerAddEventUnitRegion( t, null, r2, false );
+	
+	libcrtx_write_success("Teleport made between regions " + rn1 + " and " + rn2);
 	return true;
 }
 
@@ -326,6 +374,337 @@ bool libcrtx_command_regionreveal(bool checkConds, bool runActions)
 			}
 		}
 	}
+	
+	return true;
+}
+//=============================================
+// FUNCTIONS FOR #SELECT
+
+bool libcrtx_region_plant_update(bool checkConds, bool runActions);
+bool libcrtx_region_plant_start(bool checkConds, bool runActions)
+{
+	int i = 1;
+	
+	if(!libcrtx_isSelectingRegion_start[EventPlayer()]) {
+		if(!libcrtx_rgn_event_plant_on[EventPlayer()]) {
+			TriggerDestroy(TriggerGetCurrent());
+			//libcrtx_write_error("libcrtx_region_plant_start RUNNING INVALID TIME: TRIGGER REMOVED");			
+		}
+		return true;
+	}
+	//libcrtx_write_success("START");
+	
+	if(DataTableGetTrigger(true, IntToString(EventPlayer()) + "_rgn_event_plant") == null) {
+		DataTableSetTrigger(true, IntToString(EventPlayer()) + "_rgn_event_plant", TriggerGetCurrent()); //id: playerNumber_rgn_event_update
+		//libcrtx_write_success("NO TRIGGER FOR libcrtx_region_plant_start FOUND: WRITTEN TO DATA TABLE");
+	}
+	
+	if(libcrtx_rgn_selected[EventPlayer()]) { //in order to restart selection
+		libNtve_gf_SendActorMessageToGameRegionWithFilters(RegionEntireMap(), c_actorIntersectAgainstCenter, "Destroy", "Model", "IsStatus rgn_edge " + IntToString(EventPlayer()));	
+		ActorSend(DataTableGetActor(true, "rgn_" + IntToString(EventPlayer()) + "_node_start"), "Destroy");
+		ActorSend(DataTableGetActor(true, "rgn_" + IntToString(EventPlayer()) + "_node_end"), "Destroy");
+		DataTableValueRemove(true, "rgn_" + IntToString(EventPlayer()) + "_node_start");
+		DataTableValueRemove(true, "rgn_" + IntToString(EventPlayer()) + "_node_end");
+		libcrtx_rgn_selected[EventPlayer()] = false;
+	}
+	libcrtx_rgn_selection_start[EventPlayer()] = Point(EventMouseClickedPosXWorld(), EventMouseClickedPosYWorld());
+	
+	//place model and save in data table with syntax: rgn_[playerNumber]_node_start
+	libNtve_gf_CreateModelAtPoint(libcrtx_rgn_marker_model, libcrtx_rgn_selection_start[EventPlayer()]);
+	DataTableSetActor(true, "rgn_" + IntToString(EventPlayer()) + "_node_start", libNtve_gf_ActorLastCreated());
+	
+	//color the marker to player's color
+	ActorSend(libNtve_gf_ActorLastCreated(), "SetTintColor {250,250,250 2.5}");
+	ActorSend(libNtve_gf_ActorLastCreated(), "SetScale .2,.2,.3");
+
+	
+	//set filter so only the current player can see it:
+    while(i < libcrtx_max_players) {
+		if(i == EventPlayer() || PlayerStatus(i) != c_playerStatusActive) {
+			i += 1;
+			continue;
+		}
+		ActorSend(libNtve_gf_ActorLastCreated(), "SetFilterPlayers " + IntToString(i));
+		i += 1;
+	}
+	
+	//if region is rect, create the other corner node marker (rgn_[playerNumber]_node_end)
+	if(libcrtx_rgn_is_rect[EventPlayer()]) {
+		libNtve_gf_CreateModelAtPoint(libcrtx_rgn_marker_model, libcrtx_rgn_selection_start[EventPlayer()]);
+		DataTableSetActor(true, "rgn_" + IntToString(EventPlayer()) + "_node_end", libNtve_gf_ActorLastCreated());
+		//color it!
+		ActorSend(libNtve_gf_ActorLastCreated(), "SetScale .2,.2,.3");
+
+		ActorSend(libNtve_gf_ActorLastCreated(), "SetTintColor {250,250,250 2.5}");
+		//set filter so only the current player can see it:
+		i = 1;
+		while(i < libcrtx_max_players) {
+			if(i == EventPlayer() || PlayerStatus(i) != c_playerStatusActive) {
+				i += 1;
+				continue;
+			}
+			ActorSend(libNtve_gf_ActorLastCreated(), "SetFilterPlayers " + IntToString(i));
+			i += 1;
+		}
+	}
+	
+
+	libcrtx_isSelectingRegion_start[EventPlayer()] = false;
+	libcrtx_isSelectingRegion_end[EventPlayer()] = true;
+	
+	//only create trigger for event player, when necessary, to reduce event checks ingame
+	if(!libcrtx_rgn_event_select_on[EventPlayer()]) {
+		TriggerAddEventMouseMoved(TriggerCreate("libcrtx_region_plant_update"), EventPlayer());
+		TriggerAddEventMouseClicked(TriggerCreate("libcrtx_region_plant_end"), EventPlayer(), c_mouseButtonLeft, true);
+		libcrtx_rgn_event_select_on[EventPlayer()] = true;
+	}
+		
+	return true;
+}
+bool libcrtx_region_plant_update(bool checkConds, bool runActions) //just updates visuals
+{
+	fixed x_node = PointGetX(libcrtx_rgn_selection_start[EventPlayer()]);
+	fixed y_node = PointGetY(libcrtx_rgn_selection_start[EventPlayer()]);
+	fixed x = EventMouseMovedPosXWorld();
+	fixed y = EventMouseMovedPosYWorld();
+	fixed d;
+	fixed angle = 0;
+	int i = 1;
+	int n;
+	int count = 15;
+	
+	if(!libcrtx_isSelectingRegion_end[EventPlayer()]) {
+		//trigger should be running yet: destroy it
+		TriggerDestroy(TriggerGetCurrent());
+		//libcrtx_write_error("libcrtx_region_plant_update RUNNING INVALID TIME: TRIGGER REMOVED");		
+		return false;
+	}
+
+	if(DataTableGetTrigger(true, IntToString(EventPlayer()) + "_rgn_event_update") == null) {
+		DataTableSetTrigger(true, IntToString(EventPlayer()) + "_rgn_event_update", TriggerGetCurrent()); //id: playerNumber_rgn_event_update
+		//libcrtx_write_success("NO TRIGGER FOR libcrtx_region_plant_update FOUND: WRITTEN TO DATA TABLE");
+	}
+
+	//syntax for edge markers: rgn_[playerNumber]_node_side
+	//clear any existing edge markers for event player
+	libNtve_gf_SendActorMessageToGameRegionWithFilters(RegionEntireMap(), c_actorIntersectAgainstCenter, "Destroy", "Model", "IsStatus rgn_edge " + IntToString(EventPlayer()));
+	
+	//libcrtx_write_error(FixedToString(x_node,3) + "," + FixedToString(y_node,3));
+	
+	if(libcrtx_rgn_is_rect[EventPlayer()]) {
+		//move the corner marker:
+		ActorSend(DataTableGetActor(true, "rgn_" + IntToString(EventPlayer()) + "_node_end"), libNtve_gf_SetPosition (EventMouseMovedPosXWorld(), EventMouseMovedPosYWorld(), EventMouseMovedPosZWorld()));
+
+		//now create edges:
+		//x_node constant edge
+		n = 1;
+		while(n <= count) {
+			libNtve_gf_CreateModelAtPoint(libcrtx_rgn_marker_model, Point(x_node, y_node + (y - y_node)*(IntToFixed(n)/count)));
+			ActorSend(libNtve_gf_ActorLastCreated(), "SetScale .2,.2,.3");
+			ActorSend(libNtve_gf_ActorLastCreated(), "StatusSet rgn_edge " + IntToString(EventPlayer()));
+			ActorSend(libNtve_gf_ActorLastCreated(), "SetTintColor {250,250,250 2.5}");
+			//set filter so only the current player can see it:
+			while(i < libcrtx_max_players) {
+				if(i == EventPlayer() || PlayerStatus(i) != c_playerStatusActive) {
+					i += 1;
+					continue;
+				}
+				ActorSend(libNtve_gf_ActorLastCreated(), "SetFilterPlayers " + IntToString(i));
+				i += 1;
+			}
+			n += 1;
+		}
+		//x constant edge
+		n = 1;
+		while(n <= count) {
+			libNtve_gf_CreateModelAtPoint(libcrtx_rgn_marker_model, Point(x, y_node + (y - y_node)*(IntToFixed(n)/count)));
+			ActorSend(libNtve_gf_ActorLastCreated(), "SetScale .2,.2,.3");
+			ActorSend(libNtve_gf_ActorLastCreated(), "StatusSet rgn_edge " + IntToString(EventPlayer()));
+			ActorSend(libNtve_gf_ActorLastCreated(), "SetTintColor {250,250,250 2.5}");
+			//set filter so only the current player can see it:
+			i = 1;
+			while(i < libcrtx_max_players) {
+				if(i == EventPlayer() || PlayerStatus(i) != c_playerStatusActive) {
+					i += 1;
+					continue;
+				}
+				ActorSend(libNtve_gf_ActorLastCreated(), "SetFilterPlayers " + IntToString(i));
+				i += 1;
+			}
+			n += 1;
+		}
+		//y_node constant edge
+		n = 1;
+		while(n <= count) {
+			libNtve_gf_CreateModelAtPoint(libcrtx_rgn_marker_model, Point(x_node + (x - x_node)*(IntToFixed(n)/count), y_node));
+			ActorSend(libNtve_gf_ActorLastCreated(), "SetScale .2,.2,.3");
+			ActorSend(libNtve_gf_ActorLastCreated(), "StatusSet rgn_edge " + IntToString(EventPlayer()));
+			ActorSend(libNtve_gf_ActorLastCreated(), "SetTintColor {250,250,250 2.5}");
+			//set filter so only the current player can see it:
+			i = 1;
+			while(i < libcrtx_max_players) {
+				if(i == EventPlayer() || PlayerStatus(i) != c_playerStatusActive) {
+					i += 1;
+					continue;
+				}
+				ActorSend(libNtve_gf_ActorLastCreated(), "SetFilterPlayers " + IntToString(i));
+				i += 1;
+			}
+			n += 1;
+		}
+		//y constant edge
+		n = 1;
+		while(n <= count) {
+			libNtve_gf_CreateModelAtPoint(libcrtx_rgn_marker_model, Point(x_node + (x - x_node)*(IntToFixed(n)/count), y));
+			ActorSend(libNtve_gf_ActorLastCreated(), "SetScale .2,.2,.3");
+			ActorSend(libNtve_gf_ActorLastCreated(), "StatusSet rgn_edge " + IntToString(EventPlayer()));
+			ActorSend(libNtve_gf_ActorLastCreated(), "SetTintColor {250,250,250 2.5}");
+			//set filter so only the current player can see it:
+			i = 1;
+			while(i < libcrtx_max_players) {
+				if(i == EventPlayer() || PlayerStatus(i) != c_playerStatusActive) {
+					i += 1;
+					continue;
+				}
+				ActorSend(libNtve_gf_ActorLastCreated(), "SetFilterPlayers " + IntToString(i));
+				i += 1;
+			}
+			n += 1;
+		}
+	}
+	else { //rgn_is_circle
+		d = DistanceBetweenPoints(libcrtx_rgn_selection_start[EventPlayer()], Point(x,y));
+		while(angle < 360) {
+			libNtve_gf_CreateModelAtPoint(libcrtx_rgn_marker_model, PointWithOffsetPolar(libcrtx_rgn_selection_start[EventPlayer()], d, angle));
+			ActorSend(libNtve_gf_ActorLastCreated(), "SetScale .2,.2,.3");
+		
+			ActorSend(libNtve_gf_ActorLastCreated(), "StatusSet rgn_edge " + IntToString(EventPlayer()));
+			ActorSend(libNtve_gf_ActorLastCreated(), "SetTintColor {250,250,250 2.5}");
+			//set filter so only the current player can see it:
+			while(i < libcrtx_max_players) {
+				if(i == EventPlayer() || PlayerStatus(i) != c_playerStatusActive) {
+					i += 1;
+					continue;
+				}
+				ActorSend(libNtve_gf_ActorLastCreated(), "SetFilterPlayers " + IntToString(i));
+				i += 1;
+			}
+			angle += 5;
+		}
+	}
+
+	return true;
+}
+bool libcrtx_region_plant_end(bool checkConds, bool runActions)
+{
+	if(!libcrtx_isSelectingRegion_end[EventPlayer()] || libcrtx_isSelectingRegion_start[EventPlayer()]) {
+		//trigger should not be running: destroy it
+		TriggerDestroy(TriggerGetCurrent());
+		//libcrtx_write_error("libcrtx_region_plant_end RUNNING INVALID TIME: TRIGGER REMOVED");		
+		return true;
+	}
+	//libcrtx_write_error("END");
+	
+	libcrtx_rgn_selection_end[EventPlayer()] = Point(EventMouseClickedPosXWorld(), EventMouseClickedPosYWorld());
+	libcrtx_rgn_selected[EventPlayer()] = true;
+	libcrtx_isSelectingRegion_end[EventPlayer()] = false;
+	libcrtx_isSelectingRegion_start[EventPlayer()] = true;
+	
+	//destroy update and end triggers
+	libcrtx_rgn_event_select_on[EventPlayer()] = false;
+	TriggerDestroy(DataTableGetTrigger(true, IntToString(EventPlayer()) + "_rgn_event_update"));
+	DataTableValueRemove(true, IntToString(EventPlayer()) + "_rgn_event_update");
+	TriggerDestroy(TriggerGetCurrent());
+	
+	return true;
+}
+bool libcrtx_command_regionselect(bool checkConds, bool runActions) //#select
+{
+	string param = StringWord(libcrtx_chat_get_parse_line(EventPlayer()), 2);
+	
+	if(param == "") {
+		param = "rect";
+	}
+	
+	//check if player is in the middle of selecting a region
+	if(libcrtx_isSelectingRegion_end[EventPlayer()]) {
+		libNtve_gf_SendActorMessageToGameRegionWithFilters(RegionEntireMap(), c_actorIntersectAgainstCenter, "Destroy", "Model", "IsStatus rgn_edge " + IntToString(EventPlayer()));	
+		ActorSend(DataTableGetActor(true, "rgn_" + IntToString(EventPlayer()) + "_node_start"), "Destroy");
+		ActorSend(DataTableGetActor(true, "rgn_" + IntToString(EventPlayer()) + "_node_end"), "Destroy");
+		DataTableValueRemove(true, "rgn_" + IntToString(EventPlayer()) + "_node_start");
+		DataTableValueRemove(true, "rgn_" + IntToString(EventPlayer()) + "_node_end");
+		libcrtx_rgn_selected[EventPlayer()] = false;	
+		libcrtx_isSelectingRegion_end[EventPlayer()] = false;
+	}
+	else if(libcrtx_rgn_selected[EventPlayer()]) { 
+		libNtve_gf_SendActorMessageToGameRegionWithFilters(RegionEntireMap(), c_actorIntersectAgainstCenter, "Destroy", "Model", "IsStatus rgn_edge " + IntToString(EventPlayer()));	
+		ActorSend(DataTableGetActor(true, "rgn_" + IntToString(EventPlayer()) + "_node_start"), "Destroy");
+		ActorSend(DataTableGetActor(true, "rgn_" + IntToString(EventPlayer()) + "_node_end"), "Destroy");
+		DataTableValueRemove(true, "rgn_" + IntToString(EventPlayer()) + "_node_start");
+		DataTableValueRemove(true, "rgn_" + IntToString(EventPlayer()) + "_node_end");
+		libcrtx_rgn_selected[EventPlayer()] = false;
+	}
+	
+	if(StringEqual(param, "rect", c_stringNoCase) || StringEqual(param, "rectangle", c_stringNoCase)) {
+		libcrtx_rgn_is_rect[EventPlayer()] = true;
+		libcrtx_isSelectingRegion_start[EventPlayer()] = true;
+
+		if(!libcrtx_rgn_event_plant_on[EventPlayer()]) {
+			TriggerAddEventMouseClicked(TriggerCreate("libcrtx_region_plant_start"), EventPlayer(), c_mouseButtonLeft, true);
+			libcrtx_rgn_event_plant_on[EventPlayer()] = true;
+		}
+		
+		libcrtx_write(PlayerGroupSingle(EventPlayer()), "Click to place the first corner of the region (or type #cancel to cancel)");
+	}
+	
+	if(StringEqual(param, "circle", c_stringNoCase)) {
+		libcrtx_rgn_is_rect[EventPlayer()] = false;
+		libcrtx_isSelectingRegion_start[EventPlayer()] = true;
+
+		if(!libcrtx_rgn_event_plant_on[EventPlayer()]) {
+			TriggerAddEventMouseClicked(TriggerCreate("libcrtx_region_plant_start"), EventPlayer(), c_mouseButtonLeft, true);
+			libcrtx_rgn_event_plant_on[EventPlayer()] = true;
+		}
+		
+		libcrtx_write(PlayerGroupSingle(EventPlayer()), "Click to place the center of the region (or type #cancel to cancel)");
+		
+	}
+	
+	
+	return true;
+
+}
+bool libcrtx_command_regionselect_cancel(bool checkConds, bool runActions) //#cancel to cancel a region selection at any step
+{
+	if(libcrtx_isSelectingRegion_start[EventPlayer()]) {
+		libNtve_gf_SendActorMessageToGameRegionWithFilters(RegionEntireMap(), c_actorIntersectAgainstCenter, "Destroy", "Model", "IsStatus rgn_edge " + IntToString(EventPlayer()));	
+		ActorSend(DataTableGetActor(true, "rgn_" + IntToString(EventPlayer()) + "_node_start"), "Destroy");
+		ActorSend(DataTableGetActor(true, "rgn_" + IntToString(EventPlayer()) + "_node_end"), "Destroy");
+		DataTableValueRemove(true, "rgn_" + IntToString(EventPlayer()) + "_node_start");
+		DataTableValueRemove(true, "rgn_" + IntToString(EventPlayer()) + "_node_end");
+		libcrtx_isSelectingRegion_start[EventPlayer()] = false;
+	}
+	if(libcrtx_isSelectingRegion_end[EventPlayer()]) {
+		libNtve_gf_SendActorMessageToGameRegionWithFilters(RegionEntireMap(), c_actorIntersectAgainstCenter, "Destroy", "Model", "IsStatus rgn_edge " + IntToString(EventPlayer()));	
+		ActorSend(DataTableGetActor(true, "rgn_" + IntToString(EventPlayer()) + "_node_start"), "Destroy");
+		ActorSend(DataTableGetActor(true, "rgn_" + IntToString(EventPlayer()) + "_node_end"), "Destroy");
+		DataTableValueRemove(true, "rgn_" + IntToString(EventPlayer()) + "_node_start");
+		DataTableValueRemove(true, "rgn_" + IntToString(EventPlayer()) + "_node_end");
+		libcrtx_rgn_selected[EventPlayer()] = false;	
+		libcrtx_isSelectingRegion_end[EventPlayer()] = false;
+	}
+	if(libcrtx_rgn_selected[EventPlayer()]) { 
+		libNtve_gf_SendActorMessageToGameRegionWithFilters(RegionEntireMap(), c_actorIntersectAgainstCenter, "Destroy", "Model", "IsStatus rgn_edge " + IntToString(EventPlayer()));	
+		ActorSend(DataTableGetActor(true, "rgn_" + IntToString(EventPlayer()) + "_node_start"), "Destroy");
+		ActorSend(DataTableGetActor(true, "rgn_" + IntToString(EventPlayer()) + "_node_end"), "Destroy");
+		DataTableValueRemove(true, "rgn_" + IntToString(EventPlayer()) + "_node_start");
+		DataTableValueRemove(true, "rgn_" + IntToString(EventPlayer()) + "_node_end");
+		libcrtx_rgn_selected[EventPlayer()] = false;
+	}
+	
+	libcrtx_rgn_event_plant_on[EventPlayer()] = false;
+	
+	libcrtx_write(PlayerGroupSingle(EventPlayer()), "Region selecting stopped");
 	
 	return true;
 }

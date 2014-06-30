@@ -15,7 +15,7 @@ include "Cortex/Events/PlayerSetup.galaxy"
 include "Cortex/Events/PlayerLeaves.galaxy"
 include "Cortex/Events/PlayerMouseMovement.galaxy"
 include "Cortex/Events/SpawnerDeath.galaxy"
-include "Cortex/Events/ForgeSquadUpdate.galaxy"
+include "Cortex/Events/SquadUpdate.galaxy"
 
 bool libcrtx_event_map_init(bool checkConds, bool runActions);
 void libcrtx_events_init()

@@ -16,8 +16,6 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
-include "Cortex/Toolkit/ForgeUnitFormations.galaxy"
-
 bool libcrtx_command_kill(bool testConds, bool runActions) {
 	unitgroup g = libcrtx_chat_get_context(EventPlayer());
 	UnitGroupLoopBegin(g);
@@ -805,6 +803,8 @@ bool libcrtx_command_addweapon(bool testConds, bool runActions) {
 	}
 	
 	// use toolkit on weapon
+	weapon = libcrtx_toolkit_getweapon(weapon);
+
 	weapon = libcrtx_param_catalog(c_gameCatalogWeapon, weapon);
 	
 	if ( weapon == null || CatalogEntryScope(c_gameCatalogWeapon, weapon) == weapon) {
@@ -1084,7 +1084,9 @@ bool libcrtx_command_attach(bool testConds, bool runActions) {
 	{
 		// Attach the actor to the unit
 		libNtve_gf_AttachActorToUnit(UnitGroupLoopCurrent(), actr, apoint);
-		libcrtx_unitCache_update(UnitGroupLoopCurrent(), "@attach", libcrtx_chat_get_parse_line(EventPlayer()));
+		if(!StringContains(actr, "TalkIcon", c_stringAnywhere, c_stringNoCase)) {
+			libcrtx_unitCache_update(UnitGroupLoopCurrent(), "@attach", libcrtx_chat_get_parse_line(EventPlayer()));
+		}
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();
@@ -2730,6 +2732,41 @@ bool libcrtx_command_subtitle(bool testConds, bool runActions)
 	UnitGroupLoopEnd();
 	return true;
 }
+bool libcrtx_command_position(bool testConds, bool runActions)
+{
+	fixed x;
+	fixed y;
+	unitgroup g = libcrtx_chat_get_context(EventPlayer());
+	
+	if(StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 2) == "") { //display unit coords
+		UnitGroupLoopBegin(g);
+		while(!UnitGroupLoopDone())
+		{
+			libcrtx_write(PlayerGroupSingle(EventPlayer()), UnitGetType(UnitGroupLoopCurrent()) + " (" + FixedToString(PointGetX(UnitGetPosition(UnitGroupLoopCurrent())),2) + "," + FixedToString(PointGetY(UnitGetPosition(UnitGroupLoopCurrent())),2)  + ")");
+			UnitGroupLoopStep();
+		}
+		UnitGroupLoopEnd();
+		return true;
+	}
+	
+	if(StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 3) == "") {
+		libcrtx_write_error("@pos requires both an X and Y coordinate to move a unit to (X,Y)");
+		return true;
+	}
+	
+	x = StringToFixed(StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 2));
+	y = StringToFixed(StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 3));
+	
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone())
+	{
+		UnitSetPosition(UnitGroupLoopCurrent(), Point(x,y), false);
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+	
+	return true;
+}
 bool libcrtx_command_attach_plus(bool testConds, bool runActions) //syntax: @attach+ {-m} [Actor/Model] [Point_#] [offX] [offY] [offZ] {{-r} [rotX] [rotY] [rotZ]} [SOp1] [SOp2] [SOp3]...
 {
 	unitgroup g = libcrtx_chat_get_context(EventPlayer());
@@ -2820,7 +2857,6 @@ bool libcrtx_command_attach_plus(bool testConds, bool runActions) //syntax: @att
 	//remake the apoint string
 	apoint = "{" + apoint + apoint_index + "}";
 	
-
 	//check for offset (if specified)
 	if(StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 4 + parse_offset) != "" 
 		&& !StringContains(StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 4 + parse_offset), "SOp", c_stringAnywhere, c_stringNoCase)
@@ -2916,10 +2952,70 @@ bool libcrtx_command_attach_plus(bool testConds, bool runActions) //syntax: @att
 	{
 		ActorSend(libNtve_gf_MainActorofUnit(UnitGroupLoopCurrent()), actormsg);
 		//libHots_gf_StoreActorForUnit(UnitGroupLoopCurrent(), 1, libNtve_gf_ActorLastCreatedSend());
-		libcrtx_unitCache_update(UnitGroupLoopCurrent(), "@attach", libcrtx_chat_get_parse_line(EventPlayer()));
+		if(!StringContains(actr, "TalkIcon", c_stringAnywhere, c_stringNoCase)) {
+			libcrtx_unitCache_update(UnitGroupLoopCurrent(), "@attach", libcrtx_chat_get_parse_line(EventPlayer()));
+		}
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();
+	
+	return true;
+}
+bool libcrtx_command_actormessage(bool testConds, bool runActions) //@actrmsg
+{
+	unitgroup g = libcrtx_chat_get_context(EventPlayer());
+	string amsg;
+	
+	if(StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 2) == "") {
+		return true;
+	}
+	
+	amsg = StringSub( libcrtx_chat_get_parse_line(EventPlayer()), StringLength(StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 1)) + 2, StringLength(libcrtx_chat_get_parse_line(EventPlayer())));
+	
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone())
+	{
+		ActorSend(libNtve_gf_MainActorofUnit(UnitGroupLoopCurrent()), amsg);
+		libcrtx_unitCache_update(UnitGroupLoopCurrent(), "@actrmsg", libcrtx_chat_get_parse_line(EventPlayer()));
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();	
+	
+	return true;
+}
+bool libcrtx_command_tooltip(bool testConds, bool runActions)
+{
+	unitgroup g = libcrtx_chat_get_context(EventPlayer());
+	string description;
+	bool subtip = false;
+	
+	if(StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 2) == "") {
+		return true;
+	}
+
+	if(StringEqual(StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 2),"sub",c_stringNoCase)) {
+		description = StringSub( libcrtx_chat_get_parse_line(EventPlayer()), StringLength(StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 1)) + 2, StringLength(libcrtx_chat_get_parse_line(EventPlayer())));
+		description = StringSub( description, StringLength(StringWord( description, 1)) + 2, StringLength(description));
+
+		subtip = true;
+	}
+	else {
+		description = StringSub( libcrtx_chat_get_parse_line(EventPlayer()), StringLength(StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 1)) + 2, StringLength(libcrtx_chat_get_parse_line(EventPlayer())));
+	}
+
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone())
+	{
+		if(subtip) {
+			UnitSetInfoSubTip(UnitGroupLoopCurrent(), StringToText(description));
+		}
+		else {
+			UnitSetInfoTip(UnitGroupLoopCurrent(), StringToText(description));
+		}
+		libcrtx_unitCache_update(UnitGroupLoopCurrent(), "@tooltip", libcrtx_chat_get_parse_line(EventPlayer()));
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();		
 	
 	return true;
 }

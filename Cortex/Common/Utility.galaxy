@@ -43,7 +43,19 @@ unitgroup libcrtx_selected_units()
 
 	return g;
 }
-
+// Returns a region based on the string name
+region libcrtx_region_get(string s)
+{
+	string rgnName = libcrtx_command_region_buildidentifier(s);
+	region rgn;
+	if(DataTableValueExists(true, rgnName + "_link")) {
+		rgn = DataTableGetRegion(true, rgnName + "_link");
+	}
+	else {
+		rgn = DataTableGetRegion(true, rgnName);
+	}
+	return rgn;
+}
 // Returns the default string color name of a player slot. Ex: 1 - Red
 string libcrtx_color_from_player_default(int plr)
 {

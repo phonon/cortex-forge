@@ -28,8 +28,6 @@
 //type: string | Name: UNITID.lastcmd (last command used)
 //type: string | Name: UNITID.CACHENUMBER
 
-//cached commands: behavior, weapons, damage, range,
-//modelswap, attach, tint, scale, animspeed, height, play
 
 int cache_string_limit = 255;
 int cache_overwrite_check_limit = 10;
@@ -407,6 +405,10 @@ void libcrtx_unitCache_update(unit subject, string crtx_command, string user_com
 		return;
 	}
 	else if(crtx_command == "@color") {
+		libcrtx_unitCache_update_overwrite(subject, unit_id, crtx_command, user_command);
+		return;
+	}
+	else if(crtx_command == "@tooltip") {
 		libcrtx_unitCache_update_overwrite(subject, unit_id, crtx_command, user_command);
 		return;
 	}

@@ -119,7 +119,7 @@ void libcrtx_gamesetup_load(int player, string gamesetup_name)
 	libcrtx_write_success("Game setup loaded: \"" + gamesetup_name + "\"");
 	
 }
-void libcrtx_gamesetup_save(int player, string gamesetup_name)
+void libcrtx_gamesetup_save(int player, string gamesetup_name, region rgn)
 {
 	unitgroup g;
 	string unit_id;
@@ -143,7 +143,7 @@ void libcrtx_gamesetup_save(int player, string gamesetup_name)
 	BankValueSetFromFlag(libcrtx_gameSetup_bank[player], gamesetup_name + "_global", "setup", true);
 	
 	//save units
-	g = UnitGroup(null, player, RegionEntireMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
+	g = UnitGroup(null, player, rgn, UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
 	
 	UnitGroupLoopBegin(g);
 	while(!UnitGroupLoopDone())

@@ -26,7 +26,6 @@ include "Cortex/CortexUI/UI.galaxy"
 void libcrtx_Welcome()
 {
 	libcrtx_write(PlayerGroupActive(), "Welcome to Cortex v" + IntToString(libcrtx_version_major) + "." + IntToString(libcrtx_version_minor) + "." + IntToString(libcrtx_version_bugfix) + libcrtx_version_hotfix + ", with Cortex Forge Extensions v" +IntToString(libcrtx_frg_version_major) + "." + IntToString(libcrtx_frg_version_minor) + "." + IntToString(libcrtx_frg_version_bugfix) + libcrtx_frg_version_hotfix + ". Learn more about Cortex on the web at CortexRP.com, or join our Starcraft II group, \"Roleplaying\".");
-	libcrtx_write(PlayerGroupActive(), "</n>Or, if you are under 12 years old, have learning disabilities, or enjoy being lazy and unproductive, you are perfect for Trivaeum! Join our community and find like-minded people at trivaeum.freeforums.org.</n>");
 }
 
 bool libcrtx_MapCheck()

@@ -133,7 +133,7 @@ void libcrtx_ui_catalogs_init()
 	//load catalogs
 	i = 1;
 	catalogs = "Abilities Actors Behaviors Effects Footprints Lights Models Sounds Soundtracks Textures Turrets Units Upgrades Validators Weapons";
-	while(i < 15) {
+	while(i < 16) {
 		DialogControlAddItem(libcrtx_ui_catalogs_list, PlayerGroupAll(), StringToText(StringWord(catalogs, i)));
 		i += 1;
 	}

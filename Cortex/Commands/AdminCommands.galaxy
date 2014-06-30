@@ -1273,7 +1273,7 @@ bool libcrtx_command_weather(bool testConds, bool runActions) //!weather off|rai
 		}
 		else
 		{
-			rgn = DataTableGetRegion(true, rgnName);
+			rgn = DataTableGetRegion(true, libcrtx_command_region_buildidentifier(rgnName));
 		}
 
 		if(rgn == null)
@@ -1301,5 +1301,44 @@ bool libcrtx_command_weather(bool testConds, bool runActions) //!weather off|rai
 	}
 	
 
+	return true;
+}
+bool libcrtx_command_mapbounds(bool testConds, bool runActions) 
+{
+	region rgn;
+	string rgnName = StringWord(libcrtx_chat_get_parse_line(EventPlayer()), 2);
+	
+	if(rgnName == "" || StringEqual(rgnName, "reset", c_stringNoCase) ) { //reset bounds to default
+		RegionPlayableMapSet(RegionEntireMap());
+		CameraSetBounds(PlayerGroupAll(), RegionPlayableMap(), true);		
+		libcrtx_write_text(PlayerGroupAll(), StringToText("Map bounds set to default by ") + libcrtx_colored_player_name(EventPlayer()));
+		return true;
+	}
+	else if(StringSub(rgnName, 1, 1) != "#") {
+		libcrtx_write_error("Invalid region. Please enter region as #_____, so region \"home\" would be #home");		
+		return true;
+	}
+	else {
+		rgnName = StringSub(rgnName, 2, StringLength(rgnName));
+		if(DataTableValueExists(true, libcrtx_command_region_buildidentifier(rgnName) + "_link"))
+		{
+			rgn = DataTableGetRegion(true, libcrtx_command_region_buildidentifier(rgnName) + "_link");
+		}
+		else
+		{
+			rgn = DataTableGetRegion(true, libcrtx_command_region_buildidentifier(rgnName));
+		}
+		if(rgn == null)
+		{
+			libcrtx_write_error("No region with that name exists!");
+			return true;
+		}
+	}
+	
+    RegionPlayableMapSet(rgn);
+    CameraSetBounds(PlayerGroupAll(), rgn, true);
+	libcrtx_write_success("Map bounds set to region \"" + rgnName + "\"");
+	libcrtx_write_text(PlayerGroupAll(), StringToText("Map bounds set by ") + libcrtx_colored_player_name(EventPlayer()));
+	libcrtx_write(PlayerGroupAll(), "Map bounds can be set to default with \"!mapbounds reset\"");
 	return true;
 }

@@ -182,7 +182,7 @@ void libcrtx_chat_parsechat(int lp_player, string lp_message, int lp_recursionLi
 
 	// Check every word for aliases.
 	x = 2;
-	while( StringWord(lp_message, x) != "" && !isNoAliasCommand ) {
+	while( StringWord(lp_message, x) != "" && !isNoAliasCommand && !aliasCreate ) {
 		s = StringWord(lp_message, x);
 		if( libcrtx_alias_exists(s) ) { 
 			lp_message = libcrtx_replace_word( lp_message, s, libcrtx_alias_getsource(s), c_stringReplaceAll, false );
@@ -204,24 +204,26 @@ void libcrtx_chat_parsechat(int lp_player, string lp_message, int lp_recursionLi
 	sub = StringCase(sub, false);
 	
 	//ensure if command "wait", do nothing (already handled)
-	if(StringWord(sub, 1) != "delay" && !libcrtx_command_banned(lp_player, sub) )
+	if(StringWord(sub, 1) != "delay")
 	{
 		t = DataTableGetTrigger( true, "libcrtx_commands_" + sub );
 		if( t )
 		{
-			// Reset return value.
-			libcrtx_variable_delete(lp_player, libcrtx_variable_name_return);
+			if(!libcrtx_command_banned(lp_player, sub)) {
+				// Reset return value.
+				libcrtx_variable_delete(lp_player, libcrtx_variable_name_return);
 
-			libcrtx_chat_set_parse_line( lp_player, lp_message );
-			libcrtx_log_event(lp_player, lp_message);
-			TriggerExecute(t, false, false);
+				libcrtx_chat_set_parse_line( lp_player, lp_message );
+				libcrtx_log_event(lp_player, lp_message);
+				TriggerExecute(t, false, false);
+			}
+			else if(libcrtx_command_banned(lp_player, sub)) {
+				libcrtx_write(PlayerGroupSingle(lp_player), "You do not have permissions to use " + sub);
+			}
 		} else {
 			// No such command for this iteration
 			libcrtx_chat_write_ooc( lp_player, lp_message );
 		}
-	}
-	else if (libcrtx_command_banned(lp_player, sub)) {
-		libcrtx_write(PlayerGroupSingle(lp_player), "You do not have permissions to use " + sub);
 	}
 }
 

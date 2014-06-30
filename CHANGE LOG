@@ -1,4 +1,24 @@
-﻿[9/13/2013]Forge Extensions v1.1
+﻿[1/28/2014] Forge Extensions v1.2
+GENERAL:
+• Actors with "TalkIcon" in their name no longer cache
+• "Weapons" now shows up in catalogs UI
+• Chat parser no longer expands aliases when using "alias create"
+• Fixed issue with Permissions banning commands that causes fragments of a banned command to not be able to be used
+• gamesetup save now takes a region parameter: gamesetup save [name] #[region] (MUST INCLUDE # TO IDENTIFY REGION)
+  so players can selectively save areas (by default the entire map is used)
+• @setname and @tooltip are now cached
+
+ADDED COMMANDS:
+• @position [x] [y] [z] (just @position displays a unit's coordinates)
+• @tooltip [description]  - Sets the unit's tooltip to the [description]
+• @tooltip sub [description]  - Sets the unit's sub-tooltip to the [description]
+• @actrmsg [actor message]  - Sends the [actor message] to the unit (these are case-sensitive)
+• #select circle || #select rect  - Allows for mouse-click based region selection
+  (if a region is selected #create [name] now creates a region based on selection)
+• #cancel  - to cancel region selection
+• !mapbounds #[region] | !mapbounds reset  - sets the map's bounds to a region (reset to set to default)
+
+[9/13/2013]Forge Extensions v1.1
 GENERAL:
 • Fixed the game start lag (caused by action PortraitWaitForLoad in the model previewer UI)
 • Added permissions system for player-specific banning or allowing commands (allows overriding secure and mod/admin restrictions)
@@ -23,9 +43,11 @@ ADDED COMMANDS:
 • !weather rain|snow|hail|fog|mist|sandstorm|sun [amount (default: 25)] [HDR] #[region]
   !weather off #[region]
 
+  
 [8/5/2013] Forge Extensions v1.0a (Hotfix)
 • Fixed gamesetups saving and loading "spawner" unit
 • Dynamic unit squad movement fix
+
 
 [8/4/2013] Forge Extensions v1.0
 GENERAL:

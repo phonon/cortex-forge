@@ -43,6 +43,28 @@ const int libcrtx_unit_custom_value_guid = 0;
 const int libcrtx_unit_custom_value_texttag = 1;
 const int libcrtx_unit_custom_value_waygate = 2;
 
+const int libcrtx_unit_custom_value_squad = 5;
+const int libcrtx_unit_custom_value_squad_centerx = 6;
+const int libcrtx_unit_custom_value_squad_centery = 7;
+const int libcrtx_unit_custom_value_squad_r = 8;
+const int libcrtx_unit_custom_value_squad_theta = 9;
+const int libcrtx_unit_custom_value_squad_type = 10;
+
+const int libcrtx_unit_custom_value_cache_id = 11;
+const int libcrtx_unit_custom_value_cache_count = 12;
+const int libcrtx_unit_custom_value_cache_tint = 13;
+const int libcrtx_unit_custom_value_cache_scale = 14;
+const int libcrtx_unit_custom_value_cache_animspeed = 15;
+const int libcrtx_unit_custom_value_cache_modelswap = 16;
+const int libcrtx_unit_custom_value_cache_play = 17;
+const int libcrtx_unit_custom_value_cache_statbars = 18;
+const int libcrtx_unit_custom_value_cache_damage = 19;
+const int libcrtx_unit_custom_value_cache_range = 20;
+const int libcrtx_unit_custom_value_cache_height = 21;
+const int libcrtx_unit_custom_value_cache_invulnerable = 22;
+const int libcrtx_unit_custom_value_cache_setname = 23;
+
+
 // Prefix for all banks.
 const string libcrtx_bank_prefix = "Cortex";
 

@@ -1014,6 +1014,8 @@ bool libcrtx_command_gamesetup(bool testConds, bool runActions)
 {
 	string param;
 	string gamesetup_name;
+	string rgnName;
+	region rgn = RegionEntireMap();
 	int i;
 	string gamesetup_list = "";
 	
@@ -1030,7 +1032,25 @@ bool libcrtx_command_gamesetup(bool testConds, bool runActions)
 			libcrtx_write_error("Invalid game setup name");			
 			return true;
 		}
-		libcrtx_gamesetup_save(EventPlayer(), gamesetup_name);
+		if(StringWord(libcrtx_chat_get_parse_line(EventPlayer()), 4) != "") {
+			if(StringSub(StringWord(libcrtx_chat_get_parse_line(EventPlayer()), 4), 1, 1) == "#") {
+				rgnName = StringWord(libcrtx_chat_get_parse_line(EventPlayer()), 4);
+				rgnName = StringSub(rgnName, 2, StringLength(rgnName)); // remove the #
+			
+				rgn = libcrtx_region_get(rgnName);
+				
+				if(rgn == null) {
+					libcrtx_write_error("No region with that name exists!");
+					return true;
+				}
+				libcrtx_write_success("Saving region " + rgnName);
+			}
+			else {
+				libcrtx_write_error("Region name must be prefixed with '#' (e.g. a region named \"rgn\" must be entered as #rgn");
+				return true;				
+			}
+		}
+		libcrtx_gamesetup_save(EventPlayer(), gamesetup_name, rgn);
 		return true;
 	}
 	if(StringEqual(param, "load", c_stringNoCase))

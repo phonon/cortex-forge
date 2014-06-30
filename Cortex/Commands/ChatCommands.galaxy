@@ -33,8 +33,9 @@ text libcrtx_get_name_from_unit(unit u)
 	bank b = libcrtx_player_banks[EventPlayer()];
 	if( b == null )
 	{
-		s =CatalogFieldValueGet(c_gameCatalogUnit, UnitGetType(u), "Name", UnitGetOwner(u));
+		s = CatalogFieldValueGet(c_gameCatalogUnit, UnitGetType(u), "Name", UnitGetOwner(u));
 		if( StringSub(s, 1, 10) == "Unit/Name/" ) {
+			//libcrtx_write_success("FAILED TO LOAD BANK: RETURNING UNIT/NAME/");
 			return StringExternal(s);
 		}
 	}
@@ -46,10 +47,13 @@ text libcrtx_get_name_from_unit(unit u)
 		// Perform catalog lookup
 		s = CatalogFieldValueGet(c_gameCatalogUnit, UnitGetType(u), "Name", UnitGetOwner(u));
 		if( StringSub(s, 1, 10) == "Unit/Name/" ) {
+			//libcrtx_write_success("FAILED TO FIND BANK STRING: RETURNING UNIT/NAME/");
 			return StringExternal(s);
 		}
 	}
 
+	//libcrtx_write_success(IntToString(FixedToInt( UnitGetCustomValue(u, libcrtx_unit_custom_value_guid))) + " : " + s);
+	
 	return StringToText(s);
 }
 
@@ -137,7 +141,8 @@ bool libcrtx_command_setname(bool checkConds, bool runActions)
 		u = UnitGroupLoopCurrent();
 
 		libcrtx_assign_name_to_unit(u, s);
-
+		libcrtx_unitCache_update(UnitGroupLoopCurrent(), "@setname", libcrtx_chat_get_parse_line(EventPlayer()));
+		
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();

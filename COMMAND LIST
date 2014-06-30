@@ -50,7 +50,7 @@
 	repeat [int count] [string command_1; command_2; command_3; ...]
 	ui {"game"||"cortex"} {on||off}
 	toggleanon
-	gamesetup save [string name]
+	gamesetup save [string name] #[region]
 	gamesetup load [string name]
 	gamesetup list
 	gamesetup remove [string name]
@@ -68,10 +68,13 @@
 	!soundtrack stop ["ambience"|"music"]
 	!weather rain|snow|hail|fog|mist|sandstorm|sun [amount (default: 25)] [HDR] #[region]
   	!weather off #[region]
-
+	!mapbounds #[region]
+	!mapbounds reset
 
 	#reveal [string region] [color player] {on||off}
-	
+	#select circle||rect
+	#cancel	
+
 	@statbars {on||off}
 	@form {rect||circle||star}
 		@form rect {-a||attack} [int row] [int col] [fixed spacing] [fixed angle]
@@ -84,6 +87,10 @@
 	@undo [int iterations]
 	@copy {+visual};
 	@attach+ {-m} [Actor/Model] [Point_#] [offX] [offY] [offZ] {{-r} [rotX] [rotY] [rotZ]} [SOp1] [SOp2] [SOp3]...
+	@tooltip [description]
+	@tooltip sub [description]
+	@actrmsg [actor_message]
+	@position [x] [y] [z]
 
 	_doodad [string model]
 	_selectactors

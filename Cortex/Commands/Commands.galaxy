@@ -24,9 +24,9 @@ include "Cortex/Commands/ChatCommands.galaxy"
 include "Cortex/Commands/AdminCommands.galaxy"
 include "Cortex/Commands/AliasCommands.galaxy"
 include "Cortex/Commands/RegionCommands.galaxy"
-include "Cortex/Commands/ForgeDoodadCommands.galaxy"
-include "Cortex/Commands/ForgeBlacklistCommands.galaxy"
-include "Cortex/Commands/ForgeCameraCommands.galaxy"
+include "Cortex/Commands/DoodadCommands.galaxy"
+include "Cortex/Commands/BlacklistCommands.galaxy"
+include "Cortex/Commands/CameraCommands.galaxy"
 
 
 void libcrtx_commands_init()
@@ -140,6 +140,9 @@ void libcrtx_commands_init()
 	libcrtx_command_create("@undo", "libcrtx_command_undo");
 	libcrtx_command_create("@subtitle", "libcrtx_command_subtitle");
 	libcrtx_command_create("@attach+", "libcrtx_command_attach_plus");
+	libcrtx_command_create("@position", "libcrtx_command_position");
+	libcrtx_command_create("@actrmsg", "libcrtx_command_actormessage");
+	libcrtx_command_create("@tooltip", "libcrtx_command_tooltip");
 	
 
 	// admin commands
@@ -162,6 +165,7 @@ void libcrtx_commands_init()
 	libcrtx_command_create("!xml", "libcrtx_command_xml");
 	libcrtx_command_create("!soundtrack", "libcrtx_command_soundtrack");
 	libcrtx_command_create("!weather", "libcrtx_command_weather");
+	libcrtx_command_create("!mapbounds", "libcrtx_command_mapbounds");
 
 
 	// region commands
@@ -172,6 +176,8 @@ void libcrtx_commands_init()
 	libcrtx_command_create("#list", "libcrtx_command_regionlist");
 	libcrtx_command_create("#attach", "libcrtx_command_regionattach");
 	libcrtx_command_create("#reveal", "libcrtx_command_regionreveal");
+	libcrtx_command_create("#select", "libcrtx_command_regionselect");
+	libcrtx_command_create("#cancel", "libcrtx_command_regionselect_cancel");
 	
 	
 	// doodad/actor commands

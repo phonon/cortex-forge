@@ -1,0 +1,7 @@
+This folder contains experimental features that were not fully implemented:
+
+ForgeRPG : intended to be a full DnD-style RPG system (with customizable items, abilities
+			heroes, leveling, etc...)
+			
+Alphabatized Alias list : alphabetized version of aliases. however, was encountering 
+							issues with usage, so currently not implemented.

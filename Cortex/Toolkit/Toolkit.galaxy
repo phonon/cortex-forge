@@ -11,6 +11,7 @@
 // GNU General Public License for more details.
 
 include "Cortex/Toolkit/ToolkitStorage.galaxy"
+include "Cortex/Toolkit/XethyrUnitFormations.galaxy"
 include "Cortex/Toolkit/DefaultToolkit/DefaultToolkit.galaxy"
 
 // Default ToolKit definition for Cortex.
