@@ -19,10 +19,10 @@
 
 struct ui_command
 {
-	string cmd;
-	string stx;
-	string nfo;
-	string use;
+	string cmd; //COMMAND NAME e.g. @spawn
+	string stx; //SYNTAX e.g. @spawn [unit name] [@hostile/@neutral] [amount]
+	string nfo; //INFO e.g. creates a unit!
+	string use; //EXAMPLE USAGE e.g. @spawn 5 marine @hostile
 };
 
 ui_command[10][70] libcrtx_ui_commands_entry;
@@ -35,7 +35,7 @@ void libcrtx_ui_commands_entries_init()
 	int i;
 	int j;
 	
-	libcrtx_ui_commands_category = "admin alias blacklist camera doodad general region unit";
+	libcrtx_ui_commands_category = "admin alias permissions camera doodad general region unit";
 	
 	//1 - admin commands
 	j = 1;
@@ -81,12 +81,12 @@ void libcrtx_ui_commands_entries_init()
 	libcrtx_ui_commands_entry[j][i].use = "!smarthostile";
 	i += 1;
 	libcrtx_ui_commands_entry[j][i].cmd = "!light";
-	libcrtx_ui_commands_entry[j][i].stx = "!light [string light-name]";
+	libcrtx_ui_commands_entry[j][i].stx = "!light [light name]";
 	libcrtx_ui_commands_entry[j][i].nfo = "Changes the lighting on the map";
 	libcrtx_ui_commands_entry[j][i].use = "!light ArchonPortrait | !light BelShir";
 	i += 1;
 	libcrtx_ui_commands_entry[j][i].cmd = "!creepspeed";
-	libcrtx_ui_commands_entry[j][i].stx = "!creepspeed [fixed speed]";
+	libcrtx_ui_commands_entry[j][i].stx = "!creepspeed [speed]";
 	libcrtx_ui_commands_entry[j][i].nfo = "Sets the rate of creep spread";
 	libcrtx_ui_commands_entry[j][i].use = "!creepspeed 50.5";
 	i += 1;
@@ -106,19 +106,44 @@ void libcrtx_ui_commands_entries_init()
 	libcrtx_ui_commands_entry[j][i].use = "!secure off";
 	i += 1;
 	libcrtx_ui_commands_entry[j][i].cmd = "!fog";
-	libcrtx_ui_commands_entry[j][i].stx = "!fog [preset parameter] [fixed value]";
+	libcrtx_ui_commands_entry[j][i].stx = "!fog [parameter] [value]";
 	libcrtx_ui_commands_entry[j][i].nfo = "Changes the map fog settings";
 	libcrtx_ui_commands_entry[j][i].use = "!fog color 250 50 0 | !fog falloff 5 (type !fog to list parameters)";
 	i += 1;
 	libcrtx_ui_commands_entry[j][i].cmd = "!setting";
-	libcrtx_ui_commands_entry[j][i].stx = "!setting [preset Setting] [int/fixed value]";
+	libcrtx_ui_commands_entry[j][i].stx = "!setting [setting] [value]";
 	libcrtx_ui_commands_entry[j][i].nfo = "Changes default map settings, like spawn rate or max scale for the @scale command";
 	libcrtx_ui_commands_entry[j][i].use = "!setting maxspawnrate 100 (Typing \"!setting\" lists the settings)";
 	i += 1;
 	libcrtx_ui_commands_entry[j][i].cmd = "!fruit";
-	libcrtx_ui_commands_entry[j][i].stx = "!fruit [int number]";
+	libcrtx_ui_commands_entry[j][i].stx = "!fruit [amount]";
 	libcrtx_ui_commands_entry[j][i].nfo = "Let there be fruit";
 	libcrtx_ui_commands_entry[j][i].use = "!fruit 9001";
+	i += 1;
+	libcrtx_ui_commands_entry[j][i].cmd = "!xml";
+	libcrtx_ui_commands_entry[j][i].stx = "!xml on||off";
+	libcrtx_ui_commands_entry[j][i].nfo = "Allows or prevents xml styling to be used";
+	libcrtx_ui_commands_entry[j][i].use = "!xml on";
+	i += 1;
+	libcrtx_ui_commands_entry[j][i].cmd = "!soundtrack";
+	libcrtx_ui_commands_entry[j][i].stx = "!soundtrack [soundtrack name] [\"ambience\"|\"music\"]";
+	libcrtx_ui_commands_entry[j][i].nfo = "Plays a soundtrack for all players. Ambience is background sound. Music is played over ambience";
+	libcrtx_ui_commands_entry[j][i].use = "!soundtrack ";
+	i += 1;
+	libcrtx_ui_commands_entry[j][i].cmd = "!soundtrack stop";
+	libcrtx_ui_commands_entry[j][i].stx = "!soundtrack stop [\"ambience\"|\"music\"]";
+	libcrtx_ui_commands_entry[j][i].nfo = "Stops a played soundtrack (not specifying ambience or music stops all soundtracks)";
+	libcrtx_ui_commands_entry[j][i].use = "!soundtrack stop";
+	i += 1;
+	libcrtx_ui_commands_entry[j][i].cmd = "!weather";
+	libcrtx_ui_commands_entry[j][i].stx = "!weather rain|snow|hail|fog|mist|sandstorm|sun [amount (default: 25)] [HDR] #[region]";
+	libcrtx_ui_commands_entry[j][i].nfo = "Creates weather of type specified. HDR is intensity. Specify region with #___";
+	libcrtx_ui_commands_entry[j][i].use = "!weather rain  |  !weather snow 65 1.2 #region";
+	i += 1;
+	libcrtx_ui_commands_entry[j][i].cmd = "!weather off";
+	libcrtx_ui_commands_entry[j][i].stx = "!weather off #[region]";
+	libcrtx_ui_commands_entry[j][i].nfo = "Turns weather off. Specify region if only want to turn off weather there";
+	libcrtx_ui_commands_entry[j][i].use = "!weather off  |  !weather off #region";
 
 	//2 - alias commands
 	j = 2;
@@ -165,6 +190,26 @@ void libcrtx_ui_commands_entries_init()
 	libcrtx_ui_commands_entry[j][i].stx = "blacklist list";
 	libcrtx_ui_commands_entry[j][i].nfo = "Shows a list of players on your blacklist";
 	libcrtx_ui_commands_entry[j][i].use = "blacklist list";
+	i += 1;
+	libcrtx_ui_commands_entry[j][i].cmd = "permissions";
+	libcrtx_ui_commands_entry[j][i].stx = "permissions [color] [string command] {allow||ban||remove} {global}";
+	libcrtx_ui_commands_entry[j][i].nfo = "Sets command permissions for player. Allows or disallows commands.";
+	libcrtx_ui_commands_entry[j][i].use = "permissions red @spawn ban  |  permissions red replacemodel allow global";
+	i += 1;
+	libcrtx_ui_commands_entry[j][i].cmd = "permissions [color] [command] allow";
+	libcrtx_ui_commands_entry[j][i].stx = "permissions [color] [command] allow {global}";
+	libcrtx_ui_commands_entry[j][i].nfo = "Allow the command for [color] to override requirements like !secure";
+	libcrtx_ui_commands_entry[j][i].use = "permissions red replaceunit allow  |  permissions red gamesetup allow global";
+	i += 1;
+	libcrtx_ui_commands_entry[j][i].cmd = "permissions [color] [command] ban";
+	libcrtx_ui_commands_entry[j][i].stx = "permissions [color] [command] ban {global}";
+	libcrtx_ui_commands_entry[j][i].nfo = "Bans the command from being used by [color] player";
+	libcrtx_ui_commands_entry[j][i].use = "permissions red @spawn ban  |  permissions red replaceunit ban global";
+	i += 1;
+	libcrtx_ui_commands_entry[j][i].cmd = "permissions [color] [command] remove";
+	libcrtx_ui_commands_entry[j][i].stx = "permissions [color] [command] remove";
+	libcrtx_ui_commands_entry[j][i].nfo = "Removes all permissions for command for player";
+	libcrtx_ui_commands_entry[j][i].use = "permissions red @spawn remove";
 	
 	//4 - camera commands
 	j = 4;
@@ -767,6 +812,11 @@ void libcrtx_ui_commands_entries_init()
 	libcrtx_ui_commands_entry[j][i].stx = "@undo [int iterations]";
 	libcrtx_ui_commands_entry[j][i].nfo = "Undos a number of commands (mostly visual commands) applied to the unit";
 	libcrtx_ui_commands_entry[j][i].use = "@undo 4";
+	i += 1;
+	libcrtx_ui_commands_entry[j][i].cmd = "@attach+";
+	libcrtx_ui_commands_entry[j][i].stx = "@attach+ {-m} [Actor/Model] [Point_#] [offX] [offY] [offZ] {{-r} [rotX] [rotY] [rotZ]} [SOp1] [SOp2] [SOp3]...";
+	libcrtx_ui_commands_entry[j][i].nfo = "A more specialized attach command";
+	libcrtx_ui_commands_entry[j][i].use = "@attach+ marine origin 2 2 3  |  @attach+ marine origin 0 0 2 -r 90 180 55";
 
 	//9 - fRPG commands
 	//j = 9;

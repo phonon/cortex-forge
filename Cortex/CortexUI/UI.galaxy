@@ -24,31 +24,19 @@ include "Cortex/CortexUI/ui_Previewer.galaxy"
 include "Cortex/CortexUI/ui_Aliases.galaxy"
 include "Cortex/CortexUI/ui_CamsRegs.galaxy"
 include "Cortex/CortexUI/ui_fRPG.galaxy"
-include "Cortex/CortexUI/ui_BlistPerms.galaxy"
+include "Cortex/CortexUI/ui_Perms.galaxy"
 include "Cortex/CortexUI/ui_Toolbar.galaxy"
 
 void libcrtx_ui_init()
 {
 	libcrtx_ui_playerprofiles_init();
-	libcrtx_ui_playerprofiles_events_init();
 	libcrtx_ui_commands_init();
-	libcrtx_ui_commands_events_init();
 	libcrtx_ui_catalogs_init();
-	libcrtx_ui_catalogs_events_init();
 	libcrtx_ui_previewer_init();
-	libcrtx_ui_previewer_events_init();
 	libcrtx_ui_aliases_init();
-	libcrtx_ui_aliases_events_init();
 	libcrtx_ui_camsregs_init();
-	libcrtx_ui_camsregs_events_init();
 	libcrtx_ui_fRPG_init();
-	libcrtx_ui_fRPG_events_init();
-	libcrtx_ui_blistperms_init();
-	libcrtx_ui_blistperms_events_init();
+	libcrtx_ui_perms_init();
 	libcrtx_ui_about_init();
-	
 	libcrtx_ui_toolbar_init();
-	libcrtx_ui_toolbar_events_init();
-	
-
 }

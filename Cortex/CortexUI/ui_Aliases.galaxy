@@ -128,15 +128,11 @@ void libcrtx_ui_aliases_init()
 		i += 1;
 	}
 	
-}
-void libcrtx_ui_aliases_events_init()
-{
-
+	//EVENTS:
     TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_aliases_selected"), c_playerAny, libcrtx_ui_aliases_list, c_triggerControlEventTypeSelectionChanged);
     TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_aliases_delete"), c_playerAny, libcrtx_ui_aliases_btn_delete, c_triggerControlEventTypeClick);
     TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_aliases_rename"), c_playerAny, libcrtx_ui_aliases_btn_rename, c_triggerControlEventTypeClick);
     TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_aliases_edit"), c_playerAny, libcrtx_ui_aliases_btn_edit, c_triggerControlEventTypeClick);
-
 }
 void libcrtx_ui_aliases_list_populate(int player)
 {

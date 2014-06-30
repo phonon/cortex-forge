@@ -25,7 +25,7 @@ int libcrtx_ui_catalogs_list_filtered;
 int libcrtx_ui_catalogs_filter;
 int libcrtx_ui_catalogs_btn_filter;
 
-int[15] libcrtx_ui_catalogs_types;
+int[16] libcrtx_ui_catalogs_types;
 int[libcrtx_max_players] libcrtx_ui_catalog_selected;
 
 void libcrtx_ui_catalogs_init()
@@ -116,6 +116,8 @@ void libcrtx_ui_catalogs_init()
 	i += 1;
 	libcrtx_ui_catalogs_types[i] = c_gameCatalogSound;
 	i += 1;
+	libcrtx_ui_catalogs_types[i] = c_gameCatalogSoundtrack;
+	i += 1;
 	libcrtx_ui_catalogs_types[i] = c_gameCatalogTexture;
 	i += 1;
 	libcrtx_ui_catalogs_types[i] = c_gameCatalogTurret;
@@ -130,19 +132,15 @@ void libcrtx_ui_catalogs_init()
 
 	//load catalogs
 	i = 1;
-	catalogs = "Abilities Actors Behaviors Effects Footprints Lights Models Sounds Textures Turrets Units Upgrades Validators Weapons";
+	catalogs = "Abilities Actors Behaviors Effects Footprints Lights Models Sounds Soundtracks Textures Turrets Units Upgrades Validators Weapons";
 	while(i < 15) {
 		DialogControlAddItem(libcrtx_ui_catalogs_list, PlayerGroupAll(), StringToText(StringWord(catalogs, i)));
 		i += 1;
 	}
-}
-void libcrtx_ui_catalogs_events_init()
-{
+	
+	//EVENTS:
 	TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_catalog_populate"), c_playerAny, libcrtx_ui_catalogs_list, c_triggerControlEventTypeSelectionChanged);
     TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_catalog_filter"), c_playerAny, libcrtx_ui_catalogs_btn_filter, c_triggerControlEventTypeClick);
-
-
-
 }
 bool libcrtx_ui_catalog_populate(bool testConds, bool runActions)
 {

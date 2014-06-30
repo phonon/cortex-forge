@@ -139,6 +139,10 @@ void libcrtx_command_spawn_execute()
 		UnitSetCustomValue(UnitLastCreated(), 12, 1); //set the unit cache value
 		UnitSetCustomValue(UnitLastCreated(), 16, 0); //set the modelswap flag to 0
 		
+		//stores unit actors
+		//libHots_gf_StoreActorForUnit(UnitLastCreated(), 1, libNtve_gf_MainActorofUnit(UnitLastCreated())); //main actor
+		//libHots_gf_StoreActorForUnit(UnitLastCreated(), 2, libNtve_gf_MainActorofUnit(UnitLastCreated())); //base actor
+		
 		UnitGroupAdd(units_spawned, UnitLastCreated());
 		i += 1;
 	}

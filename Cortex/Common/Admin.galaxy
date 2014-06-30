@@ -14,6 +14,8 @@ const int libcrtx_admin_permissionlevel_none = 0;
 const int libcrtx_admin_permissionlevel_moderator = 1;
 const int libcrtx_admin_permissionlevel_admin = 2;
 
+int libcrtx_player_admin;
+
 int[libcrtx_max_players+1] libcrtx_admin_permissionmap;
 bool[libcrtx_max_players+1] libcrtx_admin_disabledmap;
 
@@ -52,4 +54,5 @@ void libcrtx_admin_init()
 	if(rootAdmin != -1) {
 		libcrtx_admin_setpermission(rootAdmin, libcrtx_admin_permissionlevel_admin);
 	}
+	libcrtx_player_admin = rootAdmin;
 }

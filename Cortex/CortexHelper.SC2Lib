@@ -33,12 +33,9 @@
                 int max_spawn_rate_limit; //per period
                 int spawn_period;
                 int spawn_timeout;
-            
                 //====================CORTEX INFO:=======================
-                //enter the name of the terrainer (optional)
+                //enter the name of the terrainer within quotes (optional)
                 libcrtx_map_terrainer = "";
-            
-            
                 //==================GAME SETTINGS:=======================
                 //DO NOT EDIT SETTINGS UNLESS YOU KNOW WHAT YOU'RE DOING
                 //DO NOT EDIT LINES AFTER "//" (THESE ARE COMMENTS)
@@ -63,15 +60,12 @@
                 spawn_period = 60;
                 //the timeout (an integer, in seconds) if a player goes over the spawn rate limit:
                 spawn_timeout = 30;
-            
                 //=================Unit Cache Settings:==================
                 //maximum unit caches (-1 for infinite, recommended)
                 unit_cache_limit = -1;
                 //max number of caches checked for overwriting commands
                 cache_overwrite_check_limit = 10;
-            
-            
-            
+                //=======================================================
                 //DO NOT EDIT THESE FUNCTIONS:
                 libcrtx_setting_setfixed(libcrtx_setting_fixed_minscale, min_scale);
                 libcrtx_setting_setfixed(libcrtx_setting_fixed_maxscale, max_scale);
@@ -83,7 +77,7 @@
         </ScriptCode>
     </Element>
     <Element Type="Trigger" Id="346F4BB5">
-        <Identifier>SetupBanks2</Identifier>
+        <Identifier>Init</Identifier>
         <Name>Initialize Cortex Engine</Name>
         <Event Type="FunctionCall" Id="58C31289"/>
         <Action Type="FunctionCall" Id="9FE59995"/>
@@ -540,7 +534,7 @@
     <Element Type="Param" Id="01A95E12">
         <Name></Name>
         <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
-        <Value>Cortexblacklist</Value>
+        <Value>CortexPermissions</Value>
         <ValueType Type="string"/>
     </Element>
     <Element Type="Param" Id="024296AF">
@@ -618,7 +612,7 @@
     <Element Type="Param" Id="19E52781">
         <Name></Name>
         <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
-        <Value>Cortexblacklist</Value>
+        <Value>CortexPermissions</Value>
         <ValueType Type="string"/>
     </Element>
     <Element Type="Param" Id="19F2D2A5">
@@ -672,7 +666,7 @@
     <Element Type="Param" Id="227E76C7">
         <Name></Name>
         <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
-        <Value>Cortexblacklist</Value>
+        <Value>CortexPermissions</Value>
         <ValueType Type="string"/>
     </Element>
     <Element Type="Param" Id="24E2CC62">
@@ -708,7 +702,7 @@
     <Element Type="Param" Id="315097DC">
         <Name></Name>
         <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
-        <Value>Cortexblacklist</Value>
+        <Value>CortexPermissions</Value>
         <ValueType Type="string"/>
     </Element>
     <Element Type="Param" Id="37FF8E07">
@@ -762,7 +756,7 @@
     <Element Type="Param" Id="3F22978F">
         <Name></Name>
         <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
-        <Value>Cortexblacklist</Value>
+        <Value>CortexPermissions</Value>
         <ValueType Type="string"/>
     </Element>
     <Element Type="Param" Id="40C018F8">
@@ -822,13 +816,13 @@
     <Element Type="Param" Id="50872066">
         <Name></Name>
         <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
-        <Value>Cortexblacklist</Value>
+        <Value>CortexPermissions</Value>
         <ValueType Type="string"/>
     </Element>
     <Element Type="Param" Id="520CD814">
         <Name></Name>
         <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
-        <Value>Cortexblacklist</Value>
+        <Value>CortexPermissions</Value>
         <ValueType Type="string"/>
     </Element>
     <Element Type="Param" Id="52C35A47">
@@ -864,7 +858,7 @@
     <Element Type="Param" Id="572855FA">
         <Name></Name>
         <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
-        <Value>Cortexblacklist</Value>
+        <Value>CortexPermissions</Value>
         <ValueType Type="string"/>
     </Element>
     <Element Type="Param" Id="58142441">
@@ -888,7 +882,7 @@
     <Element Type="Param" Id="5EBE2A51">
         <Name></Name>
         <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
-        <Value>Cortexblacklist</Value>
+        <Value>CortexPermissions</Value>
         <ValueType Type="string"/>
     </Element>
     <Element Type="Param" Id="5FD88E37">
@@ -900,7 +894,7 @@
     <Element Type="Param" Id="60F720DB">
         <Name></Name>
         <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
-        <Value>Cortexblacklist</Value>
+        <Value>CortexPermissions</Value>
         <ValueType Type="string"/>
     </Element>
     <Element Type="Param" Id="64D634A8">
@@ -1122,7 +1116,7 @@
     <Element Type="Param" Id="B6D45B21">
         <Name></Name>
         <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
-        <Value>Cortexblacklist</Value>
+        <Value>CortexPermissions</Value>
         <ValueType Type="string"/>
     </Element>
     <Element Type="Param" Id="BDF31C45">
@@ -1158,7 +1152,7 @@
     <Element Type="Param" Id="CD4CA460">
         <Name></Name>
         <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
-        <Value>Cortexblacklist</Value>
+        <Value>CortexPermissions</Value>
         <ValueType Type="string"/>
     </Element>
     <Element Type="Param" Id="CE3DD27A">
@@ -1170,7 +1164,7 @@
     <Element Type="Param" Id="D07FB942">
         <Name></Name>
         <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
-        <Value>Cortexblacklist</Value>
+        <Value>CortexPermissions</Value>
         <ValueType Type="string"/>
     </Element>
     <Element Type="Param" Id="D204AB68">
@@ -1188,7 +1182,7 @@
     <Element Type="Param" Id="DAC6A417">
         <Name></Name>
         <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
-        <Value>Cortexblacklist</Value>
+        <Value>CortexPermissions</Value>
         <ValueType Type="string"/>
     </Element>
     <Element Type="Param" Id="DAE2C5DD">
@@ -1200,7 +1194,7 @@
     <Element Type="Param" Id="DDDEE604">
         <Name></Name>
         <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
-        <Value>Cortexblacklist</Value>
+        <Value>CortexPermissions</Value>
         <ValueType Type="string"/>
     </Element>
     <Element Type="Param" Id="E510FABE">

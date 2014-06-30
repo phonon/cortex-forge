@@ -124,10 +124,9 @@ void libcrtx_ui_commands_init()
 		DialogControlAddItem(libcrtx_ui_commands_list_type, PlayerGroupAll(), StringToText(StringWord(libcrtx_ui_commands_category, i)));
 		i += 1;
 	}
-}
-void libcrtx_ui_commands_events_init()
-{
-    TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_category_select"), c_playerAny, libcrtx_ui_commands_list_type, c_triggerControlEventTypeSelectionChanged);
+    
+	//EVENTS:
+	TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_category_select"), c_playerAny, libcrtx_ui_commands_list_type, c_triggerControlEventTypeSelectionChanged);
     TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_command_select"), c_playerAny, libcrtx_ui_commands_list_cmds, c_triggerControlEventTypeSelectionChanged);
 
 }

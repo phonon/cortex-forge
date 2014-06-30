@@ -43,6 +43,11 @@ bool libcrtx_command_blacklist (bool checkConds, bool runActions)
 			
 			libcrtx_blacklist_add(EventPlayer(), pHandle, StringToText(pName), action);
 			
+			//update UI
+			if(PlayerHandle(libcrtx_ui_perms_player_index[DialogControlGetSelectedItem(libcrtx_ui_perms_player_list, EventPlayer())]) == pHandle) {
+				DialogControlSetVisible(libcrtx_ui_perms_player_tag_blacklisted, PlayerGroupSingle(EventPlayer()), true);
+				libNtve_gf_SetDialogItemText(libcrtx_ui_perms_player_btn_blacklist, StringToText("<s val=\"Header18\">Un-Blacklist</s>"), PlayerGroupSingle(EventPlayer()));
+			}
 			return true;
 		}
 		else {
@@ -68,8 +73,8 @@ bool libcrtx_command_blacklist (bool checkConds, bool runActions)
 	
 			return true;
 		}
-		while(i < BankKeyCount(libcrtx_blacklist_bank[player], "blacklist")) {
-			if(pHandle == StringWord(BankKeyName(libcrtx_blacklist_bank[player], "blacklist", i), 2)) {
+		while(i < BankKeyCount(libcrtx_permissions_bank[EventPlayer()], "blacklist")) {
+			if(pHandle == StringWord(BankKeyName(libcrtx_permissions_bank[EventPlayer()], "blacklist", i), 2)) {
 				libcrtx_write_error("Error: player already exists on blacklist");
 
 				return true;
@@ -79,7 +84,12 @@ bool libcrtx_command_blacklist (bool checkConds, bool runActions)
 		
 		libcrtx_blacklist_add(EventPlayer(), pHandle, PlayerName(player), action);
 		libcrtx_write_text(PlayerGroupSingle(EventPlayer()), PlayerName(player) + StringToText(" was added to blacklist."));
-
+		
+		//update UI
+		if(libcrtx_ui_perms_player_index[DialogControlGetSelectedItem(libcrtx_ui_perms_player_list, EventPlayer())] == player) {
+			DialogControlSetVisible(libcrtx_ui_perms_player_tag_blacklisted, PlayerGroupSingle(EventPlayer()), true);
+			libNtve_gf_SetDialogItemText(libcrtx_ui_perms_player_btn_blacklist, StringToText("<s val=\"Header18\">Un-Blacklist</s>"), PlayerGroupSingle(EventPlayer()));
+		}
 		//libcrtx_write_text(PlayerGroupSingle(EventPlayer()), StringToText(" was added to blacklist."));
 		return true;
 	}
@@ -88,15 +98,21 @@ bool libcrtx_command_blacklist (bool checkConds, bool runActions)
 	if(subCommand == "remove") {
 		if(libcrtx_blacklist_player_index(EventPlayer(), subParameter) >= 0) {
 			i = libcrtx_blacklist_player_index(EventPlayer(), subParameter);
-			pHandle = BankKeyName(libcrtx_blacklist_bank[EventPlayer()], "blacklist", i);
+			pHandle = BankKeyName(libcrtx_permissions_bank[EventPlayer()], "blacklist", i);
 			//Note: variable pHandle is not actually the player handle, but a key that contains
 			//blacklist id - player handle - action
 			//see blacklist_add
-			libcrtx_write_text(PlayerGroupSingle(EventPlayer()), BankValueGetAsText(libcrtx_blacklist_bank[EventPlayer()], "blacklist", pHandle) + StringToText(" was removed blacklist."));
+			libcrtx_write_text(PlayerGroupSingle(EventPlayer()), BankValueGetAsText(libcrtx_permissions_bank[EventPlayer()], "blacklist", pHandle) + StringToText(" was removed from blacklist."));
 			//libcrtx_write_text(PlayerGroupSingle(EventPlayer()), StringToText(" was removed blacklist."));
-
+			
+			//update UI:
+			if(PlayerHandle(libcrtx_ui_perms_player_index[DialogControlGetSelectedItem(libcrtx_ui_perms_player_list, EventPlayer())]) == StringWord(pHandle, 2) ) {
+				DialogControlSetVisible(libcrtx_ui_perms_player_tag_blacklisted, PlayerGroupSingle(EventPlayer()), false);
+				libNtve_gf_SetDialogItemText(libcrtx_ui_perms_player_btn_blacklist, StringToText("<s val=\"Header18\">Blacklist</s>"), PlayerGroupSingle(EventPlayer()));
+			}
+			
+			//finally remove entry
 			libcrtx_blacklist_remove(EventPlayer(), pHandle);
-
 			return true;
 		}
 		if(libcrtx_blacklist_player_index(EventPlayer(), subParameter) == -1) {

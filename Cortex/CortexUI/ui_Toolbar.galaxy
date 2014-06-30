@@ -24,7 +24,7 @@ include "Cortex/CortexUI/ui_Previewer.galaxy"
 include "Cortex/CortexUI/ui_Aliases.galaxy"
 include "Cortex/CortexUI/ui_CamsRegs.galaxy"
 include "Cortex/CortexUI/ui_fRPG.galaxy"
-include "Cortex/CortexUI/ui_BlistPerms.galaxy"
+include "Cortex/CortexUI/ui_Perms.galaxy"
 
 int libcrtx_ui_toolbar;
 int libcrtx_ui_toolbar_logo;
@@ -44,8 +44,8 @@ void libcrtx_ui_toolbar_init()
 	libcrtx_ui_toolbar_logo = DialogLastCreated();
     DialogSetVisible(libcrtx_ui_toolbar_logo, PlayerGroupAll(), true);
     DialogSetPositionRelative(libcrtx_ui_toolbar_logo, c_anchorCenter, libcrtx_ui_toolbar, c_anchorRight, -35, 0);
-    libNtve_gf_CreateDialogItemButton(libcrtx_ui_toolbar_logo, 120, 120, c_anchorCenter, 0, 0, StringToText("About"), StringToText(""), "Cortex\\CortexUI\\CrtxFrgRaptLogo.dds");
-    libNtve_gf_SetDialogItemImage(DialogControlLastCreated(), "Cortex\\CortexUI\\CrtxFrgRaptLogo.dds", PlayerGroupAll());
+    libNtve_gf_CreateDialogItemButton(libcrtx_ui_toolbar_logo, 120, 120, c_anchorCenter, 0, 0, StringToText("About"), StringToText(""), "Cortex\\CortexUI\\Assets\\CrtxFrgRaptLogo.dds");
+    libNtve_gf_SetDialogItemImage(DialogControlLastCreated(), "Cortex\\CortexUI\\Assets\\CrtxFrgRaptLogo.dds", PlayerGroupAll());
     libNtve_gf_SetDialogItemImageType(DialogControlLastCreated(), c_triggerImageTypeNormal, PlayerGroupAll());
     DialogSetImageVisible(libcrtx_ui_toolbar_logo, false);
 	libcrtx_ui_toolbar_btn[0] = DialogControlLastCreated();
@@ -92,8 +92,8 @@ void libcrtx_ui_toolbar_init()
 	libNtve_gf_SetDialogItemImageType(DialogControlLastCreated(), c_triggerImageTypeBorder, PlayerGroupAll());
 	libcrtx_ui_toolbar_btn[6] = DialogControlLastCreated();
 
-	libNtve_gf_CreateDialogItemImage(libcrtx_ui_toolbar, 41, 41, c_anchorBottomRight, 35, 92, StringToText(""), "Assets\\Textures\\btn-upgrade-protoss-groundweaponslevel0.dds", c_triggerImageTypeNormal, false, Color(100,100,100), c_triggerBlendModeNormal);
-	libNtve_gf_CreateDialogItemButton(libcrtx_ui_toolbar, 65, 65, c_anchorBottomRight, 25, 80, StringToText("ForgeRPG Data"), StringToText(""), "Assets\\Textures\\ui_techpurchase_techbutton_available_normaloverpressedover.dds");
+	libNtve_gf_CreateDialogItemImage(libcrtx_ui_toolbar, 41, 41, c_anchorBottomRight, 35, 92, StringToText(""), "Assets\\Textures\\ui_ingame_help_techtree_questionmark.dds", c_triggerImageTypeNormal, false, Color(100,100,100), c_triggerBlendModeNormal);
+	libNtve_gf_CreateDialogItemButton(libcrtx_ui_toolbar, 65, 65, c_anchorBottomRight, 25, 80, StringToText("Unused"), StringToText(""), "Assets\\Textures\\ui_techpurchase_techbutton_available_normaloverpressedover.dds");
 	libNtve_gf_SetDialogItemImage(DialogControlLastCreated(), "Assets\\Textures\\ui_techpurchase_techbutton_selected_normalpressed.dds", PlayerGroupAll());
 	libNtve_gf_SetDialogItemImageType(DialogControlLastCreated(), c_triggerImageTypeBorder, PlayerGroupAll());
 	libcrtx_ui_toolbar_btn[7] = DialogControlLastCreated();
@@ -104,10 +104,7 @@ void libcrtx_ui_toolbar_init()
 	libNtve_gf_SetDialogItemImageType(DialogControlLastCreated(), c_triggerImageTypeBorder, PlayerGroupAll());
 	libcrtx_ui_toolbar_btn[8] = DialogControlLastCreated();
 	
-}
-
-void libcrtx_ui_toolbar_events_init()
-{
+	//EVENTS:
 	TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_toolbar_about"), c_playerAny, libcrtx_ui_toolbar_btn[0], c_triggerControlEventTypeClick);
 
 	TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_toolbar_playerprofiles"), c_playerAny, libcrtx_ui_toolbar_btn[1], c_triggerControlEventTypeClick);
@@ -117,7 +114,8 @@ void libcrtx_ui_toolbar_events_init()
 	TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_toolbar_aliases"), c_playerAny, libcrtx_ui_toolbar_btn[5], c_triggerControlEventTypeClick);
 	TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_toolbar_camsregs"), c_playerAny, libcrtx_ui_toolbar_btn[6], c_triggerControlEventTypeClick);
 	TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_toolbar_fRPG"), c_playerAny, libcrtx_ui_toolbar_btn[7], c_triggerControlEventTypeClick);
-	TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_toolbar_blistperms"), c_playerAny, libcrtx_ui_toolbar_btn[8], c_triggerControlEventTypeClick);
+	TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_toolbar_perms"), c_playerAny, libcrtx_ui_toolbar_btn[8], c_triggerControlEventTypeClick);
+
 }
 void libcrtx_ui_panels_off()
 {
@@ -128,13 +126,14 @@ void libcrtx_ui_panels_off()
 		i += 1;
 	}
 	DialogSetVisible(libcrtx_ui_playerprofiles, PlayerGroupSingle(EventPlayer()), false);
+	DialogSetVisible(libcrtx_ui_playerprofiles_portraitselection, PlayerGroupSingle(EventPlayer()), false);
 	DialogSetVisible(libcrtx_ui_commands, PlayerGroupSingle(EventPlayer()), false);
 	DialogSetVisible(libcrtx_ui_catalogs, PlayerGroupSingle(EventPlayer()), false);
 	DialogSetVisible(libcrtx_ui_previewer, PlayerGroupSingle(EventPlayer()), false);
 	DialogSetVisible(libcrtx_ui_aliases, PlayerGroupSingle(EventPlayer()), false);
 	DialogSetVisible(libcrtx_ui_camsregs, PlayerGroupSingle(EventPlayer()), false);
 	DialogSetVisible(libcrtx_ui_fRPG, PlayerGroupSingle(EventPlayer()), false);
-	DialogSetVisible(libcrtx_ui_blistperms, PlayerGroupSingle(EventPlayer()), false);
+	DialogSetVisible(libcrtx_ui_perms, PlayerGroupSingle(EventPlayer()), false);
 
 }
 void libcrtx_ui_btn_on(int i)
@@ -172,6 +171,7 @@ bool libcrtx_ui_toolbar_playerprofiles(bool testConds, bool runActions)
 {
 	if(libcrtx_ui_panel_on[EventPlayer()][1]) {
 		DialogSetVisible(libcrtx_ui_playerprofiles, PlayerGroupSingle(EventPlayer()), false);
+		DialogSetVisible(libcrtx_ui_playerprofiles_portraitselection, PlayerGroupSingle(EventPlayer()), false);
 		libcrtx_ui_panel_on[EventPlayer()][1] = false;
 		libcrtx_ui_btn_off(1);
 	}
@@ -289,17 +289,17 @@ bool libcrtx_ui_toolbar_fRPG(bool testConds, bool runActions)
 	
 	return true;
 }
-bool libcrtx_ui_toolbar_blistperms(bool testConds, bool runActions)
+bool libcrtx_ui_toolbar_perms(bool testConds, bool runActions)
 {
 	if(libcrtx_ui_panel_on[EventPlayer()][8]) {
-		DialogSetVisible(libcrtx_ui_blistperms, PlayerGroupSingle(EventPlayer()), false);
+		DialogSetVisible(libcrtx_ui_perms, PlayerGroupSingle(EventPlayer()), false);
 		libcrtx_ui_panel_on[EventPlayer()][8] = false;
 		libcrtx_ui_btn_off(8);
 	}
 	else {
 		libcrtx_ui_panels_off();
 		libcrtx_ui_btn_off_all();
-		DialogSetVisible(libcrtx_ui_blistperms, PlayerGroupSingle(EventPlayer()), true);
+		DialogSetVisible(libcrtx_ui_perms, PlayerGroupSingle(EventPlayer()), true);
 		libcrtx_ui_panel_on[EventPlayer()][8] = true;
 		libcrtx_ui_btn_on(8);
 	}

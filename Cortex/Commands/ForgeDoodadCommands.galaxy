@@ -22,7 +22,7 @@ bool[libcrtx_max_players] doodadBrushIsOn;
 actor[libcrtx_max_players] doodadBrushActor;
 string[libcrtx_max_players] doodadBrushModel;
 point[libcrtx_max_players] doodadBrushPoint;
-
+string[libcrtx_max_players] doodadBrushFilter;
 
 bool[libcrtx_max_players] isSelectingActors;
 bool[libcrtx_max_players] isSelectingRegion;
@@ -61,6 +61,7 @@ void libcrtx_forge_doodad_init()
 		doodadBrushAngle[i] = false;
 		doodadBrushScale[i] = false;
 		doodadBrushHeight[i] = false;
+		doodadBrushFilter[i] = "";
 		
 		isSelectingActors[i] = false;
 		i += 1;
@@ -315,7 +316,7 @@ bool libcrtx_command_clearHalo(bool testConds, bool runActions)
 	string paramRadius = StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 2 );
 	fixed radius;
 	
-	if( libcrtx_admin_getpermissions( EventPlayer() ) < libcrtx_admin_permissionlevel_moderator ) {
+	if( libcrtx_admin_getpermissions( EventPlayer() ) < libcrtx_admin_permissionlevel_moderator && !libcrtx_command_allowed(EventPlayer(), StringWord(libcrtx_chat_get_parse_line(EventPlayer()), 1)) ) {
 		libcrtx_write(PlayerGroupSingle(EventPlayer()), "Only moderators or admins can use _clearhalo");
 		return true;
 	}
@@ -340,7 +341,7 @@ bool libcrtx_command_destroy(bool testConds, bool runActions)
 	string paramRadius = StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 2 );
 	fixed radius;
 	
-	if( libcrtx_admin_getpermissions( EventPlayer() ) < libcrtx_admin_permissionlevel_moderator ) {
+	if( libcrtx_admin_getpermissions( EventPlayer() ) < libcrtx_admin_permissionlevel_moderator && !libcrtx_command_allowed(EventPlayer(), StringWord(libcrtx_chat_get_parse_line(EventPlayer()), 1))) {
 		libcrtx_write(PlayerGroupSingle(EventPlayer()), "Only moderators or admins can use _destroy");
 		return true;
 	}

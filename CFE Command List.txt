@@ -1,5 +1,5 @@
 
-	Cortex Forge Extension Command List
+	Cortex Forge Extension Command List v1.1
 
 ===============================================================
 	Key:
@@ -9,6 +9,7 @@
 	*[ ] asterick indicates the input is optional
 	{VAL1||VAL2||...} indicates optional command parameters
 	//	indicates a comment (not part of command)
+	" ... " word in quotes means a constant parameter
 
 
 	Prefix Guide:
@@ -46,20 +47,29 @@
 	camera removeall
 	delay [fixed time] //basically "wait", 0s < time <= 300s
 	vision [color Player] {on||off}
-	repeat [int count]
-	ui {game||cortex} {on||off}
+	repeat [int count] [string command_1; command_2; command_3; ...]
+	ui {"game"||"cortex"} {on||off}
 	toggleanon
 	gamesetup save [string name]
 	gamesetup load [string name]
 	gamesetup list
 	gamesetup remove [string name]
 	gamesetup removeall
+	sound [sound name] [volume (0 < vol < 100)] #[region name]
+	sound stop
+	replacemodel [model_source] [model_target]
+	permissions [color] [string command] {"allow"||"ban"||"remove"} *{"global"}
 	
-	!setting [string setting] [val]
+	!setting [string setting] [value]
 	!setting list
 	!fruit {[int amount]||"remove"}
 	!xml on||off
-	
+	!soundtrack [soundtrack name] ["ambience"|"music"]
+	!soundtrack stop ["ambience"|"music"]
+	!weather rain|snow|hail|fog|mist|sandstorm|sun [amount (default: 25)] [HDR] #[region]
+  	!weather off #[region]
+
+
 	#reveal [string region] [color player] {on||off}
 	
 	@statbars {on||off}
@@ -73,7 +83,8 @@
 	@cache {[int number]}
 	@undo [int iterations]
 	@copy {+visual};
-	
+	@attach+ {-m} [Actor/Model] [Point_#] [offX] [offY] [offZ] {{-r} [rotX] [rotY] [rotZ]} [SOp1] [SOp2] [SOp3]...
+
 	_doodad [string model]
 	_selectactors
 	_removearea [fixed radius]

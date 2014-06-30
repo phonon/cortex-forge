@@ -749,9 +749,9 @@ bool libcrtx_command_replaceunit(bool testConds, bool runActions)
 		return true;
 	}
 	
-	if( libcrtx_secure_mode && libcrtx_admin_getpermissions(EventPlayer()) < libcrtx_admin_permissionlevel_moderator)
+	if( libcrtx_secure_mode && libcrtx_admin_getpermissions(EventPlayer()) < libcrtx_admin_permissionlevel_moderator && !libcrtx_command_allowed(EventPlayer(), "replaceunit"))
 	{
-		libcrtx_write(PlayerGroupSingle(EventPlayer()), "You can't do that while secure mode is enabled.");
+		libcrtx_write(PlayerGroupSingle(EventPlayer()), "You don't have permissions to do that while secure mode is enabled.");
 		return true;
 	}
 	
@@ -784,9 +784,9 @@ bool libcrtx_command_replaceeffect(bool testConds, bool runActions)
 		return true;
 	}
 	
-	if( libcrtx_secure_mode && libcrtx_admin_getpermissions(EventPlayer()) < libcrtx_admin_permissionlevel_moderator)
+	if( libcrtx_secure_mode && libcrtx_admin_getpermissions(EventPlayer()) < libcrtx_admin_permissionlevel_moderator && !libcrtx_command_allowed(EventPlayer(), "replaceeffect"))
 	{
-		libcrtx_write(PlayerGroupSingle(EventPlayer()), "You can't do that while secure mode is enabled.");
+		libcrtx_write(PlayerGroupSingle(EventPlayer()), "You don't have permissions to do that while secure mode is enabled.");
 		return true;
 	}
 	
@@ -802,6 +802,41 @@ bool libcrtx_command_replaceeffect(bool testConds, bool runActions)
 		UnitGroupLoopEnd();
 	} else {
 		CatalogLinkReplace(EventPlayer(), c_gameCatalogEffect, source, replace);
+	}
+	return true;
+}
+
+bool libcrtx_command_replacemodel(bool testConds, bool runActions)
+{
+	string source = StringWord(libcrtx_chat_get_parse_line(EventPlayer()), 2);
+	string replace = StringWord(libcrtx_chat_get_parse_line(EventPlayer()), 3);
+	unitgroup g = libcrtx_chat_get_context(EventPlayer());
+	
+	source = libcrtx_param_catalog(c_gameCatalogModel, source);
+	replace = libcrtx_param_catalog(c_gameCatalogModel, replace);
+	
+	if( source == "" || source == null || replace == "" || replace == null) {
+		return true;
+	}
+	
+	if( libcrtx_secure_mode && libcrtx_admin_getpermissions(EventPlayer()) < libcrtx_admin_permissionlevel_moderator && !libcrtx_command_allowed(EventPlayer(), "replacemodel"))
+	{
+		libcrtx_write(PlayerGroupSingle(EventPlayer()), "You don't have permissions to do that while secure mode is enabled.");
+		return true;
+	}
+	
+	// So that this command works on hostile/other players, if we are selecting other player's units, run this command on them.
+	if( UnitGroupCount(g, c_unitCountAlive) > 0 )
+	{
+		UnitGroupLoopBegin(g);
+		while(!UnitGroupLoopDone())
+		{
+			CatalogLinkReplace(UnitGetOwner(UnitGroupLoopCurrent()), c_gameCatalogModel, source, replace);
+			UnitGroupLoopStep();
+		}
+		UnitGroupLoopEnd();
+	} else {
+		CatalogLinkReplace(EventPlayer(), c_gameCatalogModel, source, replace);
 	}
 	return true;
 }
@@ -879,7 +914,7 @@ bool libcrtx_command_repeat(bool testConds, bool runActions)
 	int count;
 	string s;
 	
-	if( libcrtx_secure_mode && libcrtx_admin_getpermissions(EventPlayer()) < libcrtx_admin_permissionlevel_moderator)
+	if( libcrtx_secure_mode && libcrtx_admin_getpermissions(EventPlayer()) < libcrtx_admin_permissionlevel_moderator && !libcrtx_command_allowed(EventPlayer(), "repeat"))
 	{
 		libcrtx_write(PlayerGroupSingle(EventPlayer()), "You can't do that while secure mode is enabled.");
 		return true;
@@ -1000,9 +1035,9 @@ bool libcrtx_command_gamesetup(bool testConds, bool runActions)
 	}
 	if(StringEqual(param, "load", c_stringNoCase))
 	{
-		if( libcrtx_secure_mode && libcrtx_admin_getpermissions(EventPlayer()) < libcrtx_admin_permissionlevel_moderator)
+		if( libcrtx_secure_mode && libcrtx_admin_getpermissions(EventPlayer()) < libcrtx_admin_permissionlevel_moderator && !libcrtx_command_allowed(EventPlayer(), "gamesetup"))
 		{
-			libcrtx_write(PlayerGroupSingle(EventPlayer()), "You can't do that while secure mode is enabled.");
+			libcrtx_write(PlayerGroupSingle(EventPlayer()), "You don't have permissions to do that while secure mode is enabled.");
 			return true;
 		}
 		
@@ -1074,6 +1109,235 @@ bool libcrtx_command_gamesetup(bool testConds, bool runActions)
 		libcrtx_write(PlayerGroupSingle(EventPlayer()), gamesetup_list);
 		
 		return true;
+	}
+	
+	return true;
+}
+bool libcrtx_command_sound(bool testConds, bool runActions) //sound _____ #region
+{
+	string param;
+	string sound_name;
+	string rgnName;
+	point pos;
+	region rgn;
+	fixed vol;
+	
+	if(StringWord(libcrtx_chat_get_parse_line(EventPlayer()), 2) == "") {
+		libcrtx_write(PlayerGroupSingle(EventPlayer()), "Syntax is \"sound [name] [volume] #[region]\"");
+		if(libcrtx_admin_getpermissions( EventPlayer() ) >= libcrtx_admin_permissionlevel_moderator) {
+			libcrtx_write(PlayerGroupSingle(EventPlayer()), "Moderators and admins can type \"sound stop\" to stop sounds");
+		}
+		return true;
+	}
+ 	if(StringWord(libcrtx_chat_get_parse_line(EventPlayer()), 2) == "stop" && libcrtx_admin_getpermissions( EventPlayer() ) >= libcrtx_admin_permissionlevel_moderator) {
+		SoundStopAllTriggerSounds(true);
+		libcrtx_write_success("All sounds played via sound command are stopped");
+		return true;
+	}
+	
+
+	sound_name = StringWord(libcrtx_chat_get_parse_line(EventPlayer()), 2);
+	sound_name = libcrtx_param_catalog(c_gameCatalogSound, sound_name);
+	if(sound_name == null) {
+		libcrtx_write(PlayerGroupSingle(EventPlayer()), "<c val=\"ff0000\">Unable to play sound</c>: No such sound exists.");
+		return true;
+	}
+
+	//get volume of sound
+	if(StringWord(libcrtx_chat_get_parse_line(EventPlayer()), 3) != "") {
+		vol = StringToFixed(StringWord(libcrtx_chat_get_parse_line(EventPlayer()), 3));
+	}
+	else {
+		vol = 100;
+	}
+	
+	//get region for sound (or default to spawner position)
+	if(StringWord(libcrtx_chat_get_parse_line(EventPlayer()), 4) != "" && StringSub(StringWord(libcrtx_chat_get_parse_line(EventPlayer()), 4), 1, 1) == "#" && StringWord(libcrtx_chat_get_parse_line(EventPlayer()), 4) != "#" ) {
+		
+		rgnName = StringSub(libcrtx_chat_get_parse_line(EventPlayer()), 2, StringLength(libcrtx_chat_get_parse_line(EventPlayer())));
+		
+		if(DataTableValueExists(true, libcrtx_command_region_buildidentifier(rgnName) + "_link"))
+		{
+			rgn = DataTableGetRegion(true, libcrtx_command_region_buildidentifier(rgnName) + "_link");
+		}
+		else
+		{
+			rgn = DataTableGetRegion(true, rgnName);
+		}
+
+		if(rgn == null)
+		{
+			libcrtx_write_error("No region with that name exists.");
+			return true;
+		}
+		
+		pos = RegionGetCenter(rgn);
+	
+	}
+	else {
+		pos = libcrtx_spawn_position();
+	}
+	
+	SoundPlayAtPoint(SoundLink(sound_name, -1), PlayerGroupAll(), pos, 0.0, vol, 0.0);
+	
+	return true;
+}
+bool libcrtx_command_permissions(bool testConds, bool runActions) //permission [color] [cmd] ["allow"||"ban"||"remove"] ["global"]
+{
+	int i = 1;
+	int player;
+	string cmd = StringWord(libcrtx_chat_get_parse_line(EventPlayer()), 3);
+	bool state = false;
+	bool global = false;
+	
+	if(StringWord(libcrtx_chat_get_parse_line(EventPlayer()), 2) == "") {
+		libcrtx_write(PlayerGroupSingle(EventPlayer()), "Syntax is \"permission [color] [cmd] [\"allow\"||\"ban\"||\"remove\"] [\"global\"]\"\nType \"permissions [color]\" to view your permissions set for the specified player.");
+		return true;
+	}
+	
+	player = libcrtx_color_to_player( StringWord(libcrtx_chat_get_parse_line(EventPlayer()), 2) );
+	if( player == -1 ) {
+		return true;
+	}
+	
+	if(StringEqual(cmd, "permissions", c_stringNoCase)) {
+		libcrtx_write_error("Cannot apply permissions on the permissions command");
+		return true;
+	}
+	else if(!DataTableValueExists(true, "libcrtx_commands_" + cmd)) {
+		libcrtx_write_error("Invalid command");
+		return true;
+	}
+	
+	if(StringEqual(StringWord(libcrtx_chat_get_parse_line(EventPlayer()), 4), "allow", c_stringNoCase)) {
+		state = true;
+	}
+	else if(StringEqual(StringWord(libcrtx_chat_get_parse_line(EventPlayer()), 4), "ban", c_stringNoCase)) {
+		state = false;
+	}
+	else if(StringEqual(StringWord(libcrtx_chat_get_parse_line(EventPlayer()), 4), "remove", c_stringNoCase)) {
+		if(libcrtx_command_allowed(player, cmd)) {
+			libcrtx_permissions_allowed_remove_global(player, cmd);
+			if(libcrtx_ui_perms_player_index[DialogControlGetSelectedItem(libcrtx_ui_perms_player_list, EventPlayer())] == player) {	
+				i = 1;
+				DialogControlRemoveAllItems(libcrtx_ui_perms_allow_global, PlayerGroupSingle(EventPlayer()));
+				while(StringWord(BankValueGetAsString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_allow"), i) != "") {
+					DialogControlAddItem(libcrtx_ui_perms_allow_global, PlayerGroupSingle(EventPlayer()), StringToText(StringWord(BankValueGetAsString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_allow"), i)));
+					i += 1;
+				}
+			}
+			libcrtx_permissions_allowed_remove_local(player, cmd);
+			if(libcrtx_ui_perms_player_index[DialogControlGetSelectedItem(libcrtx_ui_perms_player_list, EventPlayer())] == player) {
+				i = 1;
+				DialogControlRemoveAllItems(libcrtx_ui_perms_allow_local, PlayerGroupSingle(EventPlayer()));
+				while(StringWord(libcrtx_permissions_allowed[player], i) != "") {
+					DialogControlAddItem(libcrtx_ui_perms_allow_local, PlayerGroupSingle(EventPlayer()), StringToText(StringWord(libcrtx_permissions_allowed[player], i)));
+					i += 1;
+				}
+			}
+		}
+		if(libcrtx_command_banned(player, cmd)) {
+			libcrtx_permissions_banned_remove_global(player, cmd);
+			if(libcrtx_ui_perms_player_index[DialogControlGetSelectedItem(libcrtx_ui_perms_player_list, EventPlayer())] == player) {
+				i = 1;
+				DialogControlRemoveAllItems(libcrtx_ui_perms_banned_global, PlayerGroupSingle(EventPlayer()));
+				while(StringWord(BankValueGetAsString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_banned"), i) != "") {
+					DialogControlAddItem(libcrtx_ui_perms_banned_global, PlayerGroupSingle(EventPlayer()), StringToText(StringWord(BankValueGetAsString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_banned"), i)));
+					i += 1;
+				}
+			}
+			libcrtx_permissions_banned_remove_local(player, cmd);
+			if(libcrtx_ui_perms_player_index[DialogControlGetSelectedItem(libcrtx_ui_perms_player_list, EventPlayer())] == player) {
+				i = 1;		
+				DialogControlRemoveAllItems(libcrtx_ui_perms_banned_local, PlayerGroupSingle(EventPlayer()));
+				while(StringWord(libcrtx_permissions_banned[player], i) != "") {
+					DialogControlAddItem(libcrtx_ui_perms_banned_local, PlayerGroupSingle(EventPlayer()), StringToText(StringWord(libcrtx_permissions_banned[player], i)));
+					i += 1;
+				}
+			}
+		}
+		libcrtx_write_text(PlayerGroupSingle(EventPlayer()), StringToText("All permissions for " + cmd + " for ") + libcrtx_colored_player_name(player) + StringToText(" have been removed"));
+		return true;
+	}
+	else { //display state of the command for player
+		if(libcrtx_command_banned(player, cmd)) {
+			libcrtx_write_text(PlayerGroupSingle(EventPlayer()), StringToText(cmd + " is banned for ") + libcrtx_colored_player_name(player));
+		}
+		else if(libcrtx_command_allowed(player, cmd)) {
+			libcrtx_write_text(PlayerGroupSingle(EventPlayer()), StringToText(cmd + " is allowed (override) for ") + libcrtx_colored_player_name(player));
+		}
+		else {
+			libcrtx_write_text(PlayerGroupSingle(EventPlayer()), StringToText(cmd + " has no flags for ") + libcrtx_colored_player_name(player));
+		}
+		return true;
+	}
+
+	if(StringEqual(StringWord(libcrtx_chat_get_parse_line(EventPlayer()), 5), "global", c_stringNoCase)) {
+		global = true;
+	}
+	
+	//pair state and scope to the proper func
+	if(global) {
+		if(state) {
+			libcrtx_permissions_allowed_add_global(player, cmd);
+			libcrtx_write_text(PlayerGroupSingle(EventPlayer()), libcrtx_colored_player_name(player) + StringToText(" has been given permissions to use " + cmd + " when you are admin"));
+			
+			if(libcrtx_ui_perms_player_index[DialogControlGetSelectedItem(libcrtx_ui_perms_player_list, EventPlayer())] == player) {
+				DialogControlRemoveAllItems(libcrtx_ui_perms_allow_global, PlayerGroupSingle(EventPlayer()));
+				while(StringWord(BankValueGetAsString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_allow"), i) != "") {
+					DialogControlAddItem(libcrtx_ui_perms_allow_global, PlayerGroupSingle(EventPlayer()), StringToText(StringWord(BankValueGetAsString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_allow"), i)));
+					i += 1;
+				}
+			}
+			return true;
+		}
+		else {
+			libcrtx_permissions_banned_add_global(player, cmd);
+			libcrtx_write_text(PlayerGroupSingle(EventPlayer()), libcrtx_colored_player_name(player) + StringToText(" has been banned from using " + cmd + " when you are admin"));
+			
+			if(libcrtx_ui_perms_player_index[DialogControlGetSelectedItem(libcrtx_ui_perms_player_list, EventPlayer())] == player) {	
+				DialogControlRemoveAllItems(libcrtx_ui_perms_banned_global, PlayerGroupSingle(EventPlayer()));
+				while(StringWord(BankValueGetAsString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_banned"), i) != "") {
+					DialogControlAddItem(libcrtx_ui_perms_banned_global, PlayerGroupSingle(EventPlayer()), StringToText(StringWord(BankValueGetAsString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_banned"), i)));
+					i += 1;
+				}
+			}
+			return true;
+		}
+	}
+	else {
+		if( libcrtx_admin_getpermissions( EventPlayer() ) < libcrtx_admin_permissionlevel_admin ) {
+			libcrtx_write_error("Only admins can set local permissions");
+			return true;
+		}
+		
+		if(state) {
+			libcrtx_permissions_allowed_add_local(player, cmd);
+			libcrtx_write_text(PlayerGroupSingle(EventPlayer()), libcrtx_colored_player_name(player) + StringToText(" has been given local permissions to use " + cmd));
+			
+			if(libcrtx_ui_perms_player_index[DialogControlGetSelectedItem(libcrtx_ui_perms_player_list, EventPlayer())] == player) {
+				DialogControlRemoveAllItems(libcrtx_ui_perms_allow_local, PlayerGroupSingle(EventPlayer()));
+				while(StringWord(libcrtx_permissions_allowed[player], i) != "") {
+					DialogControlAddItem(libcrtx_ui_perms_allow_local, PlayerGroupSingle(EventPlayer()), StringToText(StringWord(libcrtx_permissions_allowed[player], i)));
+					i += 1;
+				}
+			}
+			return true;
+		}
+		else {
+			libcrtx_permissions_banned_add_local(player, cmd);
+			libcrtx_write_text(PlayerGroupSingle(EventPlayer()), libcrtx_colored_player_name(player) + StringToText(" has been banned from using " + cmd + " in this game"));
+			
+			if(libcrtx_ui_perms_player_index[DialogControlGetSelectedItem(libcrtx_ui_perms_player_list, EventPlayer())] == player) {
+				DialogControlRemoveAllItems(libcrtx_ui_perms_banned_local, PlayerGroupSingle(EventPlayer()));
+				while(StringWord(libcrtx_permissions_banned[player], i) != "") {
+					DialogControlAddItem(libcrtx_ui_perms_banned_local, PlayerGroupSingle(EventPlayer()), StringToText(StringWord(libcrtx_permissions_banned[player], i)));
+					i += 1;
+				}
+			}			
+			return true;
+		}
+	
 	}
 	
 	return true;

@@ -1,0 +1,521 @@
+// Cortex Forge Extensions
+// By Xethyr (407)
+//
+// Copyright (C) 2013
+//
+// Cortex Engine by Motive
+// Cortex SC2 Roleplaying Engine
+// Copyright (C) 2009-2011 <http://www.cortexrp.com/>
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; version 2 of the License.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+int libcrtx_ui_perms;
+int libcrtx_ui_perms_player_list;
+int libcrtx_ui_perms_player_frame;
+
+int libcrtx_ui_perms_player_name;
+int libcrtx_ui_perms_player_handle;
+int libcrtx_ui_perms_player_tag_blacklisted;
+int libcrtx_ui_perms_player_btn_blacklist;
+
+int libcrtx_ui_perms_allow_local;
+int libcrtx_ui_perms_allow_local_btn_add;
+int libcrtx_ui_perms_allow_local_btn_remove;
+int libcrtx_ui_perms_allow_global;
+int libcrtx_ui_perms_allow_global_btn_add;
+int libcrtx_ui_perms_allow_global_btn_remove;
+int libcrtx_ui_perms_banned_local;
+int libcrtx_ui_perms_banned_local_btn_add;
+int libcrtx_ui_perms_banned_local_btn_remove;
+int libcrtx_ui_perms_banned_global;
+int libcrtx_ui_perms_banned_global_btn_add;
+int libcrtx_ui_perms_banned_global_btn_remove;
+
+int libcrtx_ui_perms_editBox;
+
+int[libcrtx_max_players] libcrtx_ui_perms_player_index;
+
+
+void libcrtx_ui_perms_init()
+{
+	int var_dialog;
+	int i;
+	int n;
+	
+	DialogCreate(850, 500, c_anchorLeft, 120, -150, true);
+	libcrtx_ui_perms = DialogLastCreated();
+
+	
+	//list for player names
+	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_perms, 200, 50, c_anchorTopLeft, 50, 45, StringToText("<s val=\"CreditsLabel\">Players:</s>"), ColorWithAlpha(0,0,0,0), false, 0.0);
+    DialogControlCreate(libcrtx_ui_perms, c_triggerControlTypeListBox);
+    libcrtx_ui_perms_player_list = DialogControlLastCreated();
+	DialogControlSetPosition(libcrtx_ui_perms_player_list, PlayerGroupAll(), c_anchorTopLeft, 50, 75);
+    DialogControlSetSize(libcrtx_ui_perms_player_list, PlayerGroupAll(), 187, 375);
+
+	//FRAMES
+    DialogControlCreate(libcrtx_ui_perms, c_triggerControlTypePortrait);
+	libcrtx_ui_perms_player_frame = DialogControlLastCreated();
+    DialogControlSetSize(libcrtx_ui_perms_player_frame, PlayerGroupAll(), 580, 500);
+    DialogControlSetPosition(libcrtx_ui_perms_player_frame, PlayerGroupAll(), c_anchorRight, 0, 0);
+    libNtve_gf_SetDialogItemRenderType(DialogControlLastCreated(), c_triggerRenderTypeLDR, PlayerGroupAll());
+	
+	//name
+	libNtve_gf_CreateDialogItemImage(libcrtx_ui_perms, 230, 50, c_anchorBottomRight, 0, 0, StringToText(""), "Assets\\Textures\\ui_research_frame_outer.dds", c_triggerImageTypeBorder, false, Color(100,100,100), c_triggerBlendModeNormal);
+    DialogControlSetPositionRelative(DialogControlLastCreated(), PlayerGroupAll(), c_anchorTopLeft, libcrtx_ui_perms_player_frame, c_anchorTopLeft, 20, 20);
+	libNtve_gf_SetDialogItemRenderPriority(DialogControlLastCreated(), 1000, PlayerGroupAll());
+	var_dialog = DialogControlLastCreated();
+	
+	//handle
+	libNtve_gf_CreateDialogItemImage(libcrtx_ui_perms, 230, 35, c_anchorBottomRight, 0, 0, StringToText(""), "Assets\\Textures\\ui_research_frame_outer.dds", c_triggerImageTypeBorder, false, Color(100,100,100), c_triggerBlendModeNormal);
+    DialogControlSetPositionRelative(DialogControlLastCreated(), PlayerGroupAll(), c_anchorTop, var_dialog, c_anchorBottom, 0, 0);
+	libNtve_gf_SetDialogItemRenderPriority(DialogControlLastCreated(), 1000, PlayerGroupAll());	
+
+	//LABELS
+	//name
+	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_perms, 230, 50, c_anchorTopLeft, 50, 35, StringToText(""), ColorWithAlpha(0,0,0,0), false, 0.0);
+	libcrtx_ui_perms_player_name = DialogControlLastCreated();
+    DialogControlSetPositionRelative(libcrtx_ui_perms_player_name, PlayerGroupAll(), c_anchorTopLeft, libcrtx_ui_perms_player_frame, c_anchorTopLeft, 25, 20);
+	libNtve_gf_SetDialogItemRenderPriority(libcrtx_ui_perms_player_name, 1024, PlayerGroupAll());
+    libNtve_gf_SetDialogItemStyle(libcrtx_ui_perms_player_name, "CreditsLabel", PlayerGroupAll());
+	
+	//handle
+	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_perms, 140, 50, c_anchorTopLeft, 50, 35, StringToText(""), ColorWithAlpha(0,0,0,0), false, 0.0);
+	libcrtx_ui_perms_player_handle = DialogControlLastCreated();
+    DialogControlSetPositionRelative(libcrtx_ui_perms_player_handle, PlayerGroupAll(), c_anchorTop, libcrtx_ui_perms_player_name, c_anchorBottom, 0, 5);
+	libNtve_gf_SetDialogItemRenderPriority(libcrtx_ui_perms_player_handle, 1024, PlayerGroupAll());	
+    libNtve_gf_SetDialogItemStyle(libcrtx_ui_perms_player_handle, "Header18", PlayerGroupAll());
+	
+	//isBlacklisted tag
+	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_perms, 230, 50, c_anchorTopLeft, 50, 35, StringToText("<c val=\"FF0000\">(Blacklisted)</c>"), ColorWithAlpha(0,0,0,0), false, 0.0);
+	libcrtx_ui_perms_player_tag_blacklisted = DialogControlLastCreated();
+    DialogControlSetPositionRelative(libcrtx_ui_perms_player_tag_blacklisted, PlayerGroupAll(), c_anchorLeft, var_dialog, c_anchorRight, 5, 10);
+	libNtve_gf_SetDialogItemRenderPriority(libcrtx_ui_perms_player_tag_blacklisted, 1024, PlayerGroupAll());
+    libNtve_gf_SetDialogItemStyle(libcrtx_ui_perms_player_tag_blacklisted, "Header18", PlayerGroupAll());
+	DialogControlSetVisible(libcrtx_ui_perms_player_tag_blacklisted, PlayerGroupAll(), false);
+	//blacklist btn
+	libNtve_gf_CreateDialogItemButton(libcrtx_ui_perms, 120, 50, c_anchorBottomRight, 0, 0, StringToText(""), StringToText("<s val=\"Header18\">Blacklist</s>"), "");
+	libcrtx_ui_perms_player_btn_blacklist = DialogControlLastCreated();
+	DialogControlSetPositionRelative(libcrtx_ui_perms_player_btn_blacklist, PlayerGroupAll(), c_anchorTopRight, libcrtx_ui_perms_player_frame, c_anchorTopRight, -15, 15);
+	libNtve_gf_SetDialogItemRenderPriority(libcrtx_ui_perms_player_btn_blacklist, 1024, PlayerGroupAll());
+	DialogControlSetEnabled(libcrtx_ui_perms_player_btn_blacklist, PlayerGroupAll(), false);
+	
+	//lists and buttons for local/global perms
+	//ALLOW_LOCAL
+    DialogControlCreate(libcrtx_ui_perms, c_triggerControlTypeListBox);
+    libcrtx_ui_perms_allow_local = DialogControlLastCreated();
+    DialogControlSetPositionRelative(libcrtx_ui_perms_allow_local, PlayerGroupAll(), c_anchorTopLeft, libcrtx_ui_perms_player_frame, c_anchorTopLeft, 15, 180);
+    DialogControlSetSize(libcrtx_ui_perms_allow_local, PlayerGroupAll(), 130, 165);
+	libNtve_gf_SetDialogItemRenderPriority(libcrtx_ui_perms_allow_local, 1024, PlayerGroupAll());
+
+	//lbl
+	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_perms, 150, 40, c_anchorTopLeft, 50, 35, StringToText("Allowed\n(Local)"), ColorWithAlpha(0,0,0,0), false, 0.0);
+    DialogControlSetPositionRelative(DialogControlLastCreated(), PlayerGroupAll(), c_anchorBottom, libcrtx_ui_perms_allow_local, c_anchorTop, 10, 0);
+	
+	libNtve_gf_CreateDialogItemButton(libcrtx_ui_perms, 130, 50, c_anchorBottomRight, 0, 0, StringToText(""), StringToText("<s val=\"Header18\">Add</s>"), "");
+	libcrtx_ui_perms_allow_local_btn_add = DialogControlLastCreated();
+	DialogControlSetPositionRelative(libcrtx_ui_perms_allow_local_btn_add, PlayerGroupAll(), c_anchorTop, libcrtx_ui_perms_allow_local, c_anchorBottom, 0, -5);
+	DialogControlSetEnabled(libcrtx_ui_perms_allow_local_btn_add, PlayerGroupAll(), false);
+	
+	libNtve_gf_CreateDialogItemButton(libcrtx_ui_perms, 130, 50, c_anchorBottomRight, 0, 0, StringToText(""), StringToText("<s val=\"Header18\">Remove\n(Selected)</s>"), "");
+	libcrtx_ui_perms_allow_local_btn_remove = DialogControlLastCreated();
+	DialogControlSetPositionRelative(libcrtx_ui_perms_allow_local_btn_remove, PlayerGroupAll(), c_anchorTop, libcrtx_ui_perms_allow_local_btn_add, c_anchorBottom, 0, -10);
+	DialogControlSetEnabled(libcrtx_ui_perms_allow_local_btn_remove, PlayerGroupAll(), false);
+	
+	//LABEL FOR COMMAND PERMISSIONS (ABOVE ALLOW_LOCAL)
+	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_perms, 450, 40, c_anchorTopLeft, 50, 35, StringToText("<s val=\"CreditsLabel\">Command Permissions:</s>"), ColorWithAlpha(0,0,0,0), false, 0.0);
+    DialogControlSetPositionRelative(DialogControlLastCreated(), PlayerGroupAll(), c_anchorBottomLeft, libcrtx_ui_perms_allow_local, c_anchorTopLeft, 0, -26);
+	
+	//ALLOW_GLOBAL
+    DialogControlCreate(libcrtx_ui_perms, c_triggerControlTypeListBox);
+    libcrtx_ui_perms_allow_global = DialogControlLastCreated();
+    DialogControlSetPositionRelative(libcrtx_ui_perms_allow_global, PlayerGroupAll(), c_anchorLeft, libcrtx_ui_perms_allow_local, c_anchorRight, 10, 0);
+    DialogControlSetSize(libcrtx_ui_perms_allow_global, PlayerGroupAll(), 130, 165);
+	libNtve_gf_SetDialogItemRenderPriority(libcrtx_ui_perms_allow_global, 1024, PlayerGroupAll());
+
+	//lbl
+	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_perms, 150, 40, c_anchorTopLeft, 50, 35, StringToText("Allowed\n(Global)"), ColorWithAlpha(0,0,0,0), false, 0.0);
+    DialogControlSetPositionRelative(DialogControlLastCreated(), PlayerGroupAll(), c_anchorBottom, libcrtx_ui_perms_allow_global, c_anchorTop, 10, 0);
+	
+	libNtve_gf_CreateDialogItemButton(libcrtx_ui_perms, 130, 50, c_anchorBottomRight, 0, 0, StringToText(""), StringToText("<s val=\"Header18\">Add</s>"), "");
+	libcrtx_ui_perms_allow_global_btn_add = DialogControlLastCreated();
+	DialogControlSetPositionRelative(libcrtx_ui_perms_allow_global_btn_add, PlayerGroupAll(), c_anchorTop, libcrtx_ui_perms_allow_global, c_anchorBottom, 0, -5);
+	DialogControlSetEnabled(libcrtx_ui_perms_allow_global_btn_add, PlayerGroupAll(), false);
+	
+	libNtve_gf_CreateDialogItemButton(libcrtx_ui_perms, 130, 50, c_anchorBottomRight, 0, 0, StringToText(""), StringToText("<s val=\"Header18\">Remove\n(Selected)</s>"), "");
+	libcrtx_ui_perms_allow_global_btn_remove = DialogControlLastCreated();
+	DialogControlSetPositionRelative(libcrtx_ui_perms_allow_global_btn_remove, PlayerGroupAll(), c_anchorTop, libcrtx_ui_perms_allow_global_btn_add, c_anchorBottom, 0, -10);
+	DialogControlSetEnabled(libcrtx_ui_perms_allow_global_btn_remove, PlayerGroupAll(), false);
+	
+	//BANNED_LOCAL
+    DialogControlCreate(libcrtx_ui_perms, c_triggerControlTypeListBox);
+    libcrtx_ui_perms_banned_local = DialogControlLastCreated();
+    DialogControlSetPositionRelative(libcrtx_ui_perms_banned_local, PlayerGroupAll(), c_anchorLeft, libcrtx_ui_perms_allow_global, c_anchorRight, 10, 0);
+    DialogControlSetSize(libcrtx_ui_perms_banned_local, PlayerGroupAll(), 130, 165);
+	libNtve_gf_SetDialogItemRenderPriority(libcrtx_ui_perms_banned_local, 1024, PlayerGroupAll());
+
+	//lbl
+	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_perms, 150, 40, c_anchorTopLeft, 50, 35, StringToText("Banned\n(Local)"), ColorWithAlpha(0,0,0,0), false, 0.0);
+    DialogControlSetPositionRelative(DialogControlLastCreated(), PlayerGroupAll(), c_anchorBottom, libcrtx_ui_perms_banned_local, c_anchorTop, 10, 0);
+	
+	libNtve_gf_CreateDialogItemButton(libcrtx_ui_perms, 130, 50, c_anchorBottomRight, 0, 0, StringToText(""), StringToText("<s val=\"Header18\">Add</s>"), "");
+	libcrtx_ui_perms_banned_local_btn_add = DialogControlLastCreated();
+	DialogControlSetPositionRelative(libcrtx_ui_perms_banned_local_btn_add, PlayerGroupAll(), c_anchorTop, libcrtx_ui_perms_banned_local, c_anchorBottom, 0, -5);
+	DialogControlSetEnabled(libcrtx_ui_perms_banned_local_btn_add, PlayerGroupAll(), false);
+	
+	libNtve_gf_CreateDialogItemButton(libcrtx_ui_perms, 130, 50, c_anchorBottomRight, 0, 0, StringToText(""), StringToText("<s val=\"Header18\">Remove\n(Selected)</s>"), "");
+	libcrtx_ui_perms_banned_local_btn_remove = DialogControlLastCreated();
+	DialogControlSetPositionRelative(libcrtx_ui_perms_banned_local_btn_remove, PlayerGroupAll(), c_anchorTop, libcrtx_ui_perms_banned_local_btn_add, c_anchorBottom, 0, -10);
+	DialogControlSetEnabled(libcrtx_ui_perms_banned_local_btn_remove, PlayerGroupAll(), false);
+	
+	//BANNED_GLOBAL
+    DialogControlCreate(libcrtx_ui_perms, c_triggerControlTypeListBox);
+    libcrtx_ui_perms_banned_global = DialogControlLastCreated();
+    DialogControlSetPositionRelative(libcrtx_ui_perms_banned_global, PlayerGroupAll(), c_anchorLeft, libcrtx_ui_perms_banned_local, c_anchorRight, 10, 0);
+    DialogControlSetSize(libcrtx_ui_perms_banned_global, PlayerGroupAll(), 130, 165);
+	libNtve_gf_SetDialogItemRenderPriority(libcrtx_ui_perms_banned_global, 1024, PlayerGroupAll());
+
+	//lbl
+	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_perms, 150, 40, c_anchorTopLeft, 50, 35, StringToText("Banned\n(Global)"), ColorWithAlpha(0,0,0,0), false, 0.0);
+    DialogControlSetPositionRelative(DialogControlLastCreated(), PlayerGroupAll(), c_anchorBottom, libcrtx_ui_perms_banned_global, c_anchorTop, 10, 0);
+	
+	libNtve_gf_CreateDialogItemButton(libcrtx_ui_perms, 130, 50, c_anchorBottomRight, 0, 0, StringToText(""), StringToText("<s val=\"Header18\">Add</s>"), "");
+	libcrtx_ui_perms_banned_global_btn_add = DialogControlLastCreated();
+	DialogControlSetPositionRelative(libcrtx_ui_perms_banned_global_btn_add, PlayerGroupAll(), c_anchorTop, libcrtx_ui_perms_banned_global, c_anchorBottom, 0, -5);
+	DialogControlSetEnabled(libcrtx_ui_perms_banned_global_btn_add, PlayerGroupAll(), false);
+			
+	libNtve_gf_CreateDialogItemButton(libcrtx_ui_perms, 130, 50, c_anchorBottomRight, 0, 0, StringToText(""), StringToText("<s val=\"Header18\">Remove\n(Selected)</s>"), "");
+	libcrtx_ui_perms_banned_global_btn_remove = DialogControlLastCreated();
+	DialogControlSetPositionRelative(libcrtx_ui_perms_banned_global_btn_remove, PlayerGroupAll(), c_anchorTop, libcrtx_ui_perms_banned_global_btn_add, c_anchorBottom, 0, -10);
+	DialogControlSetEnabled(libcrtx_ui_perms_banned_global_btn_remove, PlayerGroupAll(), false);
+	
+	
+	//editbox for entering cmd
+    DialogControlCreate(libcrtx_ui_perms, c_triggerControlTypeEditBox);
+    libcrtx_ui_perms_editBox = DialogControlLastCreated();
+    DialogControlSetPositionRelative(libcrtx_ui_perms_editBox, PlayerGroupAll(), c_anchorBottomRight, libcrtx_ui_perms_player_frame, c_anchorBottomRight, -25, -15);
+    DialogControlSetSize(libcrtx_ui_perms_editBox, PlayerGroupAll(), 350, 50);
+	libNtve_gf_SetDialogItemRenderPriority(libcrtx_ui_perms_editBox, 1024, PlayerGroupAll());
+	//lbl
+	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_perms, 155, 25, c_anchorTopLeft, 50, 35, StringToText("<s val=\"CreditsLabel\">Command:</s>"), ColorWithAlpha(0,0,0,0), false, 0.0);
+    DialogControlSetPositionRelative(DialogControlLastCreated(), PlayerGroupAll(), c_anchorRight, libcrtx_ui_perms_editBox, c_anchorLeft, 0, 0);
+	
+	i = 1;
+	n = 1;
+	while(i < libcrtx_max_players) {
+		if(PlayerStatus(i) == c_playerStatusActive && PlayerType(i) == c_playerTypeUser) {
+			DialogControlAddItem(libcrtx_ui_perms_player_list, PlayerGroupAll(), PlayerName(i));
+			libcrtx_ui_perms_player_index[n] = i;
+			n += 1;
+		}
+		i += 1;
+	}
+	
+	//EVENTS:
+    TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_perms_select"), c_playerAny, libcrtx_ui_perms_player_list, c_triggerControlEventTypeSelectionChanged);
+    TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_perms_allowed_local_add"), c_playerAny, libcrtx_ui_perms_allow_local_btn_add, c_triggerControlEventTypeClick);
+    TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_perms_allowed_local_remove"), c_playerAny, libcrtx_ui_perms_allow_local_btn_remove, c_triggerControlEventTypeClick);
+    TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_perms_banned_local_add"), c_playerAny, libcrtx_ui_perms_banned_local_btn_add, c_triggerControlEventTypeClick);
+    TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_perms_banned_local_remove"), c_playerAny, libcrtx_ui_perms_banned_local_btn_remove, c_triggerControlEventTypeClick);
+	
+	TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_perms_allowed_global_add"), c_playerAny, libcrtx_ui_perms_allow_global_btn_add, c_triggerControlEventTypeClick);
+	TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_perms_allowed_global_remove"), c_playerAny, libcrtx_ui_perms_allow_global_btn_remove, c_triggerControlEventTypeClick); 
+	TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_perms_banned_global_add"), c_playerAny, libcrtx_ui_perms_banned_global_btn_add, c_triggerControlEventTypeClick);
+	TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_perms_banned_global_remove"), c_playerAny, libcrtx_ui_perms_banned_global_btn_remove, c_triggerControlEventTypeClick);
+	
+	TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_perms_blacklist"), c_playerAny, libcrtx_ui_perms_player_btn_blacklist, c_triggerControlEventTypeClick);
+
+}
+bool libcrtx_ui_perms_select(bool testConds, bool runActions)
+{
+	int player = libcrtx_ui_playerprofile_index[DialogControlGetSelectedItem(libcrtx_ui_perms_player_list, EventPlayer())];
+	int count = BankKeyCount(libcrtx_permissions_bank[EventPlayer()], "blacklist");
+	int i;
+	
+	libNtve_gf_SetDialogItemText(libcrtx_ui_perms_player_name, PlayerName(player), PlayerGroupSingle(EventPlayer()));
+	libNtve_gf_SetDialogItemText(libcrtx_ui_perms_player_handle, StringToText(PlayerHandle(player)), PlayerGroupSingle(EventPlayer()));
+	
+	//enable buttons (enable each time to ensure if promoted player is admin, they will enable)
+	DialogControlSetEnabled(libcrtx_ui_perms_allow_global_btn_add, PlayerGroupSingle(EventPlayer()), true);
+	DialogControlSetEnabled(libcrtx_ui_perms_allow_global_btn_remove, PlayerGroupSingle(EventPlayer()), true);
+	DialogControlSetEnabled(libcrtx_ui_perms_banned_global_btn_add, PlayerGroupSingle(EventPlayer()), true);	
+	DialogControlSetEnabled(libcrtx_ui_perms_banned_global_btn_remove, PlayerGroupSingle(EventPlayer()), true);
+	if(libcrtx_admin_getpermissions( EventPlayer() ) >= libcrtx_admin_permissionlevel_admin ) {
+		DialogControlSetEnabled(libcrtx_ui_perms_allow_local_btn_add, PlayerGroupSingle(EventPlayer()), true);
+		DialogControlSetEnabled(libcrtx_ui_perms_allow_local_btn_remove, PlayerGroupSingle(EventPlayer()), true);
+		DialogControlSetEnabled(libcrtx_ui_perms_banned_local_btn_add, PlayerGroupSingle(EventPlayer()), true);
+		DialogControlSetEnabled(libcrtx_ui_perms_banned_local_btn_remove, PlayerGroupSingle(EventPlayer()), true);
+	}
+	if(player == EventPlayer()) { //no self blacklist
+		DialogControlSetEnabled(libcrtx_ui_perms_player_btn_blacklist, PlayerGroupSingle(EventPlayer()), false);
+		libNtve_gf_SetDialogItemText(libcrtx_ui_perms_player_btn_blacklist, StringToText("<s val=\"Header18\">Blacklist</s>"), PlayerGroupSingle(EventPlayer()));
+		DialogControlSetVisible(libcrtx_ui_perms_player_tag_blacklisted, PlayerGroupSingle(EventPlayer()), false);
+	}
+	else {
+		DialogControlSetEnabled(libcrtx_ui_perms_player_btn_blacklist, PlayerGroupSingle(EventPlayer()), true);
+		
+		//check if player blacklisted
+		while(count > 0) {
+			if(StringContains(BankKeyName(libcrtx_permissions_bank[EventPlayer()], "blacklist", count-1), PlayerHandle(player), c_stringAnywhere, c_stringNoCase)) {
+				DialogControlSetVisible(libcrtx_ui_perms_player_tag_blacklisted, PlayerGroupSingle(EventPlayer()), true);
+				libNtve_gf_SetDialogItemText(libcrtx_ui_perms_player_btn_blacklist, StringToText("<s val=\"Header18\">Un-Blacklist</s>"), PlayerGroupSingle(EventPlayer()));
+				count = -1; //to ensure it doesnt trigger the check
+				break;
+			}
+			count -= 1;
+		}
+		if(count == 0) {
+			DialogControlSetVisible(libcrtx_ui_perms_player_tag_blacklisted, PlayerGroupSingle(EventPlayer()), false);
+			libNtve_gf_SetDialogItemText(libcrtx_ui_perms_player_btn_blacklist, StringToText("<s val=\"Header18\">Blacklist</s>"), PlayerGroupSingle(EventPlayer()));
+		}
+	}
+	//clear lists
+	DialogControlRemoveAllItems(libcrtx_ui_perms_allow_local, PlayerGroupSingle(EventPlayer()));
+	DialogControlRemoveAllItems(libcrtx_ui_perms_allow_global, PlayerGroupSingle(EventPlayer()));
+	DialogControlRemoveAllItems(libcrtx_ui_perms_banned_local, PlayerGroupSingle(EventPlayer()));
+	DialogControlRemoveAllItems(libcrtx_ui_perms_banned_global, PlayerGroupSingle(EventPlayer()));
+	
+	i = 1;
+	while(StringWord(libcrtx_permissions_allowed[player], i) != "") {
+		DialogControlAddItem(libcrtx_ui_perms_allow_local, PlayerGroupSingle(EventPlayer()), StringToText(StringWord(libcrtx_permissions_allowed[player], i)));
+		i += 1;
+	}
+	i = 1;
+	while(StringWord(libcrtx_permissions_banned[player], i) != "") {
+		DialogControlAddItem(libcrtx_ui_perms_banned_local, PlayerGroupSingle(EventPlayer()), StringToText(StringWord(libcrtx_permissions_banned[player], i)));
+		i += 1;
+	}
+	if(BankKeyExists(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_allow")) {
+		i = 1;
+		while(StringWord(BankValueGetAsString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_allow"), i) != "") {
+			DialogControlAddItem(libcrtx_ui_perms_allow_global, PlayerGroupSingle(EventPlayer()), StringToText(StringWord(BankValueGetAsString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_allow"), i)));
+			i += 1;
+		}
+	}
+	if(BankKeyExists(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_banned")) {
+		i = 1;
+		while(StringWord(BankValueGetAsString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_banned"), i) != "") {
+			DialogControlAddItem(libcrtx_ui_perms_banned_global, PlayerGroupSingle(EventPlayer()), StringToText(StringWord(BankValueGetAsString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_banned"), i)));
+			i += 1;
+		}
+	}
+
+	return true;
+}
+bool libcrtx_ui_perms_allowed_local_add(bool testConds, bool runActions)
+{
+	string cmd = libNtve_gf_DialogItemEditValue(libcrtx_ui_perms_editBox, EventPlayer());
+	int player = libcrtx_ui_perms_player_index[DialogControlGetSelectedItem(libcrtx_ui_perms_player_list, EventPlayer())];
+	int i = 1;
+	
+	if(!DataTableValueExists(true, "libcrtx_commands_" + cmd) || StringEqual(cmd, "permissions", c_stringNoCase)) {
+		libcrtx_write_error("Invalid command");
+		return true;
+	}
+	
+	if(StringContains(libcrtx_permissions_allowed[player], cmd, c_stringAnywhere, c_stringNoCase)) {
+		return true;
+	}
+
+	libcrtx_permissions_allowed_add_local(player, cmd);
+	
+	DialogControlRemoveAllItems(libcrtx_ui_perms_allow_local, PlayerGroupSingle(EventPlayer()));
+	while(StringWord(libcrtx_permissions_allowed[player], i) != "") {
+		DialogControlAddItem(libcrtx_ui_perms_allow_local, PlayerGroupSingle(EventPlayer()), StringToText(StringWord(libcrtx_permissions_allowed[player], i)));
+		i += 1;
+	}
+	
+	return true;
+}
+bool libcrtx_ui_perms_allowed_local_remove(bool testConds, bool runActions)
+{
+	int player = libcrtx_ui_perms_player_index[DialogControlGetSelectedItem(libcrtx_ui_perms_player_list, EventPlayer())];
+	int i = 1;
+	
+	if(DialogControlGetSelectedItem(libcrtx_ui_perms_allow_local, EventPlayer()) == 0) {
+		return true;
+	}
+	
+	libcrtx_permissions_allowed_remove_local(player, StringWord(libcrtx_permissions_allowed[player], DialogControlGetSelectedItem(libcrtx_ui_perms_allow_local, EventPlayer())));
+	
+	DialogControlRemoveAllItems(libcrtx_ui_perms_allow_local, PlayerGroupSingle(EventPlayer()));
+	while(StringWord(libcrtx_permissions_allowed[player], i) != "") {
+		DialogControlAddItem(libcrtx_ui_perms_allow_local, PlayerGroupSingle(EventPlayer()), StringToText(StringWord(libcrtx_permissions_allowed[player], i)));
+		i += 1;
+	}
+	
+	return true;
+}
+bool libcrtx_ui_perms_banned_local_add(bool testConds, bool runActions)
+{
+	string cmd = libNtve_gf_DialogItemEditValue(libcrtx_ui_perms_editBox, EventPlayer());
+	int player = libcrtx_ui_perms_player_index[DialogControlGetSelectedItem(libcrtx_ui_perms_player_list, EventPlayer())];
+	int i = 1;
+	
+	if(!DataTableValueExists(true, "libcrtx_commands_" + cmd) || StringEqual(cmd, "permissions", c_stringNoCase)) {
+		libcrtx_write_error("Invalid command");
+		return true;
+	}
+	
+	if(StringContains(libcrtx_permissions_banned[player], cmd, c_stringAnywhere, c_stringNoCase)) {
+		return true;
+	}
+
+	libcrtx_permissions_banned_add_local(player, cmd);
+	
+	DialogControlRemoveAllItems(libcrtx_ui_perms_banned_local, PlayerGroupSingle(EventPlayer()));
+	while(StringWord(libcrtx_permissions_banned[player], i) != "") {
+		DialogControlAddItem(libcrtx_ui_perms_banned_local, PlayerGroupSingle(EventPlayer()), StringToText(StringWord(libcrtx_permissions_banned[player], i)));
+		i += 1;
+	}
+	
+	return true;
+}
+bool libcrtx_ui_perms_banned_local_remove(bool testConds, bool runActions)
+{
+	int player = libcrtx_ui_perms_player_index[DialogControlGetSelectedItem(libcrtx_ui_perms_player_list, EventPlayer())];
+	int i = 1;
+	
+	if(DialogControlGetSelectedItem(libcrtx_ui_perms_banned_local, EventPlayer()) == 0) {
+		return true;
+	}
+	
+	libcrtx_permissions_banned_remove_local(player, StringWord(libcrtx_permissions_banned[player], DialogControlGetSelectedItem(libcrtx_ui_perms_banned_local, EventPlayer())));
+	
+	DialogControlRemoveAllItems(libcrtx_ui_perms_banned_local, PlayerGroupSingle(EventPlayer()));
+	while(StringWord(libcrtx_permissions_banned[player], i) != "") {
+		DialogControlAddItem(libcrtx_ui_perms_banned_local, PlayerGroupSingle(EventPlayer()), StringToText(StringWord(libcrtx_permissions_banned[player], i)));
+		i += 1;
+	}
+	
+	return true;
+}
+bool libcrtx_ui_perms_allowed_global_add(bool testConds, bool runActions)
+{
+	string cmd = libNtve_gf_DialogItemEditValue(libcrtx_ui_perms_editBox, EventPlayer());
+	int player = libcrtx_ui_perms_player_index[DialogControlGetSelectedItem(libcrtx_ui_perms_player_list, EventPlayer())];
+	int i = 1;
+	
+	if(!DataTableValueExists(true, "libcrtx_commands_" + cmd) || StringEqual(cmd, "permissions", c_stringNoCase)) {
+		libcrtx_write_error("Invalid command");
+		return true;
+	}
+	
+	if(StringContains(BankValueGetAsString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_allow"), cmd, c_stringAnywhere, c_stringNoCase)) {
+		return true;
+	}
+	
+	libcrtx_permissions_allowed_add_global(player, cmd);
+	
+	DialogControlRemoveAllItems(libcrtx_ui_perms_allow_global, PlayerGroupSingle(EventPlayer()));
+	while(StringWord(BankValueGetAsString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_allow"), i) != "") {
+		DialogControlAddItem(libcrtx_ui_perms_allow_global, PlayerGroupSingle(EventPlayer()), StringToText(StringWord(BankValueGetAsString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_allow"), i)));
+		i += 1;
+	}
+	
+	return true;
+}
+bool libcrtx_ui_perms_allowed_global_remove(bool testConds, bool runActions)
+{
+	int player = libcrtx_ui_perms_player_index[DialogControlGetSelectedItem(libcrtx_ui_perms_player_list, EventPlayer())];
+	int i = 1;
+	
+	if(DialogControlGetSelectedItem(libcrtx_ui_perms_allow_global, EventPlayer()) == 0) {
+		return true;
+	}
+	
+	libcrtx_permissions_allowed_remove_global(player, StringWord(BankValueGetAsString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_allow"), DialogControlGetSelectedItem(libcrtx_ui_perms_allow_global, EventPlayer())));
+	
+	DialogControlRemoveAllItems(libcrtx_ui_perms_allow_global, PlayerGroupSingle(EventPlayer()));
+	while(StringWord(BankValueGetAsString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_allow"), i) != "") {
+		DialogControlAddItem(libcrtx_ui_perms_allow_global, PlayerGroupSingle(EventPlayer()), StringToText(StringWord(BankValueGetAsString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_allow"), i)));
+		i += 1;
+	}
+	
+	return true;
+}
+
+bool libcrtx_ui_perms_banned_global_add(bool testConds, bool runActions)
+{
+	string cmd = libNtve_gf_DialogItemEditValue(libcrtx_ui_perms_editBox, EventPlayer());
+	int player = libcrtx_ui_perms_player_index[DialogControlGetSelectedItem(libcrtx_ui_perms_player_list, EventPlayer())];
+	int i = 1;
+	
+	if(!DataTableValueExists(true, "libcrtx_commands_" + cmd) || StringEqual(cmd, "permissions", c_stringNoCase)) {
+		libcrtx_write_error("Invalid command");
+		return true;
+	}
+	
+	if(StringContains(BankValueGetAsString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_banned"), cmd, c_stringAnywhere, c_stringNoCase)) {
+		return true;
+	}
+	
+	libcrtx_permissions_banned_add_global(player, cmd);
+	
+	DialogControlRemoveAllItems(libcrtx_ui_perms_banned_global, PlayerGroupSingle(EventPlayer()));
+	while(StringWord(BankValueGetAsString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_banned"), i) != "") {
+		DialogControlAddItem(libcrtx_ui_perms_banned_global, PlayerGroupSingle(EventPlayer()), StringToText(StringWord(BankValueGetAsString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_banned"), i)));
+		i += 1;
+	}
+	
+	return true;
+}
+bool libcrtx_ui_perms_banned_global_remove(bool testConds, bool runActions)
+{
+	int player = libcrtx_ui_perms_player_index[DialogControlGetSelectedItem(libcrtx_ui_perms_player_list, EventPlayer())];
+	int i = 1;
+	
+	if(DialogControlGetSelectedItem(libcrtx_ui_perms_banned_global, EventPlayer()) == 0) {
+		return true;
+	}
+	
+	libcrtx_permissions_banned_remove_global(player, StringWord(BankValueGetAsString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_banned"), DialogControlGetSelectedItem(libcrtx_ui_perms_banned_global, EventPlayer())));
+	
+	DialogControlRemoveAllItems(libcrtx_ui_perms_banned_global, PlayerGroupSingle(EventPlayer()));
+	while(StringWord(BankValueGetAsString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_banned"), i) != "") {
+		DialogControlAddItem(libcrtx_ui_perms_banned_global, PlayerGroupSingle(EventPlayer()), StringToText(StringWord(BankValueGetAsString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_banned"), i)));
+		i += 1;
+	}
+	
+	return true;
+}
+bool libcrtx_ui_perms_blacklist(bool testConds, bool runActions)
+{
+	int player = libcrtx_ui_perms_player_index[DialogControlGetSelectedItem(libcrtx_ui_perms_player_list, EventPlayer())];
+	int count;
+	
+	if(DialogControlIsVisible(libcrtx_ui_perms_player_tag_blacklisted, EventPlayer())) { // => blacklist remove
+		count = BankKeyCount(libcrtx_permissions_bank[EventPlayer()], "blacklist");
+		if(count == 0) { //safeguard?
+			return true;
+		}
+		while(StringWord(BankKeyName(libcrtx_permissions_bank[EventPlayer()], "blacklist", count - 1), 2) != PlayerHandle(player)) {
+			count -= 1;
+		}
+		
+		BankKeyRemove(libcrtx_permissions_bank[EventPlayer()], "blacklist", BankKeyName(libcrtx_permissions_bank[EventPlayer()], "blacklist", count-1));
+		BankSave(libcrtx_permissions_bank[EventPlayer()]);
+		
+		DialogControlSetVisible(libcrtx_ui_perms_player_tag_blacklisted, PlayerGroupSingle(EventPlayer()), false);
+		libNtve_gf_SetDialogItemText(libcrtx_ui_perms_player_btn_blacklist, StringToText("<s val=\"Header18\">Blacklist</s>"), PlayerGroupSingle(EventPlayer()));
+
+		return true;
+	}
+	else { // => blacklist add
+		libcrtx_blacklist_add(EventPlayer(), PlayerHandle(player), PlayerName(player), "1");
+
+		DialogControlSetVisible(libcrtx_ui_perms_player_tag_blacklisted, PlayerGroupSingle(EventPlayer()), true);
+		libNtve_gf_SetDialogItemText(libcrtx_ui_perms_player_btn_blacklist, StringToText("<s val=\"Header18\">Un-Blacklist</s>"), PlayerGroupSingle(EventPlayer()));
+	
+		return true;
+	}
+	
+	return true;
+}

@@ -32,6 +32,7 @@ include "Cortex/Commands/ForgeCameraCommands.galaxy"
 void libcrtx_commands_init()
 {
 	libcrtx_cache_init();
+	libcrtx_camera_init();
 	
 	libcrtx_debug("libcrtx_commands_init()");
 
@@ -56,9 +57,9 @@ void libcrtx_commands_init()
 	libcrtx_command_create("uncontrol", "libcrtx_command_uncontrol");
 	libcrtx_command_create("replaceeffect", "libcrtx_command_replaceeffect");
 	libcrtx_command_create("replaceunit", "libcrtx_command_replaceunit");
+	libcrtx_command_create("replacemodel", "libcrtx_command_replacemodel");
 	libcrtx_command_create("togglespawner", "libcrtx_command_togglespawner");
 	libcrtx_command_create("blacklist", "libcrtx_command_blacklist");
-	libcrtx_camera_init();
 	libcrtx_command_create("camera", "libcrtx_command_camera");
 	libcrtx_command_create("delay", "libcrtx_command_delay_dummy");
 	libcrtx_command_create("vision", "libcrtx_command_vision");
@@ -66,6 +67,8 @@ void libcrtx_commands_init()
 	libcrtx_command_create("ui", "libcrtx_command_ui");
 	libcrtx_command_create("gamesetup", "libcrtx_command_gamesetup");
 	libcrtx_command_create("toggleanon", "libcrtx_command_toggleanon");
+	libcrtx_command_create("sound", "libcrtx_command_sound");
+	libcrtx_command_create("permissions", "libcrtx_command_permissions");
 	
 	
 	// unit commands
@@ -136,6 +139,7 @@ void libcrtx_commands_init()
 	libcrtx_command_create("@cache", "libcrtx_command_cache");
 	libcrtx_command_create("@undo", "libcrtx_command_undo");
 	libcrtx_command_create("@subtitle", "libcrtx_command_subtitle");
+	libcrtx_command_create("@attach+", "libcrtx_command_attach_plus");
 	
 
 	// admin commands
@@ -156,8 +160,9 @@ void libcrtx_commands_init()
 	libcrtx_command_create("!setting", "libcrtx_command_setting");
 	libcrtx_command_create("!fruit", "libcrtx_command_fruit");
 	libcrtx_command_create("!xml", "libcrtx_command_xml");
+	libcrtx_command_create("!soundtrack", "libcrtx_command_soundtrack");
+	libcrtx_command_create("!weather", "libcrtx_command_weather");
 
-	
 
 	// region commands
 	libcrtx_command_create("#create", "libcrtx_command_regioncreate");

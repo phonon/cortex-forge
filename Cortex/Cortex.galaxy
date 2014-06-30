@@ -77,15 +77,14 @@ void libcrtx_InitLib()
 
 	if( libcrtx_MapCheck() ) {
 		libcrtx_toolkit_init();
+		libcrtx_admin_init();
 		libcrtx_events_init();
 		libcrtx_chat_init();
-		libcrtx_admin_init();
 		libcrtx_commands_init();
 		libcrtx_ui_init();
-		libcrtx_blacklist_init();
+		libcrtx_permissions_init();
 	}
 	
 	libcrtx_Welcome();
-	TriggerAddEventTimeElapsed(TriggerCreate("libcrtx_blacklist_update"), 0.01, c_timeGame);
 	
 }

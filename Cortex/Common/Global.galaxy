@@ -31,9 +31,9 @@ const string libcrtx_version_hotfix = "";
 // Version in form major.minor.bugfix.hotfix
 // ex: "0.10.1a" when concatenated
 const int libcrtx_frg_version_major = 1;
-const int libcrtx_frg_version_minor = 2;
+const int libcrtx_frg_version_minor = 1;
 const int libcrtx_frg_version_bugfix = 0;
-const string libcrtx_frg_version_hotfix = "a";
+const string libcrtx_frg_version_hotfix = "";
 
 // Max players supported by SC2.
 const int libcrtx_max_players = 16;
@@ -92,4 +92,4 @@ include "Cortex/Common/CortexID.galaxy"
 include "Cortex/Common/Utility.galaxy"
 include "Cortex/Common/ComputerAI.galaxy"
 include "Cortex/Common/Log.galaxy"
-include "Cortex/Common/ForgeBlacklist.galaxy"
+include "Cortex/Common/Permissions.galaxy"

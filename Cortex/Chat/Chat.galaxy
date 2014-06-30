@@ -156,7 +156,7 @@ void libcrtx_chat_write_ooc(int player, string message)
 	}
 	
 	if( !libcrtx_cortexid_has_playerflag(player, c_cortexIdPlayerFlagPrefersAnon) ) {
-		msg = libcrtx_color_text_by_player( player, PlayerName( player ) + StringToText(" (OOC)") );
+		msg = libcrtx_color_text_by_player( player, StringToText("<d Player=\"" + IntToString(player) + "\" GameValue=\"PlayerClanTag\"/> ") + PlayerName( player ) + StringToText(" (OOC)") );
 	}
 	
 	//check message for ">" to greentext it

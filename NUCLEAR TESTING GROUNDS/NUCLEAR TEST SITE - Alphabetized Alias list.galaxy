@@ -69,7 +69,7 @@ string libcrtx_alias_list()
 			rvalue = rvalue + " ";
 		}
 
-		count = count - 1;
+		count -= 1;
 	}
 	
 	//alphabetizes the alias string

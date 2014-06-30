@@ -24,17 +24,11 @@ void libcrtx_ui_fRPG_init()
 	DialogCreate(850, 500, c_anchorLeft, 120, -150, true);
 	libcrtx_ui_fRPG = DialogLastCreated();
 	
-	libNtve_gf_CreateDialogItemButton(libcrtx_ui_fRPG, 200, 200, c_anchorCenter, 0, 0, StringToText(""), StringToText(""), "Cortex\\CortexUI\\CrtxFrgRaptLogo.dds");
-    libNtve_gf_SetDialogItemImage(DialogControlLastCreated(), "Cortex\\CortexUI\\CrtxFrgRaptLogo.dds", PlayerGroupAll());
+	libNtve_gf_CreateDialogItemButton(libcrtx_ui_fRPG, 200, 200, c_anchorCenter, 0, 0, StringToText(""), StringToText(""), "Cortex\\CortexUI\\Assets\\CrtxFrgRaptLogo.dds");
+    libNtve_gf_SetDialogItemImage(DialogControlLastCreated(), "Cortex\\CortexUI\\Assets\\CrtxFrgRaptLogo.dds", PlayerGroupAll());
     libNtve_gf_SetDialogItemImageType(DialogControlLastCreated(), c_triggerImageTypeNormal, PlayerGroupAll());   
 	DialogControlSetPosition(DialogControlLastCreated(), PlayerGroupAll(), c_anchorCenter, 0, 0);
 	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_fRPG, 300, 100, c_anchorTopLeft, 50, 45, StringToText("<s val=\"Header18\">NOT YET IMPLEMENTED (Hold on dammit)</s>"), ColorWithAlpha(0,0,0,0), false, 0.0);
 	DialogControlSetPosition(DialogControlLastCreated(), PlayerGroupAll(), c_anchorBottom, 0, 50);
 	
-}
-void libcrtx_ui_fRPG_events_init()
-{
-
-
-
 }

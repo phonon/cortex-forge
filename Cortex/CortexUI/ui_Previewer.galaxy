@@ -124,7 +124,7 @@ void libcrtx_ui_previewer_init()
 			libNtve_gf_SetDialogItemRenderType(libcrtx_ui_previewer_modelview[i], c_triggerRenderTypeLDR, PlayerGroupAll());
 			libNtve_gf_SetDialogItemCamera(libcrtx_ui_previewer_modelview[i], "Star2CameraLow01", PlayerGroupAll());
 			libNtve_gf_SetDialogItemModel(libcrtx_ui_previewer_modelview[i], "MercHavenChick", PlayerGroupAll());
-			PortraitWaitForLoad(PortraitGetTriggerControl(libcrtx_ui_previewer_modelview[i]));
+			//PortraitWaitForLoad(PortraitGetTriggerControl(libcrtx_ui_previewer_modelview[i])); //potential lag causer?
 			ActorSend(ActorFromDialogControl(libcrtx_ui_previewer_modelview[i]), "SetScale 0.100000 0.500000");
 			
 			DialogControlSetVisible(libcrtx_ui_previewer_modelview[i], PlayerGroupAll(), false);
@@ -141,18 +141,14 @@ void libcrtx_ui_previewer_init()
 		i += 1;
 	}
 	
-}
-
-void libcrtx_ui_previewer_events_init()
-{
-    TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_previewer_model_select"), c_playerAny, libcrtx_ui_previewer_list, c_triggerControlEventTypeSelectionChanged);
+	//EVENTS:
+	TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_previewer_model_select"), c_playerAny, libcrtx_ui_previewer_list, c_triggerControlEventTypeSelectionChanged);
     TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_previewer_model_filter"), c_playerAny, libcrtx_ui_previewer_btn_filter, c_triggerControlEventTypeClick);
 	TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_previewer_scale_increment"), c_playerAny, libcrtx_ui_previewer_btn_scaleincrease, c_triggerControlEventTypeClick);
 	TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_previewer_scale_decrement"), c_playerAny, libcrtx_ui_previewer_btn_scaledecrease, c_triggerControlEventTypeClick);
 	TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_previewer_angle_increment"), c_playerAny, libcrtx_ui_previewer_btn_angleincrement, c_triggerControlEventTypeClick);
 	TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_previewer_angle_decrement"), c_playerAny, libcrtx_ui_previewer_btn_angledecrement, c_triggerControlEventTypeClick);
 }
-
 bool libcrtx_ui_previewer_model_select(bool testConds, bool runActions)
 {
 	int i;

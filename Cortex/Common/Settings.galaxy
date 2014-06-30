@@ -30,8 +30,9 @@ const int libcrtx_setting_int_spawnperiod = 7; // See #6.
 const int libcrtx_setting_int_spawntimeout = 8; // How long your spawn will be disabled should you mass.
 const int libcrtx_setting_int_smarthostile = 9;
 
-//XML SETTING (bool)
+//OTHER SETTING (bool)
 bool libcrtx_setting_use_xml;
+bool libcrtx_setting_use_blacklist;
 
 
 

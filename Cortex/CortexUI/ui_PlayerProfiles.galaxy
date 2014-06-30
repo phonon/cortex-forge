@@ -26,6 +26,16 @@ int libcrtx_ui_profile_img_edit;
 int libcrtx_ui_profile_charcode_edit;
 int libcrtx_ui_profile_likes_edit;
 int[4] libcrtx_ui_profile_nfo_edit;
+int libcrtx_ui_profile_btn_portrait;
+
+int libcrtx_ui_playerprofiles_portraitselection;
+int libcrtx_ui_playerprofiles_portraitselection_btn_index_next;
+int libcrtx_ui_playerprofiles_portraitselection_btn_index_previous;
+int[6] libcrtx_ui_playerprofiles_portraitselection_btn_portrait;
+int[6] libcrtx_ui_playerprofiles_portraitselection_img_portrait;
+int[libcrtx_max_players] libcrtx_ui_playerprofiles_portraitselection_index;
+string[42] libcrtx_ui_profile_portrait;
+const int libcrtx_ui_playerprofiles_portraitselection_index_MAX = 6;
 
 int libcrtx_ui_player_img;
 int libcrtx_ui_player_name;
@@ -133,6 +143,12 @@ void libcrtx_ui_playerprofiles_init()
     libNtve_gf_SetDialogItemRenderPriority(libcrtx_ui_profile_nfo_edit[0], 1024, PlayerGroupAll());
 	DialogControlSetVisible(libcrtx_ui_profile_nfo_edit[0], PlayerGroupAll(), false);
 	
+	libNtve_gf_CreateDialogItemButton(libcrtx_ui_playerprofiles, 85, 85, c_anchorBottomRight, 0, 0, StringToText(""), StringToText("<s val=\"Header18\">Select</s>"), "");
+    libcrtx_ui_profile_btn_portrait = DialogControlLastCreated();
+	DialogControlSetPositionRelative(libcrtx_ui_profile_btn_portrait, PlayerGroupAll(), c_anchorCenter, libcrtx_ui_profile_frame_img, c_anchorCenter, 0, 0);
+	libNtve_gf_SetDialogItemRenderPriority(libcrtx_ui_profile_btn_portrait, 1024, PlayerGroupAll());
+	DialogControlSetVisible(libcrtx_ui_profile_btn_portrait, PlayerGroupAll(), false);
+	
 	//BELOW ARE HOLDERS/LABELS FOR ACTUAL DISPLAY
 	//name
 	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_playerprofiles, 230, 50, c_anchorTopLeft, 50, 35, StringToText(""), ColorWithAlpha(0,0,0,0), false, 0.0);
@@ -143,7 +159,7 @@ void libcrtx_ui_playerprofiles_init()
 	//handle
 	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_playerprofiles, 230, 50, c_anchorTopLeft, 50, 35, StringToText(""), ColorWithAlpha(0,0,0,0), false, 0.0);
 	libcrtx_ui_player_handle = DialogControlLastCreated();
-    DialogControlSetPositionRelative(libcrtx_ui_player_handle, PlayerGroupAll(), c_anchorTopLeft, libcrtx_ui_profile_frame, c_anchorTopLeft, 200, 90);
+    DialogControlSetPositionRelative(libcrtx_ui_player_handle, PlayerGroupAll(), c_anchorTopLeft, libcrtx_ui_profile_frame, c_anchorTopLeft, 215, 90);
 	libNtve_gf_SetDialogItemRenderPriority(libcrtx_ui_player_handle, 1024, PlayerGroupAll());
 	
 	//char code
@@ -168,19 +184,160 @@ void libcrtx_ui_playerprofiles_init()
 	libNtve_gf_CreateDialogItemImage(libcrtx_ui_playerprofiles, 85, 85, c_anchorBottomRight, 0, 0, StringToText(""), "Assets\\Textures\\ui_chatbaricons_zerg_individual.dds", c_triggerImageTypeNormal, false, Color(100,100,100), c_triggerBlendModeNormal);
     libcrtx_ui_player_img = DialogControlLastCreated();
 	DialogControlSetPositionRelative(libcrtx_ui_player_img, PlayerGroupAll(), c_anchorCenter, libcrtx_ui_profile_frame_img, c_anchorCenter, 0, 0);
-	libNtve_gf_SetDialogItemRenderPriority(libcrtx_ui_player_img, 1024, PlayerGroupAll());
+	libNtve_gf_SetDialogItemRenderPriority(libcrtx_ui_player_img, 1012, PlayerGroupAll());
 	//DialogControlSetVisible(libcrtx_ui_player_img, PlayerGroupSingle(EventPlayer()), true);
+
+	//=========================================================================================
+	//Initialize array to hold paths to portrait choices
 	
+	i = 0;
+	while(i < 42) {
+		libcrtx_ui_profile_portrait[i] = "Assets\\Textures\\ui_ingame_help_techtree_questionmark.dds";
+		i += 1;
+	}
+	i = 0;
+	libcrtx_ui_profile_portrait[i] = "Assets\\Textures\\btn-hero-dehaka.dds";
+	i += 1;
+	libcrtx_ui_profile_portrait[i] = "Assets\\Textures\\btn-hero-niadra.dds";
+	i += 1;
+	libcrtx_ui_profile_portrait[i] = "Assets\\Textures\\btn-hero-hyperion.dds";
+	i += 1;
+	libcrtx_ui_profile_portrait[i] = "Assets\\Textures\\btn-hero-infestedstukov.dds";
+	i += 1;
+	libcrtx_ui_profile_portrait[i] = "Assets\\Textures\\btn-hero-kerriganghost.dds";
+	i += 1;
+	libcrtx_ui_profile_portrait[i] = "Assets\\Textures\\btn-hero-kerriganqueenofblades.dds";
+	i += 1;
+	
+	libcrtx_ui_profile_portrait[i] = "Assets\\Textures\\btn-hero-niadra.dds";
+	i += 1;
+	libcrtx_ui_profile_portrait[i] = "Assets\\Textures\\btn-hero-raynor.dds"; 
+	i += 1;	
+	libcrtx_ui_profile_portrait[i] = "Assets\\Textures\\ui-heroicon-artanis.dds";
+	i += 1;
+	libcrtx_ui_profile_portrait[i] = "Assets\\Textures\\ui-heroicon-mohandar.dds";
+	i += 1;
+	libcrtx_ui_profile_portrait[i] = "Assets\\Textures\\ui-heroicon-selendis.dds";
+	i += 1;
+	libcrtx_ui_profile_portrait[i] = "Assets\\Textures\\ui-heroicon-nova.dds";
+	i += 1;
+	
+	libcrtx_ui_profile_portrait[i] = "Assets\\Textures\\ui-heroicon-stetmann.dds";
+	i += 1;
+	libcrtx_ui_profile_portrait[i] = "Assets\\Textures\\ui-heroicon-swann.dds";
+	i += 1;
+	libcrtx_ui_profile_portrait[i] = "Assets\\Textures\\ui-heroicon-tosh.dds";
+	i += 1;
+	libcrtx_ui_profile_portrait[i] = "Assets\\Textures\\ui-heroicon-tychus.dds";
+	i += 1;
+	libcrtx_ui_profile_portrait[i] = "Assets\\Textures\\ui-heroicon-urun.dds";
+	i += 1;
+	libcrtx_ui_profile_portrait[i] = "Assets\\Textures\\ui-heroicon-zeratul.dds";
+	i += 1;
+	
+	libcrtx_ui_profile_portrait[i] = "Assets\\Textures\\btn-boss-narud.dds";
+	i += 1;
+	libcrtx_ui_profile_portrait[i] = "Assets\\Textures\\btn-boss-slivan.dds";
+	i += 1;
+	libcrtx_ui_profile_portrait[i] = "Assets\\Textures\\btn-boss-zurvan.dds";
+	i += 1;
+	libcrtx_ui_profile_portrait[i] = "Assets\\Textures\\btn-boss-vikingarchangel.dds";
+	i += 1;
+	libcrtx_ui_profile_portrait[i] = "Assets\\Textures\\primalzerg02portrait_static.dds";
+	i += 1;
+	libcrtx_ui_profile_portrait[i] = "Assets\\Textures\\femalecivilian2portrait_static.dds";
+	i += 1;
+	
+	libcrtx_ui_profile_portrait[i] = "Assets\\Textures\\dominionmarine1portrait_static.dds";
+	i += 1;
+	libcrtx_ui_profile_portrait[i] = "Assets\\Textures\\firebatmercenaryportrait_static.dds";
+	i += 1;
+	libcrtx_ui_profile_portrait[i] = "Assets\\Textures\\maraudermercenaryportrait_static.dds";
+	i += 1;
+	libcrtx_ui_profile_portrait[i] = "Assets\\Textures\\karassportrait_static.dds";
+	i += 1;
+	libcrtx_ui_profile_portrait[i] = "Assets\\Textures\\taldarimexecutorportrait_static.dds";
+	i += 1;
+	libcrtx_ui_profile_portrait[i] = "Assets\\Textures\\tempestportrait_static.dds";
+	i += 1;
+
+	libcrtx_ui_profile_portrait[i] = "Assets\\Textures\\cadeportrait_static.dds";
+	i += 1;	
+	libcrtx_ui_profile_portrait[i] = "Assets\\Textures\\odinportrait_static.dds";
+	i += 1;
+	libcrtx_ui_profile_portrait[i] = "Assets\\Textures\\arcturusportrait_static.dds";
+	i += 1;
+	libcrtx_ui_profile_portrait[i] = "Assets\\Textures\\darkvoiceportrait_static.dds";
+	i += 1;	
+	libcrtx_ui_profile_portrait[i] = "Assets\\Textures\\smx1_hanportrait_static.dds";
+	i += 1;
+	libcrtx_ui_profile_portrait[i] = "Assets\\Textures\\sm_mb_kerriganphoto.dds";
+	i += 1;
+
+	
+	libcrtx_ui_profile_portrait[i] = "Assets\\Textures\\ui_glues_help_armyicon_protoss.dds";
+	i += 1;	
+	libcrtx_ui_profile_portrait[i] = "Assets\\Textures\\ui_glues_help_armyicon_terran.dds";
+	i += 1;	
+	libcrtx_ui_profile_portrait[i] = "Assets\\Textures\\ui_glues_help_armyicon_zerg.dds";
+	i += 1;
+	libcrtx_ui_profile_portrait[i] = "Assets\\Textures\\btn-icon-dominion.dds";
+	i += 1;
+	libcrtx_ui_profile_portrait[i] = "Assets\\Textures\\ui_chatbaricons_zerg_individual.dds";
+	i += 1;
+	
+	//=========================================================================================
+	//Initialize portrait selection	
+	DialogCreate(510, 120, c_anchorLeft, 120, -150, true); //display 6 portraits, size 50x50
+	libcrtx_ui_playerprofiles_portraitselection = DialogLastCreated();
+    DialogSetPositionRelative(libcrtx_ui_playerprofiles_portraitselection, c_anchorBottomLeft, libcrtx_ui_playerprofiles, c_anchorTopLeft, 120, 10);
+	
+	i = 0;
+	while(i < 6) {
+		//create button:
+		libNtve_gf_CreateDialogItemButton(libcrtx_ui_playerprofiles_portraitselection, 75, 75, c_anchorLeft, 43 + i*70, 0, StringToText(""), StringToText(""), "Assets\\Textures\\ui_hots_button_shared_nineslice03_2states_hover.dds");
+		libcrtx_ui_playerprofiles_portraitselection_btn_portrait[i] = DialogControlLastCreated();
+		DialogControlSetVisible(DialogControlLastCreated(), PlayerGroupAll(), true);
+		libNtve_gf_SetDialogItemImage(DialogControlLastCreated(), "Assets\\Textures\\ui_hots_button_shared_nineslice03_2states_normal.dds", PlayerGroupAll());
+		libNtve_gf_SetDialogItemImageType(DialogControlLastCreated(), c_triggerImageTypeNormal, PlayerGroupAll());
+		libNtve_gf_SetDialogItemRenderPriority(DialogControlLastCreated(), 1000, PlayerGroupAll());	
+		//create image:
+		libNtve_gf_CreateDialogItemImage(libcrtx_ui_playerprofiles_portraitselection, 57, 57, c_anchorBottomRight, 0, 0, StringToText(""), libcrtx_ui_profile_portrait[i], c_triggerImageTypeNormal, false, Color(100,100,100), c_triggerBlendModeNormal);
+		libcrtx_ui_playerprofiles_portraitselection_img_portrait[i] = DialogControlLastCreated();
+		DialogControlSetPositionRelative(DialogControlLastCreated(), PlayerGroupAll(), c_anchorCenter, libcrtx_ui_playerprofiles_portraitselection_btn_portrait[i], c_anchorCenter, 0, 0);
+		libNtve_gf_SetDialogItemRenderPriority(DialogControlLastCreated(), 1024, PlayerGroupAll());
+		i += 1;
+	}
+
+    libNtve_gf_CreateDialogItemButton(libcrtx_ui_playerprofiles_portraitselection, 25, 25, c_anchorRight, 25, 0, StringToText(""), StringToText(""), "Assets\\Textures\\ui_challenge_missionbuttonicon_normaloverpressedover.dds");
+  	libcrtx_ui_playerprofiles_portraitselection_btn_index_next = DialogControlLastCreated();  
+	libNtve_gf_SetDialogItemImage(libcrtx_ui_playerprofiles_portraitselection_btn_index_next, "Assets\\Textures\\ui_challenge_missionbuttonicon_normaloverpressedover.dds", PlayerGroupAll());
+    libNtve_gf_SetDialogItemImageType(libcrtx_ui_playerprofiles_portraitselection_btn_index_next, c_triggerImageTypeNormal, PlayerGroupAll());
+    //DialogControlSetPositionRelative(libcrtx_ui_playerprofiles_portraitselection_btn_index_next, PlayerGroupAll(), c_anchorCenter, libcrtx_ui_previewer_frame, c_anchorBottom, 53, -35);
+    libNtve_gf_SetDialogItemRenderPriority(libcrtx_ui_playerprofiles_portraitselection_btn_index_next, 1024, PlayerGroupAll());
+	libNtve_gf_CreateDialogItemImage(libcrtx_ui_playerprofiles_portraitselection, 20, 20, c_anchorBottomRight, 0, 0, StringToText(""), "Assets\\Textures\\ui_research_frame_available_arrow_right.dds", c_triggerImageTypeNormal, false, Color(100,100,100), c_triggerBlendModeNormal);
+    DialogControlSetPositionRelative(DialogControlLastCreated(), PlayerGroupAll(), c_anchorCenter, libcrtx_ui_playerprofiles_portraitselection_btn_index_next, c_anchorCenter, 0, 0);
+	
+    libNtve_gf_CreateDialogItemButton(libcrtx_ui_playerprofiles_portraitselection, 25, 25, c_anchorLeft, 25, 0, StringToText(""), StringToText(""), "Assets\\Textures\\ui_challenge_missionbuttonicon_normaloverpressedover.dds");
+  	libcrtx_ui_playerprofiles_portraitselection_btn_index_previous = DialogControlLastCreated();
+	libNtve_gf_SetDialogItemImage(libcrtx_ui_playerprofiles_portraitselection_btn_index_previous, "Assets\\Textures\\ui_challenge_missionbuttonicon_normaloverpressedover.dds", PlayerGroupAll());
+    libNtve_gf_SetDialogItemImageType(libcrtx_ui_playerprofiles_portraitselection_btn_index_previous, c_triggerImageTypeNormal, PlayerGroupAll());
+    //DialogControlSetPositionRelative(libcrtx_ui_playerprofiles_portraitselection_btn_index_previous, PlayerGroupAll(), c_anchorCenter, libcrtx_ui_previewer_frame, c_anchorBottom, -53, -35);
+    libNtve_gf_SetDialogItemRenderPriority(libcrtx_ui_playerprofiles_portraitselection_btn_index_previous, 1024, PlayerGroupAll());	
+	libNtve_gf_CreateDialogItemImage(libcrtx_ui_playerprofiles_portraitselection, 20, 20, c_anchorLeft, 0, 0, StringToText(""), "Assets\\Textures\\ui_research_frame_available_arrow_left.dds", c_triggerImageTypeNormal, false, Color(100,100,100), c_triggerBlendModeNormal);
+    DialogControlSetPositionRelative(DialogControlLastCreated(), PlayerGroupAll(), c_anchorCenter, libcrtx_ui_playerprofiles_portraitselection_btn_index_previous, c_anchorCenter, 0, 0);
+
 	//=========================================================================================
 	//Dialog set up done. Now initialize player entries:
 	
 	i = 1;
 	n = 1;
-	while(i < 14) {
-		if(PlayerStatus(i) == c_playerStatusActive) {
+	while(i < libcrtx_max_players) {
+		if(PlayerStatus(i) == c_playerStatusActive && PlayerType(i) == c_playerTypeUser) {
 			libcrtx_ui_profile[i] = BankLoad(libcrtx_cortexid_bank, i);
 			DialogControlAddItem(libcrtx_ui_profile_list, PlayerGroupAll(), PlayerName(i));
 			libcrtx_ui_playerprofile_index[n] = i;
+			libcrtx_ui_playerprofiles_portraitselection_index[i] = 0;
 			n += 1;
 		}
 		i += 1;
@@ -188,17 +345,23 @@ void libcrtx_ui_playerprofiles_init()
 	
 	
 	//CortexID > Profile > Interests
-	//CortexID > Profile > About420
+	//CortexID > Profile > About
+	//CortexID > Profile > IMG  (int)
 	
-	
-}
-void libcrtx_ui_playerprofiles_events_init()
-{
+	//================================================
+	//EVENTS:
     TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_profile_show"), c_playerAny, libcrtx_ui_profile_list, c_triggerControlEventTypeSelectionChanged);
     TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_profile_edit"), c_playerAny, libcrtx_ui_profile_btn_edit, c_triggerControlEventTypeClick);
-
+    TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_profile_portrait_select_dialog"), c_playerAny, libcrtx_ui_profile_btn_portrait, c_triggerControlEventTypeClick);
+    TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_profile_portrait_index_change"), c_playerAny, libcrtx_ui_playerprofiles_portraitselection_btn_index_next, c_triggerControlEventTypeClick);
+    TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_profile_portrait_index_change"), c_playerAny, libcrtx_ui_playerprofiles_portraitselection_btn_index_previous, c_triggerControlEventTypeClick);
+	i = 0;
+	while(i < 6) {
+		TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_profile_portrait_select"), c_playerAny, libcrtx_ui_playerprofiles_portraitselection_btn_portrait[i], c_triggerControlEventTypeClick);
+		i += 1;
+	}
+	
 }
-
 //libNtve_gf_SetDialogItemText(DialogControlLastCreated(), StringExternal("Param/Value/FB3785FE"), PlayerGroupAll());
 bool libcrtx_ui_profile_edit(bool testConds, bool runActions)
 {
@@ -209,7 +372,8 @@ bool libcrtx_ui_profile_edit(bool testConds, bool runActions)
 		DialogControlSetVisible(libcrtx_ui_profile_charcode_edit, PlayerGroupSingle(EventPlayer()), true);
 		DialogControlSetVisible(libcrtx_ui_profile_likes_edit, PlayerGroupSingle(EventPlayer()), true);
 		DialogControlSetVisible(libcrtx_ui_profile_nfo_edit[0], PlayerGroupSingle(EventPlayer()), true);
-		
+		DialogControlSetVisible(libcrtx_ui_profile_btn_portrait, PlayerGroupSingle(EventPlayer()), true);
+	
 		DialogControlSetVisible(libcrtx_ui_player_charcode, PlayerGroupSingle(EventPlayer()), false);
 		DialogControlSetVisible(libcrtx_ui_player_likes, PlayerGroupSingle(EventPlayer()), false);
 		DialogControlSetVisible(libcrtx_ui_player_nfo, PlayerGroupSingle(EventPlayer()), false);
@@ -265,34 +429,104 @@ bool libcrtx_ui_profile_edit(bool testConds, bool runActions)
 		DialogControlSetVisible(libcrtx_ui_profile_charcode_edit, PlayerGroupSingle(EventPlayer()), false);
 		DialogControlSetVisible(libcrtx_ui_profile_likes_edit, PlayerGroupSingle(EventPlayer()), false);
 		DialogControlSetVisible(libcrtx_ui_profile_nfo_edit[0], PlayerGroupSingle(EventPlayer()), false);
+		DialogControlSetVisible(libcrtx_ui_profile_btn_portrait, PlayerGroupSingle(EventPlayer()), false);
+		DialogSetVisible(libcrtx_ui_playerprofiles_portraitselection, PlayerGroupSingle(EventPlayer()), false);
 
 		DialogControlSetVisible(libcrtx_ui_player_charcode, PlayerGroupSingle(EventPlayer()), true);
 		DialogControlSetVisible(libcrtx_ui_player_likes, PlayerGroupSingle(EventPlayer()), true);
 		DialogControlSetVisible(libcrtx_ui_player_nfo, PlayerGroupSingle(EventPlayer()), true);
-		
+			
 		libcrtx_ui_profile_edit_on[EventPlayer()] = false;
 		return true;	
 	}
 	
 	return true;
 }
-void libcrtx_ui_profile_pic_uniques_update (int player)
+bool libcrtx_ui_profile_portrait_select_dialog(bool testConds, bool runActions)
 {
-	if(PlayerHandle(player) == "1-S2-1-938669") {
-		libNtve_gf_SetDialogItemImage(libcrtx_ui_player_img, "Cortex\\CortexUI\\Portraits\\thr.dds", PlayerGroupSingle(EventPlayer()));
-		return;
-	}	
-	else if(PlayerHandle(player) == "1-S2-1-698512") {
-		libNtve_gf_SetDialogItemImage(libcrtx_ui_player_img, "Cortex\\CortexUI\\Portraits\\xet.dds", PlayerGroupSingle(EventPlayer()));
+	int i = 0;
+	
+	if(DialogIsVisible(libcrtx_ui_playerprofiles_portraitselection, EventPlayer())) {
+		DialogSetVisible(libcrtx_ui_playerprofiles_portraitselection, PlayerGroupSingle(EventPlayer()), false);
+	}
+	else {
+		DialogSetVisible(libcrtx_ui_playerprofiles_portraitselection, PlayerGroupSingle(EventPlayer()), true);
+		//populate images:
+		while(i < 6) {
+			libNtve_gf_SetDialogItemImage(libcrtx_ui_playerprofiles_portraitselection_img_portrait[i], libcrtx_ui_profile_portrait[i + (libcrtx_ui_playerprofiles_portraitselection_index[EventPlayer()]*6)], PlayerGroupSingle(EventPlayer()));
+			i += 1;
+		}
+	}
+	
+	return true;
+}
+bool libcrtx_ui_profile_portrait_select(bool testConds, bool runActions)
+{
+	int i = 0;
+	
+	while(EventDialogControl() != libcrtx_ui_playerprofiles_portraitselection_btn_portrait[i]) {
+		i += 1;
+	}
+	BankValueSetFromInt(libcrtx_ui_profile[EventPlayer()], "Profile", "img", i + (libcrtx_ui_playerprofiles_portraitselection_index[EventPlayer()]*6));
+	BankSave(libcrtx_ui_profile[EventPlayer()]);
+	
+	libNtve_gf_SetDialogItemImage(libcrtx_ui_player_img, libcrtx_ui_profile_portrait[i + (libcrtx_ui_playerprofiles_portraitselection_index[EventPlayer()]*6)], PlayerGroupSingle(EventPlayer()));
+
+	return true;
+}
+bool libcrtx_ui_profile_portrait_index_change(bool testConds, bool runActions)
+{
+	int i = 0;
+	
+	if(EventDialogControl() == libcrtx_ui_playerprofiles_portraitselection_btn_index_next) {
+		if(libcrtx_ui_playerprofiles_portraitselection_index[EventPlayer()] < libcrtx_ui_playerprofiles_portraitselection_index_MAX) {
+			libcrtx_ui_playerprofiles_portraitselection_index[EventPlayer()] += 1;
+		}
+		else {
+			libcrtx_ui_playerprofiles_portraitselection_index[EventPlayer()] = 0;
+		}
+	}
+	else if(EventDialogControl() == libcrtx_ui_playerprofiles_portraitselection_btn_index_previous) {
+		if(libcrtx_ui_playerprofiles_portraitselection_index[EventPlayer()] > 0) {
+			libcrtx_ui_playerprofiles_portraitselection_index[EventPlayer()] -= 1;
+		}
+		else {
+			libcrtx_ui_playerprofiles_portraitselection_index[EventPlayer()] = libcrtx_ui_playerprofiles_portraitselection_index_MAX;
+		}		
+	}
+	
+	//populate images:
+	while(i < 6) {
+		libNtve_gf_SetDialogItemImage(libcrtx_ui_playerprofiles_portraitselection_img_portrait[i], libcrtx_ui_profile_portrait[i + (libcrtx_ui_playerprofiles_portraitselection_index[EventPlayer()]*6)], PlayerGroupSingle(EventPlayer()));
+		i += 1;
+	}
+	
+	return true;
+}
+void libcrtx_ui_profile_pic_update (int player)
+{
+	if(PlayerHandle(player) == "1-S2-1-698512") {
+		libNtve_gf_SetDialogItemImage(libcrtx_ui_player_img, "Cortex\\CortexUI\\Assets\\Portraits\\xet.dds", PlayerGroupSingle(EventPlayer()));
 		return;	
 	}
+	else if(PlayerHandle(player) == "1-S2-1-938669") {
+		libNtve_gf_SetDialogItemImage(libcrtx_ui_player_img, "Cortex\\CortexUI\\Assets\\Portraits\\thr.dds", PlayerGroupSingle(EventPlayer()));
+		return;
+	}
 	else if(PlayerHandle(player) == "1-S2-1-359991") {
-		libNtve_gf_SetDialogItemImage(libcrtx_ui_player_img, "Cortex\\CortexUI\\Portraits\\fru.dds", PlayerGroupSingle(EventPlayer()));
+		libNtve_gf_SetDialogItemImage(libcrtx_ui_player_img, "Cortex\\CortexUI\\Assets\\Portraits\\fru.dds", PlayerGroupSingle(EventPlayer()));
 		return;	
 	}
 	else if(PlayerHandle(player) == "1-S2-1-2045584") {
-		libNtve_gf_SetDialogItemImage(libcrtx_ui_player_img, "Cortex\\CortexUI\\Portraits\\azn.dds", PlayerGroupSingle(EventPlayer()));
+		libNtve_gf_SetDialogItemImage(libcrtx_ui_player_img, "Cortex\\CortexUI\\Assets\\Portraits\\azn.dds", PlayerGroupSingle(EventPlayer()));
 		return;	
+	}
+	else if(PlayerHandle(player) == "1-S2-1-1103801") {
+		libNtve_gf_SetDialogItemImage(libcrtx_ui_player_img, "Cortex\\CortexUI\\Assets\\Portraits\\xby.dds", PlayerGroupSingle(EventPlayer()));
+		return;	
+	}
+	else if(BankKeyExists(libcrtx_ui_profile[player], "Profile", "img")) {
+		libNtve_gf_SetDialogItemImage(libcrtx_ui_player_img, libcrtx_ui_profile_portrait[BankValueGetAsInt(libcrtx_ui_profile[player], "Profile", "img")], PlayerGroupSingle(EventPlayer()));
 	}
 	else {
 		libNtve_gf_SetDialogItemImage(libcrtx_ui_player_img, "Assets\\Textures\\ui_chatbaricons_zerg_individual.dds", PlayerGroupSingle(EventPlayer()));
@@ -309,7 +543,7 @@ bool libcrtx_ui_profile_show(bool testConds, bool runActions)
     libNtve_gf_SetDialogItemStyle(libcrtx_ui_player_name, "CreditsLabel", PlayerGroupSingle(EventPlayer()));
 	libNtve_gf_SetDialogItemText(libcrtx_ui_player_handle, StringToText(PlayerHandle(player)), PlayerGroupSingle(EventPlayer()));
     libNtve_gf_SetDialogItemStyle(libcrtx_ui_player_handle, "Header18", PlayerGroupSingle(EventPlayer()));
-	libcrtx_ui_profile_pic_uniques_update(player); //temporary
+	libcrtx_ui_profile_pic_update(player); //temporary
 	
 	//check if player selected is player's prof: allow editing if so
 	if(EventPlayer() == player) {
@@ -325,6 +559,7 @@ bool libcrtx_ui_profile_show(bool testConds, bool runActions)
 		DialogControlSetVisible(libcrtx_ui_profile_charcode_edit, PlayerGroupSingle(EventPlayer()), true);
 		DialogControlSetVisible(libcrtx_ui_profile_likes_edit, PlayerGroupSingle(EventPlayer()), true);
 		DialogControlSetVisible(libcrtx_ui_profile_nfo_edit[0], PlayerGroupSingle(EventPlayer()), true);
+		DialogControlSetVisible(libcrtx_ui_profile_btn_portrait, PlayerGroupSingle(EventPlayer()), true);
 		
 		DialogControlSetVisible(libcrtx_ui_player_charcode, PlayerGroupSingle(EventPlayer()), false);
 		DialogControlSetVisible(libcrtx_ui_player_likes, PlayerGroupSingle(EventPlayer()), false);
@@ -337,6 +572,7 @@ bool libcrtx_ui_profile_show(bool testConds, bool runActions)
 		DialogControlSetVisible(libcrtx_ui_profile_charcode_edit, PlayerGroupSingle(EventPlayer()), false);
 		DialogControlSetVisible(libcrtx_ui_profile_likes_edit, PlayerGroupSingle(EventPlayer()), false);
 		DialogControlSetVisible(libcrtx_ui_profile_nfo_edit[0], PlayerGroupSingle(EventPlayer()), false);
+		DialogControlSetVisible(libcrtx_ui_profile_btn_portrait, PlayerGroupSingle(EventPlayer()), false);
 
 		DialogControlSetVisible(libcrtx_ui_player_charcode, PlayerGroupSingle(EventPlayer()), true);
 		DialogControlSetVisible(libcrtx_ui_player_likes, PlayerGroupSingle(EventPlayer()), true);

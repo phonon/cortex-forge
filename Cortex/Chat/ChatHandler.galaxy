@@ -204,7 +204,7 @@ void libcrtx_chat_parsechat(int lp_player, string lp_message, int lp_recursionLi
 	sub = StringCase(sub, false);
 	
 	//ensure if command "wait", do nothing (already handled)
-	if(StringWord(sub, 1) != "delay")
+	if(StringWord(sub, 1) != "delay" && !libcrtx_command_banned(lp_player, sub) )
 	{
 		t = DataTableGetTrigger( true, "libcrtx_commands_" + sub );
 		if( t )
@@ -219,6 +219,9 @@ void libcrtx_chat_parsechat(int lp_player, string lp_message, int lp_recursionLi
 			// No such command for this iteration
 			libcrtx_chat_write_ooc( lp_player, lp_message );
 		}
+	}
+	else if (libcrtx_command_banned(lp_player, sub)) {
+		libcrtx_write(PlayerGroupSingle(lp_player), "You do not have permissions to use " + sub);
 	}
 }
 

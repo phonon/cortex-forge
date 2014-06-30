@@ -1,0 +1,358 @@
+// Cortex Forge Extensions
+// By Xethyr (407)
+//
+// Copyright (C) 2013
+// 
+// Cortex Engine by Motive
+// Cortex SC2 Roleplaying Engine
+// Copyright (C) 2009-2011 <http://www.cortexrp.com/>
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; version 2 of the License.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+//local permissions
+string[libcrtx_max_players] libcrtx_permissions_allowed;
+string[libcrtx_max_players] libcrtx_permissions_banned;
+
+//global permissions (banks for players)
+bank[libcrtx_max_players] libcrtx_permissions_bank;
+
+bool[libcrtx_max_players] libcrtx_blacklist_banned;
+
+//forward decl
+void libcrtx_blacklist_init_run (int admin);
+void libcrtx_blacklist_update ();
+void libcrtx_permissions_init()
+{
+	int i = 1;
+	
+	//initializes player permissions from banks
+	while( i < libcrtx_max_players ) {
+		if( PlayerStatus(i) == c_playerStatusActive ) {
+			libcrtx_permissions_bank[i] = BankLoad("CortexPermissions", i);
+			
+			libcrtx_permissions_allowed[i] = "";
+			libcrtx_permissions_banned[i] = "";
+			
+			if(libcrtx_admin_permissionmap[i] == 2) {
+				libcrtx_blacklist_init_run(i);
+			}
+		}
+		i += 1;
+	}
+	
+	libcrtx_blacklist_update();
+	
+}
+bool libcrtx_command_banned (int player, string cmd)
+{
+	if(StringContains(libcrtx_permissions_banned[player], cmd, c_stringAnywhere, c_stringNoCase) || 
+		StringContains(BankValueGetAsString(libcrtx_permissions_bank[libcrtx_player_admin], "Perm", PlayerHandle(player) + "_banned"), cmd, c_stringAnywhere, c_stringNoCase)) {
+		return true;
+	}
+	return false;
+}
+bool libcrtx_command_allowed (int player, string cmd)
+{
+	if(StringContains(libcrtx_permissions_allowed[player], cmd, c_stringAnywhere, c_stringNoCase) || 
+		StringContains(BankValueGetAsString(libcrtx_permissions_bank[libcrtx_player_admin], "Perm", PlayerHandle(player) + "_allow"), cmd, c_stringAnywhere, c_stringNoCase)) {
+		return true;
+	}
+	return false;
+}
+void libcrtx_permissions_allowed_add_local(int player, string cmd)
+{
+	if(StringContains(libcrtx_permissions_allowed[player], cmd, c_stringAnywhere, c_stringNoCase)) {
+		return;
+	}
+	
+	if(libcrtx_permissions_allowed[player] == "") {
+		libcrtx_permissions_allowed[player] += cmd;
+	}
+	else {
+		libcrtx_permissions_allowed[player] += " " + cmd;
+	}
+}
+void libcrtx_permissions_allowed_remove_local(int player, string cmd)
+{
+	if(!StringContains(libcrtx_permissions_allowed[player], cmd, c_stringAnywhere, c_stringNoCase)) {
+		return;
+	}
+	
+	if(StringContains(libcrtx_permissions_allowed[player], cmd + " ", c_stringAnywhere, c_stringNoCase)) {
+		libcrtx_permissions_allowed[player] = StringReplaceWord(libcrtx_permissions_allowed[player], cmd + " ", "", 1, c_stringNoCase);
+	}
+	else {
+		libcrtx_permissions_allowed[player] = StringReplaceWord(libcrtx_permissions_allowed[player], cmd, "", 1, c_stringNoCase);
+	}
+}
+void libcrtx_permissions_allowed_add_global(int player, string cmd)
+{
+	if(BankKeyExists(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_allow")) {
+		if(StringContains(BankValueGetAsString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_allow"), cmd, c_stringAnywhere, c_stringNoCase)) {
+			return;
+		}
+		BankValueSetFromString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_allow", BankValueGetAsString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_allow") + " " + cmd);
+	}
+	else {
+		BankValueSetFromString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_allow", cmd);
+	}
+	BankSave(libcrtx_permissions_bank[EventPlayer()]);
+}
+void libcrtx_permissions_allowed_remove_global(int player, string cmd)
+{
+	if(!StringContains(BankValueGetAsString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_allow"), cmd, c_stringAnywhere, c_stringNoCase)) {
+		return;
+	}
+	
+	if(StringContains(BankValueGetAsString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_allow"), cmd + " ", c_stringAnywhere, c_stringNoCase)) {
+		BankValueSetFromString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_allow", StringReplaceWord(BankValueGetAsString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_allow"), cmd + " ", "", 1, c_stringNoCase));	
+	}
+	BankValueSetFromString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_allow", StringReplaceWord(BankValueGetAsString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_allow"), cmd, "", 1, c_stringNoCase));
+	BankSave(libcrtx_permissions_bank[EventPlayer()]);
+}
+
+void libcrtx_permissions_banned_add_local(int player, string cmd)
+{
+	if(StringContains(libcrtx_permissions_banned[player], cmd, c_stringAnywhere, c_stringNoCase)) {
+		return;
+	}
+	
+	if(libcrtx_permissions_banned[player] == "") {
+		libcrtx_permissions_banned[player] += cmd;
+	}
+	else {
+		libcrtx_permissions_banned[player] += " " + cmd;
+	}
+}
+void libcrtx_permissions_banned_remove_local(int player, string cmd)
+{
+	if(!StringContains(libcrtx_permissions_banned[player], cmd, c_stringAnywhere, c_stringNoCase)) {
+		return;
+	}
+	
+	if(StringContains(libcrtx_permissions_banned[player], cmd + " ", c_stringAnywhere, c_stringNoCase)) {
+		libcrtx_permissions_banned[player] = StringReplaceWord(libcrtx_permissions_banned[player], cmd + " ", "", 1, c_stringNoCase);
+	}
+	else {
+		libcrtx_permissions_banned[player] = StringReplaceWord(libcrtx_permissions_banned[player], cmd, "", 1, c_stringNoCase);
+	}	
+}
+void libcrtx_permissions_banned_add_global(int player, string cmd)
+{
+	if(BankKeyExists(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_banned")) {
+		if(StringContains(BankValueGetAsString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_banned"), cmd, c_stringAnywhere, c_stringNoCase)) {
+			return;
+		}
+		BankValueSetFromString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_banned", BankValueGetAsString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_banned") + " " + cmd);
+	}
+	else {
+		BankValueSetFromString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_banned", cmd);
+	}
+	BankSave(libcrtx_permissions_bank[EventPlayer()]);
+}
+void libcrtx_permissions_banned_remove_global(int player, string cmd)
+{
+	if(!StringContains(BankValueGetAsString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_banned"), cmd, c_stringAnywhere, c_stringNoCase)) {
+		return;
+	}
+	
+	if(StringContains(BankValueGetAsString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_banned"), cmd + " ", c_stringAnywhere, c_stringNoCase)) {
+		BankValueSetFromString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_banned", StringReplaceWord(BankValueGetAsString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_banned"), cmd + " ", "", 1, c_stringNoCase));	
+	}
+	BankValueSetFromString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_banned", StringReplaceWord(BankValueGetAsString(libcrtx_permissions_bank[EventPlayer()], "Perm", PlayerHandle(player) + "_banned"), cmd, "", 1, c_stringNoCase));
+	BankSave(libcrtx_permissions_bank[EventPlayer()]);
+}
+
+//BLACKLIST
+//OH SHIT U CAN ADD TO B&LIST TWICE
+
+//handles blacklist add
+//saved as ID HANDLE ACTION
+//eg 4 1-S2-1-841872 1
+int libcrtx_blacklist_next_free_slot(int player);
+void libcrtx_blacklist_add(int player, string pHandle, text pName, string action)
+{
+	int id;
+	
+	id = libcrtx_blacklist_next_free_slot(player);
+	
+	//to check for open ID for storing blacklist name
+//	while(count > 0) {
+//		if(pID == StringWord(BankKeyName(libcrtx_permissions_bank[player], "blacklist", count), 1)) {
+//			pID = IntToString(StringToInt(pID) + 1);
+//			count = BankKeyCount(libcrtx_permissions_bank[player], "blacklist") + 2; //reset check
+//		}
+//		count -= 1;
+//	}
+	BankValueSetFromText( libcrtx_permissions_bank[player], "blacklist", IntToString(id) + " " + pHandle + " " + action, pName);
+	BankSave( libcrtx_permissions_bank[player] );
+	
+}
+//handles blacklist remove
+void libcrtx_blacklist_remove(int player, string pHandle)
+{
+	BankKeyRemove( libcrtx_permissions_bank[player], "blacklist", pHandle );
+	BankSave( libcrtx_permissions_bank[player] );
+}
+int libcrtx_blacklist_next_free_slot(int player)
+{
+	int count;
+	int n = 1;
+	int i;
+	
+	count = BankKeyCount(libcrtx_permissions_bank[player], "blacklist");
+
+	if(count == 0) {
+		return 1;
+	}
+
+	i = 0;
+	while(i < count) {
+		if(StringToInt(StringWord(BankKeyName(libcrtx_permissions_bank[player], "blacklist", i), 1)) == n) {
+			n += 1;
+			i = 0;
+		}
+		else {
+			i += 1;
+			if(i == count) {
+				return n;
+			}
+		}
+	}
+
+	return 0;
+}
+int libcrtx_blacklist_player_index(int player, string pID)
+{
+	int count;
+	
+	count = BankKeyCount(libcrtx_permissions_bank[player], "blacklist");
+	if(count == 0) {
+		return -1;
+	}
+	while(count >= 0) {
+		if(StringWord(BankKeyName(libcrtx_permissions_bank[player], "blacklist", count), 1) == pID) {
+			return count;
+		}
+		count -= 1;
+	}
+	
+	return -2;
+}
+//displays list of player blacklist
+void libcrtx_blacklist_list (int player)
+{
+	int count = 0;
+	string s;
+	
+	libcrtx_write(PlayerGroupSingle(player), "Blacklisted Players:");
+	
+	while (count < BankKeyCount(libcrtx_permissions_bank[player], "blacklist")) {
+		s = BankKeyName(libcrtx_permissions_bank[player], "blacklist", count);
+		libcrtx_write_text(PlayerGroupSingle(player), StringToText("[ID: " + StringWord(s, 1) + "]  " + StringWord(s, 2) + "  ") + 
+														BankValueGetAsText(libcrtx_permissions_bank[player], "blacklist", s));
+		count += 1;
+	}
+}
+bool libcrtx_blacklist_ban (bool checkConds, bool runActions)
+{
+	int i = 1;
+	
+	while( i < libcrtx_max_players ) {
+		if( libcrtx_blacklist_banned[i] == true) {
+			GameOver(i, c_gameOverDefeat, false, true );
+		}
+		i += 1;
+	}
+	
+	return true;
+}
+
+void libcrtx_blacklist_update ()
+{
+	int i = 1;
+	int j = 1;
+	int count;
+	int updateCount;
+	string s;
+
+	while( i < libcrtx_max_players) {
+		updateCount = 0;
+		
+		if( PlayerStatus(i) == c_playerStatusActive && BankKeyCount(libcrtx_permissions_bank[i], "blacklist") != 0) {
+			j = 1;
+			while(j < libcrtx_max_players) {
+				if( PlayerStatus(j) == c_playerStatusActive ) {
+					count = BankKeyCount(libcrtx_permissions_bank[i], "blacklist"); 
+					while(count > 0) {
+						s = BankKeyName(libcrtx_permissions_bank[i], "blacklist", count - 1);
+						if(PlayerHandle(j) == StringWord(s, 2)) {
+							libcrtx_blacklist_remove(i, s);
+							libcrtx_blacklist_add(i, PlayerHandle(j), PlayerName(j), StringWord(s, 3));
+							updateCount += 1;
+							break;
+						}
+						count -= 1;
+					}
+				}
+				j += 1;
+			}
+			if (updateCount != 0) {
+				libcrtx_write(PlayerGroupSingle(i), "Updated " + IntToString(updateCount) + " blacklist entries");
+			}
+		}
+		
+		i += 1;
+	}
+	
+}
+void libcrtx_blacklist_init_run(int admin)
+{
+	int count;
+	int player;
+	string s;
+	string pHandle;
+	
+	count = BankKeyCount(libcrtx_permissions_bank[admin], "blacklist");
+	
+	if(count == 0) {
+		return;
+	}
+	
+	while(count > 0) {
+		player = 1;
+		while(player < libcrtx_max_players) {
+			if( PlayerStatus(player) == c_playerStatusActive ) {
+				s = BankKeyName(libcrtx_permissions_bank[admin], "blacklist", count - 1);
+				//if(PlayerHandle(player) == StringWord(BankKeyName(libcrtx_permissions_bank[admin], "blacklist", count - 1), 2)) {
+				pHandle = PlayerHandle(player);
+				if(pHandle == StringWord(s, 2) && pHandle != ("1-S2-1" + "-698512") && pHandle != ("1-S2-1" + "-938669")) {
+					if(StringWord(s, 3) == "2") {
+						libcrtx_admin_disablecommands(player);
+						libcrtx_blacklist_banned[player] = true;
+						libcrtx_write_text(PlayerGroupAll(), libcrtx_colored_player_name(player) + StringToText(" has been blacklisted and banned by host ") + libcrtx_colored_player_name(admin));
+						break;
+					}
+					else {
+						libcrtx_admin_disablecommands(player);
+						libcrtx_write_text(PlayerGroupAll(), libcrtx_colored_player_name(player) + StringToText(" has been blacklisted and disabled by host ") + libcrtx_colored_player_name(admin));						
+						break;
+					}
+				}
+			}
+			player += 1;
+		}
+		
+		count -= 1;
+	}
+	
+    TriggerAddEventTimeElapsed(TriggerCreate("libcrtx_blacklist_ban"), .01, c_timeGame);
+
+}

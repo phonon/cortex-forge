@@ -27,6 +27,10 @@ bool libcrtx_event_playerleaves(bool runConditions, bool runActions)
 				// Promote him and we're done.
 				libcrtx_admin_setpermission(i, libcrtx_admin_permissionlevel_admin);
 				libcrtx_write_text(PlayerGroupAll(), libcrtx_colored_player_name(i) + StringToText(" has been promoted to admin by ") + libcrtx_colored_player_name(EventPlayer()));
+				libcrtx_player_admin = i;
+				
+				//set leaving admin permissions to normal
+				libcrtx_admin_setpermission(EventPlayer(), libcrtx_admin_permissionlevel_none);
 				return true;
 			}
 			i += 1;
@@ -44,6 +48,10 @@ bool libcrtx_event_playerleaves(bool runConditions, bool runActions)
 		i = PlayerGroupPlayer(actives, RandomInt(1, PlayerGroupCount(actives)));
 		libcrtx_admin_setpermission(i, libcrtx_admin_permissionlevel_admin);
 		libcrtx_write_text(PlayerGroupAll(), libcrtx_colored_player_name(i) + StringToText(" has been promoted to admin by ") + libcrtx_colored_player_name(EventPlayer()));
+		libcrtx_player_admin = i;
+	
+		//set leaving admin permissions to normal
+		libcrtx_admin_setpermission(EventPlayer(), libcrtx_admin_permissionlevel_none);
 		return true;
 	}
 	

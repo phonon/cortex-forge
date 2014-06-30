@@ -1,4 +1,29 @@
-﻿[8/5/2013] Forge Extensions v1.0a (Hotfix)
+﻿[9/13/2013]Forge Extensions v1.1
+GENERAL:
+• Fixed the game start lag (caused by action PortraitWaitForLoad in the model previewer UI)
+• Added permissions system for player-specific banning or allowing commands (allows overriding secure and mod/admin restrictions)
+• Added UI panel for permissions and blacklist
+• Added portrait selection to Player Profiles UI panel
+• Gamesetups now load structures with proper facing angle (@face no longer needed to be cached)
+• @rotate is now cached
+• Clan tags are now displayed when players type in OOC
+• Admins and moderators can now use !remove on themselves
+• Admins are demoted to user status when they leave
+• Can no longer use !ban, !disable, !enable, !disable, !promote, !demote on non-players (Computer, Hostile, Neutral,...)
+
+ADDED COMMANDS:
+• @attach+
+(syntax: @attach+ {-m} [Actor/Model] [Point_#] [offX] [offY] [offZ] {{-r} [rotX] [rotY] [rotZ]} [SOp1] [SOp2] [SOp3]...)
+• permissions [player color] [command] ["allow"||"ban"||"remove"] ["global"]
+• replacemodel [model_source] [model_target]
+• sound [sound name] [volume (0 < vol < 100)] #[region name]
+  sound stop (for moderators and admins)
+• !soundtrack [soundtrack name] ["ambience"|"music"]
+  !soundtrack stop ["ambience"|"music"]
+• !weather rain|snow|hail|fog|mist|sandstorm|sun [amount (default: 25)] [HDR] #[region]
+  !weather off #[region]
+
+[8/5/2013] Forge Extensions v1.0a (Hotfix)
 • Fixed gamesetups saving and loading "spawner" unit
 • Dynamic unit squad movement fix
 
@@ -28,7 +53,7 @@ MODIFIED COMMANDS:
 • "repeat" requires secure to be off or moderator+ permissions
 
 
-=====================PRE PUBLIC RELEASE:=========================================
+=====================PRE-PUBLIC RELEASE:=========================================
 
 [7/9/2013] Forge Extensions v.2
 • Added all commands to "Commands" UI frame

@@ -117,6 +117,7 @@ bool libcrtx_command_scale(bool testConds, bool runActions) {
 	while(!UnitGroupLoopDone())
 	{
 		UnitSetScale( UnitGroupLoopCurrent(), scale, scaleY, scaleZ );
+		//ActorSend(libHots_gf_ActorForUnit(UnitGroupLoopCurrent(), 1), "SetScale " + FixedToString(scale, 3) + "," + FixedToString(scaleY, 3) + "," + FixedToString(scaleZ, 3));
 		libcrtx_unitCache_update(UnitGroupLoopCurrent(), "@scale", libcrtx_chat_get_parse_line(EventPlayer()));
 		UnitGroupLoopStep();
 	}
@@ -749,18 +750,15 @@ bool libcrtx_command_face(bool testConds, bool runActions) {
 		// face spawner
 		if( nextParam == "" ) {
 			libNtve_gf_MakeUnitFacePoint( UnitGroupLoopCurrent(), libcrtx_spawn_position(), 0.0 );
-			libcrtx_unitCache_update(UnitGroupLoopCurrent(), "@face", libcrtx_chat_get_parse_line(EventPlayer()));
 		}
 		else if(!absolute) {
 			UnitSetFacing(UnitGroupLoopCurrent(), UnitGetFacing(UnitGroupLoopCurrent()) + angleToFace, 0.0);
 			libcrtx_debug("making face " + FixedToString(UnitGetFacing(UnitGroupLoopCurrent()) + angleToFace, c_fixedPrecisionAny));
-			libcrtx_unitCache_update(UnitGroupLoopCurrent(), "@face", libcrtx_chat_get_parse_line(EventPlayer()));
 		}
 		else {
 			// face angle
 			UnitSetFacing( UnitGroupLoopCurrent(), angleToFace, 0.0 );
 			libcrtx_debug("making face " + FixedToString(angleToFace, c_fixedPrecisionAny));
-			libcrtx_unitCache_update(UnitGroupLoopCurrent(), "@face", libcrtx_chat_get_parse_line(EventPlayer()));	
 		}
 		UnitGroupLoopStep();
 	}
@@ -2382,6 +2380,7 @@ bool libcrtx_command_rotate(bool testConds, bool runActions)
 	UnitGroupLoopBegin(g);
 	while(!UnitGroupLoopDone()) {
 		ActorSend( libNtve_gf_MainActorofUnit(UnitGroupLoopCurrent()), libNtve_gf_SetRotation(forwardX, forwardY, forwardZ, upX, upY, upZ) );
+		libcrtx_unitCache_update(UnitGroupLoopCurrent(), "@rotate", libcrtx_chat_get_parse_line(EventPlayer()));
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();
@@ -2729,5 +2728,198 @@ bool libcrtx_command_subtitle(bool testConds, bool runActions)
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();
+	return true;
+}
+bool libcrtx_command_attach_plus(bool testConds, bool runActions) //syntax: @attach+ {-m} [Actor/Model] [Point_#] [offX] [offY] [offZ] {{-r} [rotX] [rotY] [rotZ]} [SOp1] [SOp2] [SOp3]...
+{
+	unitgroup g = libcrtx_chat_get_context(EventPlayer());
+	int parse_offset = 0;
+	int x;
+	string actr = "{}";
+	string model = "{}";
+	string scope;
+	string apoint;
+	string apoint_index = "";
+	string offset = null;
+	string rotation = null;
+	string SOp;
+	string siteops = "";
+	string actormsg;
+	string attachPoints = "Origin Center Damage Engine Hardpoint Head Hit Overhead RallyPoint StatusBar Left Right Target Turret TurretY TurretZ Upgrade Weapon WeaponLeft WeaponRight";
+	
+	
+	if(StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 2) == "") {
+		return true;
+	}
+	else if(StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 2) == "-m") {
+		model = StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 3);
+		parse_offset += 1;
+	}
+	else {
+		actr = StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 2);
+	}
+	
+	if( actr == "listpoints" || model =="listpoints" ) {
+		libcrtx_write(PlayerGroupSingle(EventPlayer()), "<c val=\"00ff00\">Available attach points</c>:<n/>" + attachPoints);
+		return true;
+	}
+	
+	//Check actr/model is valid
+	if(StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 2) == "-m") { //do catalog check for model
+		model = libcrtx_param_catalog(c_gameCatalogModel, model);
+		if(model == null)
+		{
+			libcrtx_write(PlayerGroupSingle(EventPlayer()), "<c val=\"ff0000\">Unable to attach actor model</c>: No such model exists.");
+			return true;
+		}
+	}
+	else { //do catalog check for actor
+		actr = libcrtx_param_catalog(c_gameCatalogActor, actr);
+		if(actr == null)
+		{
+			libcrtx_write(PlayerGroupSingle(EventPlayer()), "<c val=\"ff0000\">Unable to attach actor</c>: No such actor exists.");
+			return true;
+		}
+		scope = CatalogEntryScope( c_gameCatalogActor, actr );
+		if( scope == "CActorEventMacro" || scope == "CActorSound" ) {
+			libcrtx_write(PlayerGroupSingle(EventPlayer()), "<c val=\"ff0000\">Unable to attach actor</c>: Invalid actor.");
+			return true;
+		}
+	}
+	
+	//MODIFY ATTACH POINT STRING:
+	//get apoint
+	apoint = StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 3 + parse_offset);
+	if( apoint == "" ) { 
+		apoint = "Origin";
+	}
+	if(StringContains(apoint, "_", c_stringAnywhere, c_stringNoCase)) {
+		x = StringLength(apoint);
+		while(StringSub(apoint, x, x) != "_") {
+			x -= 1;
+		}
+		apoint_index = " " + StringSub(apoint, x+1, StringLength(apoint));
+		apoint = StringSub(apoint, 1, x-1);
+	}
+	//check apoint is valid
+	x = 1;
+	while( StringWord(attachPoints, x) != "" ) {
+		if( StringEqual(apoint, StringWord(attachPoints, x), false) ) {
+			apoint = StringWord(attachPoints, x);
+			x = -1;
+			break;
+		}
+		x = x + 1;
+	}
+	
+	if( x != -1 ) {
+		apoint = "Origin";
+		libcrtx_write(PlayerGroupSingle(EventPlayer()), "<c val=\"ff0000\">Warning</c>: Invalid attachment point, defaulting to Origin.<n/>You can obtain a list of attachment points by typing <c val=\"00ff00\">@attach listpoints</c>.");
+	}
+	
+	//remake the apoint string
+	apoint = "{" + apoint + apoint_index + "}";
+	
+
+	//check for offset (if specified)
+	if(StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 4 + parse_offset) != "" 
+		&& !StringContains(StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 4 + parse_offset), "SOp", c_stringAnywhere, c_stringNoCase)
+		&& StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 4 + parse_offset) != "-r") {
+		//libcrtx_write_success("ENTERED OFFSET");
+		x = 0;
+		offset = "";
+		while(x < 3) {
+			if(StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 4 + parse_offset + x) != "") {
+				offset += "," + FixedToString(StringToFixed(StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 4 + parse_offset + x)), c_fixedPrecisionAny);
+			}
+			else {
+				offset += ",0";
+			}
+			
+			x += 1;
+		}
+		offset = StringSub(offset, 2, StringLength(offset));
+		parse_offset += 3;
+	}
+	//check for local rotation (if specified)
+	if(StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 4 + parse_offset) == "-r") {
+		//libcrtx_write_success("ENTERED ROTATION");
+		parse_offset += 1;
+		x = 0;
+		rotation = "";
+		if(offset == null) {
+			offset = "0,0,0";
+		}
+		while(x < 3) {
+			if(StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 4 + parse_offset + x) != "") {
+				rotation += "," + FixedToString(StringToFixed(StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 4 + parse_offset + x)), c_fixedPrecisionAny);
+			}
+			else {
+				rotation += ",0";
+			}
+			
+			x += 1;
+		}
+		rotation = StringSub(rotation, 2, StringLength(rotation));
+		parse_offset += 3;
+	}
+	
+
+	//keep checking for specified site ops until reached end of string
+	if(StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 4 + parse_offset) != "") {
+		//libcrtx_write_success("ENTERED SOP");
+		x = 0;
+		while(StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 4 + parse_offset + x) != "") {
+			//libcrtx_write_success("ENTERED SOP: [" + IntToString(4 + parse_offset + x) + "]: " + StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 4 + parse_offset + x));
+			if(StringContains(StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 4 + parse_offset + x), "SOp", c_stringAnywhere, c_stringNoCase)) {
+				//libcrtx_write_success("ENTERED SOP ADD: [" + IntToString(4 + parse_offset + x) + "]: " + StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 4 + parse_offset + x));
+				SOp = StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 4 + parse_offset + x);
+				SOp = libcrtx_param_catalog(c_gameCatalogActor, SOp);
+				if(SOp == null)
+				{
+					libcrtx_write(PlayerGroupSingle(EventPlayer()), "<c val=\"ff0000\">Warning: Encounted invalid or unknown Site Op: Skipping");
+				}
+				else {
+					siteops = siteops + " " + SOp;
+				}
+			}
+			x += 1;
+		}
+		if(siteops != "") {
+			if(offset == null) {
+				offset = "0,0,0";
+			}
+			if(rotation == null) {
+				rotation = "{}";
+			}
+			siteops = StringSub(siteops, 2, StringLength(siteops));
+			siteops = "{" + siteops + "}";
+		}
+	}
+	
+	//FINALLY create the actor msg (before send)
+	actormsg = "AttachModelOffset " + actr + " " + model + " " + apoint;
+	if(offset != null) {
+		actormsg = actormsg + " " + offset;
+	}
+	if(rotation != null) {
+		actormsg = actormsg + " " + rotation;
+	}
+	if(siteops != "") {
+		actormsg = actormsg + " " + siteops;
+	}
+	
+	//libcrtx_write_success("TEST: ACTORMSG = " + "\"" + actormsg + "\"");
+	
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone())
+	{
+		ActorSend(libNtve_gf_MainActorofUnit(UnitGroupLoopCurrent()), actormsg);
+		//libHots_gf_StoreActorForUnit(UnitGroupLoopCurrent(), 1, libNtve_gf_ActorLastCreatedSend());
+		libcrtx_unitCache_update(UnitGroupLoopCurrent(), "@attach", libcrtx_chat_get_parse_line(EventPlayer()));
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+	
 	return true;
 }

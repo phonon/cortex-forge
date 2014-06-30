@@ -179,7 +179,7 @@ text libcrtx_color_text(text colorme, color c)
 // Returns a player's name colored to match his current player color.
 text libcrtx_colored_player_name(int player)
 {
-	text pName = PlayerName(player);
+	text pName = StringToText("<d Player=\"" + IntToString(player) + "\" GameValue=\"PlayerClanTag\"/> ") + PlayerName(player);
 	if( PlayerStatus(player) == c_playerStatusUnused ) {
 		pName = StringToText("Unnamed");
 	}

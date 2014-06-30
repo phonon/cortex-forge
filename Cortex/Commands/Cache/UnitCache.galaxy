@@ -398,7 +398,7 @@ void libcrtx_unitCache_update(unit subject, string crtx_command, string user_com
 		libcrtx_unitCache_update_overwrite(subject, unit_id, crtx_command, user_command);
 		return;
 	}
-	else if(crtx_command == "@face") {
+	else if(crtx_command == "@rotate") {
 		libcrtx_unitCache_update_overwrite(subject, unit_id, crtx_command, user_command);
 		return;
 	}
