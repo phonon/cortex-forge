@@ -1,0 +1,43 @@
+// Cortex Forge Extensions
+// By Xethyr (407)
+//
+// Copyright (C) 2013
+//
+// Cortex Engine by Motive
+// Cortex SC2 Roleplaying Engine
+// Copyright (C) 2009-2011 <http://www.cortexrp.com/>
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; version 2 of the License.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+include "Cortex/ForgeRPG/ForgeRPGDefinitions.galaxy"
+
+void fRPG_init()
+{
+	fRPG_bank_init();
+
+}
+//USE THIS GALAXY FILE TO HANDLE ALL INTERACTIONS IN FORGE RPG
+//use for casting abilities, creating fx, etc
+//for using items
+//use ForgeRPGCombat.galaxy for combat handling, but deal with exp and attributes in this file
+
+//For handling picking up items, get the unit's custom value 1
+//the associated number + . + the property will be its location
+//on data table
+//e.x. 3.name, 69.description, 420.commands
+
+//because actors can be stored on data table, the "reversal" of commands for dequipment
+//can destroy attachments made by item YESSSS
+
+//dequipment scans commands and applies the negative to a command
+
+//for item commands/visual use:
+//string libcrtx_chat_variablereplace( int player, string message )
+//void libcrtx_chat_parsechat(int lp_player, string lp_message, int lp_recursionLimit)

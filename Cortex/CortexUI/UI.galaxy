@@ -1,0 +1,54 @@
+// Cortex Forge Extensions
+// By Xethyr (407)
+//
+// Copyright (C) 2013
+//
+// Cortex Engine by Motive
+// Cortex SC2 Roleplaying Engine
+// Copyright (C) 2009-2011 <http://www.cortexrp.com/>
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; version 2 of the License.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+include "Cortex/CortexUI/ui_About.galaxy"
+include "Cortex/CortexUI/ui_PlayerProfiles.galaxy"
+include "Cortex/CortexUI/ui_Commands.galaxy"
+include "Cortex/CortexUI/ui_Catalogs.galaxy"
+include "Cortex/CortexUI/ui_Previewer.galaxy"
+include "Cortex/CortexUI/ui_Aliases.galaxy"
+include "Cortex/CortexUI/ui_CamsRegs.galaxy"
+include "Cortex/CortexUI/ui_fRPG.galaxy"
+include "Cortex/CortexUI/ui_BlistPerms.galaxy"
+include "Cortex/CortexUI/ui_Toolbar.galaxy"
+
+void libcrtx_ui_init()
+{
+	libcrtx_ui_playerprofiles_init();
+	libcrtx_ui_playerprofiles_events_init();
+	libcrtx_ui_commands_init();
+	libcrtx_ui_commands_events_init();
+	libcrtx_ui_catalogs_init();
+	libcrtx_ui_catalogs_events_init();
+	libcrtx_ui_previewer_init();
+	libcrtx_ui_previewer_events_init();
+	libcrtx_ui_aliases_init();
+	libcrtx_ui_aliases_events_init();
+	libcrtx_ui_camsregs_init();
+	libcrtx_ui_camsregs_events_init();
+	libcrtx_ui_fRPG_init();
+	libcrtx_ui_fRPG_events_init();
+	libcrtx_ui_blistperms_init();
+	libcrtx_ui_blistperms_events_init();
+	libcrtx_ui_about_init();
+	
+	libcrtx_ui_toolbar_init();
+	libcrtx_ui_toolbar_events_init();
+	
+
+}

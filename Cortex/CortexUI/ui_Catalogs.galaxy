@@ -1,0 +1,198 @@
+// Cortex Forge Extensions
+// By Xethyr (407)
+//
+// Copyright (C) 2013
+//
+// Cortex Engine by Motive
+// Cortex SC2 Roleplaying Engine
+// Copyright (C) 2009-2011 <http://www.cortexrp.com/>
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; version 2 of the License.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+int libcrtx_ui_catalogs;
+
+int libcrtx_ui_catalogs_list;
+int libcrtx_ui_catalogs_list_entries;
+int libcrtx_ui_catalogs_list_filtered;
+
+int libcrtx_ui_catalogs_filter;
+int libcrtx_ui_catalogs_btn_filter;
+
+int[15] libcrtx_ui_catalogs_types;
+int[libcrtx_max_players] libcrtx_ui_catalog_selected;
+
+void libcrtx_ui_catalogs_init()
+{
+	int frame1;
+	int frame2;
+	int frame3;
+	int i;
+	string catalogs;
+	
+	
+	DialogCreate(850, 500, c_anchorLeft, 120, -150, true);
+	libcrtx_ui_catalogs = DialogLastCreated();
+	
+	//frames for search
+	DialogControlCreate(libcrtx_ui_catalogs, c_triggerControlTypePortrait);
+    DialogControlSetSize(DialogControlLastCreated(), PlayerGroupAll(), 180, 350);
+    DialogControlSetPosition(DialogControlLastCreated(), PlayerGroupAll(), c_anchorBottomLeft, 0, 0);
+    libNtve_gf_SetDialogItemRenderType(DialogControlLastCreated(), c_triggerRenderTypeLDR, PlayerGroupAll());
+	frame1 = DialogControlLastCreated();
+	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_catalogs, 180, 50, c_anchorBottomLeft, 50, 35, StringToText("<s val=\"ChatDisplay\">Catalogs:</s>"), ColorWithAlpha(0,0,0,0), false, 0.0);
+    DialogControlSetPositionRelative(DialogControlLastCreated(), PlayerGroupAll(), c_anchorTop, frame1, c_anchorTop, 10, 15);
+	libNtve_gf_SetDialogItemRenderPriority(DialogControlLastCreated(), 1024, PlayerGroupAll());
+	
+	DialogControlCreate(libcrtx_ui_catalogs, c_triggerControlTypePortrait);
+    DialogControlSetSize(DialogControlLastCreated(), PlayerGroupAll(), 310, 350);
+    libNtve_gf_SetDialogItemRenderType(DialogControlLastCreated(), c_triggerRenderTypeLDR, PlayerGroupAll());
+	frame2 = DialogControlLastCreated();
+    DialogControlSetPositionRelative(frame2, PlayerGroupAll(), c_anchorLeft, frame1, c_anchorRight, 25, 0);	
+	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_catalogs, 265, 50, c_anchorBottomLeft, 50, 35, StringToText("<s val=\"ChatDisplay\">Entries:</s>"), ColorWithAlpha(0,0,0,0), false, 0.0);
+    DialogControlSetPositionRelative(DialogControlLastCreated(), PlayerGroupAll(), c_anchorTop, frame2, c_anchorTop, 10, 10);
+	libNtve_gf_SetDialogItemRenderPriority(DialogControlLastCreated(), 1024, PlayerGroupAll());
+	
+	DialogControlCreate(libcrtx_ui_catalogs, c_triggerControlTypePortrait);
+    DialogControlSetSize(DialogControlLastCreated(), PlayerGroupAll(), 310, 350);
+    DialogControlSetPosition(DialogControlLastCreated(), PlayerGroupAll(), c_anchorBottomRight, 0, 0);
+    libNtve_gf_SetDialogItemRenderType(DialogControlLastCreated(), c_triggerRenderTypeLDR, PlayerGroupAll());
+	frame3 = DialogControlLastCreated();
+    DialogControlSetPositionRelative(frame3, PlayerGroupAll(), c_anchorLeft, frame2, c_anchorRight, 25, 0);
+	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_catalogs, 265, 50, c_anchorBottomLeft, 50, 35, StringToText("<s val=\"ChatDisplay\">Filtered:</s>"), ColorWithAlpha(0,0,0,0), false, 0.0);
+    DialogControlSetPositionRelative(DialogControlLastCreated(), PlayerGroupAll(), c_anchorTop, frame3, c_anchorTop, 10, 10);
+	libNtve_gf_SetDialogItemRenderPriority(DialogControlLastCreated(), 1024, PlayerGroupAll());
+
+	//catalogs list
+	DialogControlCreate(libcrtx_ui_catalogs, c_triggerControlTypeListBox);
+    libcrtx_ui_catalogs_list = DialogControlLastCreated();
+    DialogControlSetPositionRelative(libcrtx_ui_catalogs_list, PlayerGroupAll(), c_anchorCenter, frame1, c_anchorCenter, 0, 15);
+    DialogControlSetSize(libcrtx_ui_catalogs_list, PlayerGroupAll(), 170, 290);
+	libNtve_gf_SetDialogItemRenderPriority(libcrtx_ui_catalogs_list, 1024, PlayerGroupAll());
+	//entries list
+	DialogControlCreate(libcrtx_ui_catalogs, c_triggerControlTypeListBox);
+    libcrtx_ui_catalogs_list_entries = DialogControlLastCreated();
+    DialogControlSetPositionRelative(libcrtx_ui_catalogs_list_entries, PlayerGroupAll(), c_anchorCenter, frame2, c_anchorCenter, 0, 15);
+    DialogControlSetSize(libcrtx_ui_catalogs_list_entries, PlayerGroupAll(), 260, 290);
+	libNtve_gf_SetDialogItemRenderPriority(libcrtx_ui_catalogs_list_entries, 1024, PlayerGroupAll());
+	//filtered entries
+	DialogControlCreate(libcrtx_ui_catalogs, c_triggerControlTypeListBox);
+    libcrtx_ui_catalogs_list_filtered = DialogControlLastCreated();
+    DialogControlSetPositionRelative(libcrtx_ui_catalogs_list_filtered, PlayerGroupAll(), c_anchorCenter, frame3, c_anchorCenter, 0, 15);
+    DialogControlSetSize(libcrtx_ui_catalogs_list_filtered, PlayerGroupAll(), 260, 290);
+	libNtve_gf_SetDialogItemRenderPriority(libcrtx_ui_catalogs_list_filtered, 1024, PlayerGroupAll());
+	
+	//filter box and button
+	DialogControlCreate(libcrtx_ui_catalogs, c_triggerControlTypeEditBox);
+    libcrtx_ui_catalogs_filter = DialogControlLastCreated();
+	DialogControlSetPosition(libcrtx_ui_catalogs_filter, PlayerGroupAll(), c_anchorTopLeft, 50, 50);
+    DialogControlSetSize(libcrtx_ui_catalogs_filter, PlayerGroupAll(), 625, 50);
+	libNtve_gf_SetDialogItemRenderPriority(libcrtx_ui_catalogs_filter, 1024, PlayerGroupAll());
+	
+	libNtve_gf_CreateDialogItemButton(libcrtx_ui_catalogs, 100, 50, c_anchorTopLeft, 680, 50, StringToText(""), StringToText("Filter"), "");
+    libcrtx_ui_catalogs_btn_filter = DialogControlLastCreated();
+	libNtve_gf_SetDialogItemRenderPriority(libcrtx_ui_catalogs_btn_filter, 1024, PlayerGroupAll());
+	
+	i = 1;
+	libcrtx_ui_catalogs_types[i] = c_gameCatalogAbil;
+	i += 1;
+	libcrtx_ui_catalogs_types[i] = c_gameCatalogActor;
+	i += 1;
+	libcrtx_ui_catalogs_types[i] = c_gameCatalogBehavior;
+	i += 1;
+	libcrtx_ui_catalogs_types[i] = c_gameCatalogEffect;
+	i += 1;
+	libcrtx_ui_catalogs_types[i] = c_gameCatalogFootprint;
+	i += 1;
+	libcrtx_ui_catalogs_types[i] = c_gameCatalogLight;
+	i += 1;
+	libcrtx_ui_catalogs_types[i] = c_gameCatalogModel;
+	i += 1;
+	libcrtx_ui_catalogs_types[i] = c_gameCatalogSound;
+	i += 1;
+	libcrtx_ui_catalogs_types[i] = c_gameCatalogTexture;
+	i += 1;
+	libcrtx_ui_catalogs_types[i] = c_gameCatalogTurret;
+	i += 1;
+	libcrtx_ui_catalogs_types[i] = c_gameCatalogUnit;
+	i += 1;
+	libcrtx_ui_catalogs_types[i] = c_gameCatalogUpgrade;
+	i += 1;
+	libcrtx_ui_catalogs_types[i] = c_gameCatalogValidator;
+	i += 1;
+	libcrtx_ui_catalogs_types[i] = c_gameCatalogWeapon;
+
+	//load catalogs
+	i = 1;
+	catalogs = "Abilities Actors Behaviors Effects Footprints Lights Models Sounds Textures Turrets Units Upgrades Validators Weapons";
+	while(i < 15) {
+		DialogControlAddItem(libcrtx_ui_catalogs_list, PlayerGroupAll(), StringToText(StringWord(catalogs, i)));
+		i += 1;
+	}
+}
+void libcrtx_ui_catalogs_events_init()
+{
+	TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_catalog_populate"), c_playerAny, libcrtx_ui_catalogs_list, c_triggerControlEventTypeSelectionChanged);
+    TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_catalog_filter"), c_playerAny, libcrtx_ui_catalogs_btn_filter, c_triggerControlEventTypeClick);
+
+
+
+}
+bool libcrtx_ui_catalog_populate(bool testConds, bool runActions)
+{
+	int i = 1;
+	int count;
+	int catalog;
+
+		
+	catalog = libcrtx_ui_catalogs_types[DialogControlGetSelectedItem(libcrtx_ui_catalogs_list, EventPlayer())];
+	count = CatalogEntryCount(catalog);
+	
+	DialogControlRemoveAllItems(libcrtx_ui_catalogs_list_entries, PlayerGroupSingle(EventPlayer()));
+	DialogControlRemoveAllItems(libcrtx_ui_catalogs_list_filtered, PlayerGroupSingle(EventPlayer()));
+	
+	while(i < count) {
+		DialogControlAddItem(libcrtx_ui_catalogs_list_entries, PlayerGroupSingle(EventPlayer()), StringToText(CatalogEntryGet(catalog, i)));
+		i += 1;
+	}
+
+	libcrtx_ui_catalog_selected[EventPlayer()] = catalog;
+	
+	return true;
+}
+bool libcrtx_ui_catalog_filter(bool testConds, bool runActions)
+{
+	string filter;
+	int i = 1;
+	int count;
+	
+	if(libcrtx_ui_catalog_selected[EventPlayer()] == 0) { //player has not yet selected a catalog
+		return true;
+	}
+	
+	if(libNtve_gf_DialogItemEditValue(libcrtx_ui_catalogs_filter, EventPlayer()) != "") {
+		filter = libNtve_gf_DialogItemEditValue(libcrtx_ui_catalogs_filter, EventPlayer());
+	}
+	else {
+		DialogControlRemoveAllItems(libcrtx_ui_catalogs_list_filtered, PlayerGroupSingle(EventPlayer()));
+		return true;
+	}
+
+	DialogControlRemoveAllItems(libcrtx_ui_catalogs_list_filtered, PlayerGroupSingle(EventPlayer()));
+	
+	count = CatalogEntryCount(libcrtx_ui_catalog_selected[EventPlayer()]);
+	while(i < count) {
+		if(StringContains(CatalogEntryGet(libcrtx_ui_catalog_selected[EventPlayer()], i), filter, c_stringAnywhere, false)) {
+			DialogControlAddItem(libcrtx_ui_catalogs_list_filtered, PlayerGroupSingle(EventPlayer()), StringToText(CatalogEntryGet(libcrtx_ui_catalog_selected[EventPlayer()], i)));
+		}
+		i += 1;
+	}
+	
+	return true;
+}

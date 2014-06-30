@@ -1,0 +1,126 @@
+// Cortex Forge Extensions
+// By Xethyr (407)
+//
+// Copyright (C) 2013
+//
+// Cortex Engine by Motive
+// Cortex SC2 Roleplaying Engine
+// Copyright (C) 2009-2011 <http://www.cortexrp.com/>
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; version 2 of the License.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+//UNIT FORMATIONS, AKA GEOMETRY EXERCISE 101
+
+//'s' is spacing
+
+int gv_squadCount = 1;
+
+void libcrtx_unitgroup_form_rect(unitgroup g, int row, int col, fixed s, fixed angle, bool attack)
+{
+	int r = 1;
+	int c;
+	fixed lengthR;
+	fixed lengthC;
+	point center = libcrtx_spawn_position();
+	point p = null;
+	
+	lengthR = s*(IntToFixed(row) - 1);
+	lengthC = s*(IntToFixed(col) -1);
+	
+	//for testing:
+	//libcrtx_write(PlayerGroupSingle(EventPlayer()), "rows = " + IntToString(row));
+	//libcrtx_write(PlayerGroupSingle(EventPlayer()), "cols = " + IntToString(col));	
+	//libcrtx_write(PlayerGroupSingle(EventPlayer()), "s = " + FixedToString(s, 4));
+	//libcrtx_write(PlayerGroupSingle(EventPlayer()), "angle = " + FixedToString(angle, 4));
+	//libcrtx_write(PlayerGroupSingle(EventPlayer()), "lengthR = " + FixedToString(lengthR, 4));
+	//libcrtx_write(PlayerGroupSingle(EventPlayer()), "lengthC = " + FixedToString(lengthC, 4));
+
+	UnitGroupLoopBegin(g);
+	
+	while(!UnitGroupLoopDone() && r <= row) {
+		c = 1;
+		while(c <= col)
+		{
+			p = Point(PointGetX(center) + ((lengthR/2 - s*(r-1))*Cos(angle) + (lengthC/2 - s*(c-1))*Cos(angle + 90)),
+				PointGetY(center) + ((lengthR/2 - s*(r-1))*Sin(angle) + (lengthC/2 - s*(c-1))*Sin(angle + 90)));
+			if(attack) {
+				if(UnitOrderIsValid(UnitGroupLoopCurrent(), OrderTargetingPoint(AbilityCommand("attack", 0), p))) {
+					UnitIssueOrder(UnitGroupLoopCurrent(), OrderTargetingPoint(AbilityCommand("attack", 0), p), c_orderQueueReplace);
+				}
+			}
+			else {
+				if(UnitOrderIsValid(UnitGroupLoopCurrent(), OrderTargetingPoint(AbilityCommand("move", 0), p))) {
+					UnitIssueOrder(UnitGroupLoopCurrent(), OrderTargetingPoint(AbilityCommand("move", 0), p), c_orderQueueReplace);
+				}
+				if(UnitOrderIsValid(UnitGroupLoopCurrent(), Order(AbilityCommand("move", 2)))) {
+					UnitIssueOrder(UnitGroupLoopCurrent(), Order(AbilityCommand("move", 2)), c_orderQueueAddToEnd);
+				}
+			}
+			
+			//was for testing:
+			//libcrtx_write(PlayerGroupSingle(EventPlayer()), "P(" + IntToString(r) + "," + IntToString(c) + ") = (" + FixedToString(PointGetX(p), 4) + "," + FixedToString(PointGetY(p), 4) + ")");
+
+			UnitGroupLoopStep();
+			c += 1;
+		}
+		r += 1;
+	}
+	UnitGroupLoopEnd();
+}
+void libcrtx_unitgroup_form_circle(unitgroup g, fixed radius, fixed angle)
+{
+	point center = libcrtx_spawn_position();
+	fixed posAngle;
+	int i = 0;
+	
+	posAngle = 360.0/IntToFixed(UnitGroupCount(g, c_unitCountAll)); 
+	
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone()) {
+		if(UnitOrderIsValid(UnitGroupLoopCurrent(), OrderTargetingPoint(AbilityCommand("move", 0), PointWithOffsetPolar(center, radius, posAngle*i + angle)))) {
+			UnitIssueOrder(UnitGroupLoopCurrent(), OrderTargetingPoint(AbilityCommand("move", 0), PointWithOffsetPolar(center, radius, posAngle*i + angle)), c_orderQueueReplace);
+		}
+		if(UnitOrderIsValid(UnitGroupLoopCurrent(), Order(AbilityCommand("move", 2)))) {
+			UnitIssueOrder(UnitGroupLoopCurrent(), Order(AbilityCommand("move", 2)), c_orderQueueAddToEnd);
+		}
+		i += 1;
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+}
+void libcrtx_unitgroup_form_arrow(unitgroup g, point center, fixed s, fixed angle, bool attack)
+{
+	
+}
+//a circle is actually a "star" with sides equal to number of units
+void libcrtx_unitgroup_form_star(unitgroup g, point center, int points, fixed dist, int row, fixed s, fixed angle)
+{
+	int i = 0;
+	int r = 0;
+	fixed posAngle;
+	
+	posAngle = 360.0/IntToFixed(points);
+	
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone() && dist - s*r > 0 && r < row) {
+		i = 0;
+		while(i < points) {
+			if(UnitOrderIsValid(UnitGroupLoopCurrent(), OrderTargetingPoint(AbilityCommand("move", 0), PointWithOffsetPolar(center, dist - s*r, posAngle*i + angle)))) {
+				UnitIssueOrder(UnitGroupLoopCurrent(), OrderTargetingPoint(AbilityCommand("move", 0), PointWithOffsetPolar(center, dist - s*r, posAngle*i + angle)), c_orderQueueReplace);
+			}
+			if(UnitOrderIsValid(UnitGroupLoopCurrent(), Order(AbilityCommand("move", 2)))) {
+				UnitIssueOrder(UnitGroupLoopCurrent(), Order(AbilityCommand("move", 2)), c_orderQueueAddToEnd);
+			}
+			i += 1;
+			UnitGroupLoopStep();
+		}
+		r += 1;
+	}
+}

@@ -1,0 +1,206 @@
+//In data table, unit squads stored as "squad [#] [type]" where # is the int of unit squad units' custom value index 5
+//and [type]: fluid - no formation, dynam - form with angle update, static - form with no angle update
+
+//In units, custom values will be stored in following index format:
+//Index: | 5 - squad # | 6 - Cx | 7 - Cy | 8 - r | 9 - theta | 10 - type/ID |
+//	TriggerAddEventUnitOrder(TriggerCreate("libcrtx_squad_order"), null, null);
+//  TriggerAddEventUnitSelected(TriggerCreate("libcrtx_squad_order"), null, EventPlayer(), true);
+
+int libcrtx_global_squad_count = 1;
+unitgroup[libcrtx_max_players] oldSelection;
+
+//prototypes
+unitgroup libcrtx_selection_squad_update(int player, unitgroup g);
+
+void libcrtx_unitgroup_selectable_on(unitgroup g)
+{
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone()) {
+		//UnitSetState(UnitGroupLoopCurrent(), c_unitStateSelectable, true);
+		UnitSetState(UnitGroupLoopCurrent(), c_unitStateCursorable, true);
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+}
+void libcrtx_unitgroup_selectable_off(unitgroup g)
+{
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone()) {
+		//UnitSetState(UnitGroupLoopCurrent(), c_unitStateSelectable, false);
+		UnitSetState(UnitGroupLoopCurrent(), c_unitStateCursorable, false);
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+}
+//selects entire squad if a selected unit is part of squad
+bool libcrtx_squad_select(bool testConds, bool runActions)
+{
+	int i;
+	unitgroup g;
+	unitgroup current = UnitGroupSelected(EventPlayer());
+	
+	libcrtx_unitgroup_selectable_on(oldSelection[EventPlayer()]);
+	
+	if(UnitGroupSelected(EventPlayer()) == UnitGroupEmpty() && oldSelection[EventPlayer()] != UnitGroupEmpty()) {
+		if(UnitGetCustomValue(EventUnit(), 5) >= 1) {
+			if(UnitGetCustomValue(EventUnit(), 10) > 0) {
+				i = 1;
+			}
+			else {
+				i = FixedToInt(UnitGetCustomValue(EventUnit(), 10));
+			}		
+			g = DataTableGetUnitGroup(true, "sqd " + FixedToString(UnitGetCustomValue(EventUnit(), 5), 0) + " " + IntToString(i));
+			UnitGroupLoopBegin(g);
+			while(!UnitGroupLoopDone()) {
+				if(!UnitGroupHasUnit(current, UnitGroupLoopCurrent())) {
+					UnitGroupAdd(current, UnitGroupLoopCurrent());
+					//UnitSetState(UnitGroupLoopCurrent(), c_unitStateSelectable, false);
+					UnitSetState(UnitGroupLoopCurrent(), c_unitStateCursorable, false);
+					
+				}
+				UnitGroupLoopStep();
+			}
+			UnitGroupLoopEnd();
+			
+			UnitGroupSelect(current, EventPlayer(), true);
+			oldSelection[EventPlayer()] = current;
+			
+			return true;
+		}
+	}
+	
+	if(UnitGetCustomValue(EventUnit(), 5) >= 1 ) {
+		if(UnitGetCustomValue(EventUnit(), 10) > 0) {
+			i = 1;
+		}
+		else {
+			i = FixedToInt(UnitGetCustomValue(EventUnit(), 10));
+		}
+		
+		if(UnitGroupSelected(EventPlayer()) != DataTableGetUnitGroup(true, "sqd " + FixedToString(UnitGetCustomValue(EventUnit(), 5), 0) + " " + IntToString(i))) {
+			UnitGroupSelect(DataTableGetUnitGroup(true, "sqd " + FixedToString(UnitGetCustomValue(EventUnit(), 5), 0) + " " + IntToString(i)), EventPlayer(), true);
+			oldSelection[EventPlayer()] = DataTableGetUnitGroup(true, "sqd " + FixedToString(UnitGetCustomValue(EventUnit(), 5), 0) + " " + IntToString(i));
+			libcrtx_unitgroup_selectable_off(oldSelection[EventPlayer()]);
+		}
+	}
+	return true;
+}
+//verify if units deselected were members of squad, and if selected units still contain members of squad
+bool libcrtx_squad_deselect(bool testConds, bool runActions)
+{
+	int i;
+	unitgroup g;
+	unitgroup current = UnitGroupSelected(EventPlayer());
+	bool hasSquad = false;
+
+	if(UnitGroupSelected(EventPlayer()) == UnitGroupEmpty() && oldSelection[EventPlayer()] != UnitGroupEmpty()) {
+		libcrtx_unitgroup_selectable_on(oldSelection[EventPlayer()]);
+		oldSelection[EventPlayer()] = UnitGroupEmpty();
+		return true;
+	}
+	
+	if(UnitGroupSelected(EventPlayer()) != UnitGroupEmpty() || oldSelection[EventPlayer()] != UnitGroupEmpty()) { //do similar check as that in the select func
+		if(UnitGetCustomValue(EventUnit(), 5) >= 1 ) {
+			UnitGroupLoopBegin(UnitGroupSelected(EventPlayer()));
+			while(!UnitGroupLoopDone()) {
+				if(UnitGetCustomValue(UnitGroupLoopCurrent(), 5) == UnitGetCustomValue(EventUnit(), 5)) {
+					hasSquad = true;
+					break;
+				}
+				else {
+					UnitGroupLoopStep();
+				}
+			}
+			UnitGroupLoopEnd();
+			
+			if(!hasSquad) { //if no squad, no need to go further
+				return true;
+			}
+			
+			//else, verify if contains entire squad:
+			if(UnitGetCustomValue(EventUnit(), 10) > 0) {
+				i = 1;
+			}
+			else {
+				i = FixedToInt(UnitGetCustomValue(EventUnit(), 10));
+			}
+			
+			g = DataTableGetUnitGroup(true, "sqd " + FixedToString(UnitGetCustomValue(EventUnit(), 5), 0) + " " + IntToString(i));
+			UnitGroupLoopBegin(g);
+			while(!UnitGroupLoopDone()) {
+				if(!UnitGroupHasUnit(current, UnitGroupLoopCurrent())) {
+					UnitGroupAdd(current, UnitGroupLoopCurrent());
+					//UnitSetState(UnitGroupLoopCurrent(), c_unitStateSelectable, false);
+					UnitSetState(UnitGroupLoopCurrent(), c_unitStateCursorable, false);
+				}
+				UnitGroupLoopStep();
+			}
+			UnitGroupLoopEnd();
+			
+			UnitGroupSelect(current, EventPlayer(), true);
+			oldSelection[EventPlayer()] = current;
+			
+			return true;
+			
+		}
+	}
+	
+	return true;
+}
+
+bool libcrtx_squad_order(bool testConds, bool runActions)
+{
+	point newCenter;
+	fixed angle;
+	order unitOrd;
+	abilcmd action;
+	
+	if(EventUnitOrder() == DataTableGetOrder(true, "unitOrd " + IntToString(UnitGetTag(EventUnit())))) {
+		return true;
+	}
+	
+	if(UnitGetCustomValue(EventUnit(), 5) >= 1 ) {
+		//ORDERED TO MOVE:
+		if(OrderGetAbilityCommand(EventUnitOrder()) == AbilityCommand("move", 0) || OrderGetAbilityCommand(EventUnitOrder()) == AbilityCommand("attack", 0)) {
+			action = OrderGetAbilityCommand(EventUnitOrder());
+			
+			if(UnitGetCustomValue(EventUnit(), 10) == -1 ) { //fluid squad: do nothing
+				return true;
+			}
+			if(UnitGetCustomValue(EventUnit(), 10) == 0 ) { //static squad: static offset
+				newCenter = OrderGetTargetPoint(EventUnitOrder());
+				
+				unitOrd = OrderTargetingPoint(action, PointWithOffsetPolar(newCenter, UnitGetCustomValue(EventUnit(), 8), UnitGetCustomValue(EventUnit(), 9)));
+				DataTableSetOrder(true, "unitOrd " + IntToString(UnitGetTag(EventUnit())), unitOrd);
+				
+				UnitIssueOrder(EventUnit(), OrderTargetingPoint(action, PointWithOffsetPolar(newCenter, UnitGetCustomValue(EventUnit(), 8), UnitGetCustomValue(EventUnit(), 9))), c_orderQueueReplace);
+				UnitIssueOrder(EventUnit(), Order(AbilityCommand("move", 2)), c_orderQueueAddToEnd);
+				
+				return true;
+			}
+			if(UnitGetCustomValue(EventUnit(), 10) >= 1 ) { //dynam squad: angled offset
+				//libcrtx_write_success(FixedToString(UnitGetCustomValue(EventUnit(), 8), 4));
+
+				newCenter = OrderGetTargetPoint(EventUnitOrder());
+				if(PointGetX(newCenter) - UnitGetCustomValue(EventUnit(), 6) == 0) { //prevent divide by zero error
+					angle = 0.0;
+				}
+				else {
+					angle = ATan2(PointGetY(newCenter) - UnitGetCustomValue(EventUnit(), 7), PointGetX(newCenter) - UnitGetCustomValue(EventUnit(), 6));
+				}
+				
+				unitOrd = OrderTargetingPoint(action, PointWithOffsetPolar(newCenter, UnitGetCustomValue(EventUnit(), 8), UnitGetCustomValue(EventUnit(), 9) + angle));
+				DataTableSetOrder(true, "unitOrd " + IntToString(UnitGetTag(EventUnit())), unitOrd);
+
+				UnitIssueOrder(EventUnit(), unitOrd, c_orderQueueReplace);
+				UnitIssueOrder(EventUnit(), Order(AbilityCommand("move", 2)), c_orderQueueAddToEnd);
+
+				UnitSetCustomValue(EventUnit(), 6, PointGetX(newCenter));
+				UnitSetCustomValue(EventUnit(), 7, PointGetY(newCenter));
+				return true;
+			}
+		}
+	}
+
+	return true;
+}

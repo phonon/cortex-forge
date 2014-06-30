@@ -1,0 +1,371 @@
+// Cortex Forge Extensions
+// By Xethyr (407)
+//
+// Copyright (C) 2013
+//
+// Cortex Engine by Motive
+// Cortex SC2 Roleplaying Engine
+// Copyright (C) 2009-2011 <http://www.cortexrp.com/>
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; version 2 of the License.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+int libcrtx_ui_playerprofiles;
+
+int libcrtx_ui_profile_list;
+int libcrtx_ui_profile_frame;
+int libcrtx_ui_profile_frame_img;
+int libcrtx_ui_profile_btn_edit;
+int libcrtx_ui_profile_img_edit;
+int libcrtx_ui_profile_charcode_edit;
+int libcrtx_ui_profile_likes_edit;
+int[4] libcrtx_ui_profile_nfo_edit;
+
+int libcrtx_ui_player_img;
+int libcrtx_ui_player_name;
+int libcrtx_ui_player_handle;
+int libcrtx_ui_player_charcode;
+int libcrtx_ui_player_likes;
+int libcrtx_ui_player_nfo;
+
+int[libcrtx_max_players] libcrtx_ui_playerprofile_index;
+bank[libcrtx_max_players] libcrtx_ui_profile;
+bool[libcrtx_max_players] libcrtx_ui_profile_edit_on;
+
+void libcrtx_ui_playerprofiles_init()
+{
+	int i;
+	int n;
+	
+	DialogCreate(850, 500, c_anchorLeft, 120, -150, true);
+	libcrtx_ui_playerprofiles = DialogLastCreated();
+	
+	//list for player names
+	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_playerprofiles, 200, 50, c_anchorTopLeft, 50, 45, StringToText("<s val=\"CreditsLabel\">Profiles:</s>"), ColorWithAlpha(0,0,0,0), false, 0.0);
+    DialogControlCreate(libcrtx_ui_playerprofiles, c_triggerControlTypeListBox);
+    libcrtx_ui_profile_list = DialogControlLastCreated();
+	DialogControlSetPosition(libcrtx_ui_profile_list, PlayerGroupAll(), c_anchorTopLeft, 50, 75);
+    DialogControlSetSize(libcrtx_ui_profile_list, PlayerGroupAll(), 187, 375);
+	
+	//frame for player profiles
+    DialogControlCreate(libcrtx_ui_playerprofiles, c_triggerControlTypePortrait);
+	libcrtx_ui_profile_frame = DialogControlLastCreated();
+    DialogControlSetSize(libcrtx_ui_profile_frame, PlayerGroupAll(), 580, 500);
+    DialogControlSetPosition(libcrtx_ui_profile_frame, PlayerGroupAll(), c_anchorRight, 0, 0);
+    libNtve_gf_SetDialogItemRenderType(DialogControlLastCreated(), c_triggerRenderTypeLDR, PlayerGroupAll());
+	
+	DialogControlCreate(libcrtx_ui_playerprofiles, c_triggerControlTypePortrait);
+	libcrtx_ui_profile_frame_img = DialogControlLastCreated();
+    DialogControlSetSize(DialogControlLastCreated(), PlayerGroupAll(), 90, 90);
+    DialogControlSetPositionRelative(DialogControlLastCreated(), PlayerGroupAll(), c_anchorTopLeft, libcrtx_ui_profile_frame, c_anchorTopLeft, 50, 50);
+    libNtve_gf_SetDialogItemRenderType(DialogControlLastCreated(), c_triggerRenderTypeLDR, PlayerGroupAll());
+	libNtve_gf_SetDialogItemRenderPriority(DialogControlLastCreated(), 750, PlayerGroupAll());
+
+	//name
+	libNtve_gf_CreateDialogItemImage(libcrtx_ui_playerprofiles, 230, 50, c_anchorBottomRight, 0, 0, StringToText(""), "Assets\\Textures\\ui_research_frame_outer.dds", c_triggerImageTypeBorder, false, Color(100,100,100), c_triggerBlendModeNormal);
+    DialogControlSetPositionRelative(DialogControlLastCreated(), PlayerGroupAll(), c_anchorTopLeft, libcrtx_ui_profile_frame, c_anchorTopLeft, 165, 35);
+	libNtve_gf_SetDialogItemRenderPriority(DialogControlLastCreated(), 1000, PlayerGroupAll());
+	
+	//handle
+	libNtve_gf_CreateDialogItemImage(libcrtx_ui_playerprofiles, 230, 35, c_anchorBottomRight, 0, 0, StringToText(""), "Assets\\Textures\\ui_research_frame_outer.dds", c_triggerImageTypeBorder, false, Color(100,100,100), c_triggerBlendModeNormal);
+    DialogControlSetPositionRelative(DialogControlLastCreated(), PlayerGroupAll(), c_anchorTopLeft, libcrtx_ui_profile_frame, c_anchorTopLeft, 165, 80);
+	libNtve_gf_SetDialogItemRenderPriority(DialogControlLastCreated(), 1000, PlayerGroupAll());
+	
+	//char code
+	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_playerprofiles, 75, 50, c_anchorTopLeft, 50, 35, StringToText("Friend</n>Code:"), ColorWithAlpha(0,0,0,0), false, 0.0);
+    DialogControlSetPositionRelative(DialogControlLastCreated(), PlayerGroupAll(), c_anchorTopRight, libcrtx_ui_profile_frame, c_anchorTopRight, -105, 45);
+	libNtve_gf_SetDialogItemRenderPriority(DialogControlLastCreated(), 1000, PlayerGroupAll());
+
+	libNtve_gf_CreateDialogItemImage(libcrtx_ui_playerprofiles, 90, 50, c_anchorBottomRight, 0, 0, StringToText(""), "Assets\\Textures\\ui_research_frame_outer.dds", c_triggerImageTypeBorder, false, Color(100,100,100), c_triggerBlendModeNormal);
+    DialogControlSetPositionRelative(DialogControlLastCreated(), PlayerGroupAll(), c_anchorTopRight, libcrtx_ui_profile_frame, c_anchorTopRight, -25, 35);
+	libNtve_gf_SetDialogItemRenderPriority(DialogControlLastCreated(), 1000, PlayerGroupAll());
+
+	//interests
+	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_playerprofiles, 200, 50, c_anchorTopLeft, 50, 35, StringToText("<s val=\"CreditsLabel\">Interests:</s>"), ColorWithAlpha(0,0,0,0), false, 0.0);
+    DialogControlSetPositionRelative(DialogControlLastCreated(), PlayerGroupAll(), c_anchorBottom, libcrtx_ui_profile_frame, c_anchorBottom, -170, -283);
+	libNtve_gf_SetDialogItemRenderPriority(DialogControlLastCreated(), 1000, PlayerGroupAll());
+	
+	libNtve_gf_CreateDialogItemImage(libcrtx_ui_playerprofiles, 550, 50, c_anchorBottomRight, 0, 0, StringToText(""), "Assets\\Textures\\ui_research_frame_outer.dds", c_triggerImageTypeBorder, false, Color(100,100,100), c_triggerBlendModeNormal);
+    DialogControlSetPositionRelative(DialogControlLastCreated(), PlayerGroupAll(), c_anchorBottom, libcrtx_ui_profile_frame, c_anchorBottom, 0, -255);
+	libNtve_gf_SetDialogItemRenderPriority(DialogControlLastCreated(), 1000, PlayerGroupAll());
+	
+	//about me
+	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_playerprofiles, 200, 50, c_anchorTopLeft, 50, 35, StringToText("<s val=\"CreditsLabel\">About:</s>"), ColorWithAlpha(0,0,0,0), false, 0.0);
+    DialogControlSetPositionRelative(DialogControlLastCreated(), PlayerGroupAll(), c_anchorBottom, libcrtx_ui_profile_frame, c_anchorBottom, -170, -200);
+	libNtve_gf_SetDialogItemRenderPriority(DialogControlLastCreated(), 1000, PlayerGroupAll());
+
+	libNtve_gf_CreateDialogItemImage(libcrtx_ui_playerprofiles, 550, 200, c_anchorBottomRight, 0, 0, StringToText(""), "Assets\\Textures\\ui_research_frame_outer.dds", c_triggerImageTypeBorder, false, Color(100,100,100), c_triggerBlendModeNormal);
+    DialogControlSetPositionRelative(DialogControlLastCreated(), PlayerGroupAll(), c_anchorBottom, libcrtx_ui_profile_frame, c_anchorBottom, 0, -25);
+	libNtve_gf_SetDialogItemRenderPriority(DialogControlLastCreated(), 1000, PlayerGroupAll());
+
+	//BELOW ARE HIDDEN EDIT DIALOGS
+	//edit button (initially hidden)
+	libNtve_gf_CreateDialogItemButton(libcrtx_ui_playerprofiles, 70, 35, c_anchorBottomRight, 0, 0, StringToText(""), StringToText("Edit"), "");
+    libcrtx_ui_profile_btn_edit = DialogControlLastCreated();
+	DialogControlSetPositionRelative(libcrtx_ui_profile_btn_edit, PlayerGroupAll(), c_anchorRight, libcrtx_ui_profile_frame, c_anchorRight, -10, -75);
+	libNtve_gf_SetDialogItemRenderPriority(libcrtx_ui_profile_btn_edit, 1024, PlayerGroupAll());
+	DialogControlSetVisible(libcrtx_ui_profile_btn_edit, PlayerGroupAll(), false);
+	
+	DialogControlCreate(libcrtx_ui_playerprofiles, c_triggerControlTypeEditBox);
+	libcrtx_ui_profile_likes_edit = DialogControlLastCreated();
+    DialogControlSetSize(libcrtx_ui_profile_likes_edit, PlayerGroupAll(), 550, 50);
+    DialogControlSetPositionRelative(libcrtx_ui_profile_likes_edit, PlayerGroupAll(), c_anchorBottom, libcrtx_ui_profile_frame, c_anchorBottom, 0, -255);
+    libNtve_gf_SetDialogItemRenderPriority(libcrtx_ui_profile_likes_edit, 1024, PlayerGroupAll());
+	DialogControlSetVisible(libcrtx_ui_profile_likes_edit, PlayerGroupAll(), false);
+	
+	DialogControlCreate(libcrtx_ui_playerprofiles, c_triggerControlTypeEditBox);
+	libcrtx_ui_profile_charcode_edit = DialogControlLastCreated();
+    DialogControlSetSize(libcrtx_ui_profile_charcode_edit, PlayerGroupAll(), 90, 50);
+    DialogControlSetPositionRelative(libcrtx_ui_profile_charcode_edit, PlayerGroupAll(), c_anchorTopRight, libcrtx_ui_profile_frame, c_anchorTopRight, -25, 35);
+    libNtve_gf_SetDialogItemRenderPriority(libcrtx_ui_profile_charcode_edit, 1024, PlayerGroupAll());
+	DialogControlSetVisible(libcrtx_ui_profile_charcode_edit, PlayerGroupAll(), false);
+	
+	DialogControlCreate(libcrtx_ui_playerprofiles, c_triggerControlTypeEditBox);
+	libcrtx_ui_profile_nfo_edit[0] = DialogControlLastCreated();
+    DialogControlSetSize(libcrtx_ui_profile_nfo_edit[0], PlayerGroupAll(), 550, 200);
+    DialogControlSetPositionRelative(libcrtx_ui_profile_nfo_edit[0], PlayerGroupAll(), c_anchorBottom, libcrtx_ui_profile_frame, c_anchorBottom, 0, -25);
+    libNtve_gf_SetDialogItemRenderPriority(libcrtx_ui_profile_nfo_edit[0], 1024, PlayerGroupAll());
+	DialogControlSetVisible(libcrtx_ui_profile_nfo_edit[0], PlayerGroupAll(), false);
+	
+	//BELOW ARE HOLDERS/LABELS FOR ACTUAL DISPLAY
+	//name
+	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_playerprofiles, 230, 50, c_anchorTopLeft, 50, 35, StringToText(""), ColorWithAlpha(0,0,0,0), false, 0.0);
+	libcrtx_ui_player_name = DialogControlLastCreated();
+    DialogControlSetPositionRelative(libcrtx_ui_player_name, PlayerGroupAll(), c_anchorTopLeft, libcrtx_ui_profile_frame, c_anchorTopLeft, 165, 35);
+	libNtve_gf_SetDialogItemRenderPriority(libcrtx_ui_player_name, 1024, PlayerGroupAll());
+	
+	//handle
+	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_playerprofiles, 230, 50, c_anchorTopLeft, 50, 35, StringToText(""), ColorWithAlpha(0,0,0,0), false, 0.0);
+	libcrtx_ui_player_handle = DialogControlLastCreated();
+    DialogControlSetPositionRelative(libcrtx_ui_player_handle, PlayerGroupAll(), c_anchorTopLeft, libcrtx_ui_profile_frame, c_anchorTopLeft, 200, 90);
+	libNtve_gf_SetDialogItemRenderPriority(libcrtx_ui_player_handle, 1024, PlayerGroupAll());
+	
+	//char code
+	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_playerprofiles, 90, 50, c_anchorTopLeft, 50, 35, StringToText(""), ColorWithAlpha(0,0,0,0), false, 0.0);
+	libcrtx_ui_player_charcode = DialogControlLastCreated();
+    DialogControlSetPositionRelative(libcrtx_ui_player_charcode, PlayerGroupAll(), c_anchorTopRight, libcrtx_ui_profile_frame, c_anchorTopRight, -15, 50);
+	libNtve_gf_SetDialogItemRenderPriority(libcrtx_ui_player_handle, 1024, PlayerGroupAll());
+	
+	//likes
+	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_playerprofiles, 550, 50, c_anchorTopLeft, 50, 35, StringToText(""), ColorWithAlpha(0,0,0,0), false, 0.0);
+	libcrtx_ui_player_likes = DialogControlLastCreated();
+    DialogControlSetPositionRelative(libcrtx_ui_player_likes, PlayerGroupAll(), c_anchorBottom, libcrtx_ui_profile_frame, c_anchorBottom, 15, -235);
+	libNtve_gf_SetDialogItemRenderPriority(libcrtx_ui_player_handle, 1024, PlayerGroupAll());	
+	
+	//nfo
+	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_playerprofiles, 530, 190, c_anchorTopLeft, 50, 35, StringToText(""), ColorWithAlpha(0,0,0,0), false, 0.0);
+	libcrtx_ui_player_nfo = DialogControlLastCreated();
+    DialogControlSetPositionRelative(libcrtx_ui_player_nfo, PlayerGroupAll(), c_anchorBottom, libcrtx_ui_profile_frame, c_anchorBottom, 0, -25);
+	libNtve_gf_SetDialogItemRenderPriority(libcrtx_ui_player_handle, 1024, PlayerGroupAll());
+	
+	//img
+	libNtve_gf_CreateDialogItemImage(libcrtx_ui_playerprofiles, 85, 85, c_anchorBottomRight, 0, 0, StringToText(""), "Assets\\Textures\\ui_chatbaricons_zerg_individual.dds", c_triggerImageTypeNormal, false, Color(100,100,100), c_triggerBlendModeNormal);
+    libcrtx_ui_player_img = DialogControlLastCreated();
+	DialogControlSetPositionRelative(libcrtx_ui_player_img, PlayerGroupAll(), c_anchorCenter, libcrtx_ui_profile_frame_img, c_anchorCenter, 0, 0);
+	libNtve_gf_SetDialogItemRenderPriority(libcrtx_ui_player_img, 1024, PlayerGroupAll());
+	//DialogControlSetVisible(libcrtx_ui_player_img, PlayerGroupSingle(EventPlayer()), true);
+	
+	//=========================================================================================
+	//Dialog set up done. Now initialize player entries:
+	
+	i = 1;
+	n = 1;
+	while(i < 14) {
+		if(PlayerStatus(i) == c_playerStatusActive) {
+			libcrtx_ui_profile[i] = BankLoad(libcrtx_cortexid_bank, i);
+			DialogControlAddItem(libcrtx_ui_profile_list, PlayerGroupAll(), PlayerName(i));
+			libcrtx_ui_playerprofile_index[n] = i;
+			n += 1;
+		}
+		i += 1;
+	}
+	
+	
+	//CortexID > Profile > Interests
+	//CortexID > Profile > About420
+	
+	
+}
+void libcrtx_ui_playerprofiles_events_init()
+{
+    TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_profile_show"), c_playerAny, libcrtx_ui_profile_list, c_triggerControlEventTypeSelectionChanged);
+    TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_profile_edit"), c_playerAny, libcrtx_ui_profile_btn_edit, c_triggerControlEventTypeClick);
+
+}
+
+//libNtve_gf_SetDialogItemText(DialogControlLastCreated(), StringExternal("Param/Value/FB3785FE"), PlayerGroupAll());
+bool libcrtx_ui_profile_edit(bool testConds, bool runActions)
+{
+	string val;
+	
+	if(!libcrtx_ui_profile_edit_on[EventPlayer()]) {
+		libNtve_gf_SetDialogItemText(libcrtx_ui_profile_btn_edit, StringToText("Done"), PlayerGroupSingle(EventPlayer()));
+		DialogControlSetVisible(libcrtx_ui_profile_charcode_edit, PlayerGroupSingle(EventPlayer()), true);
+		DialogControlSetVisible(libcrtx_ui_profile_likes_edit, PlayerGroupSingle(EventPlayer()), true);
+		DialogControlSetVisible(libcrtx_ui_profile_nfo_edit[0], PlayerGroupSingle(EventPlayer()), true);
+		
+		DialogControlSetVisible(libcrtx_ui_player_charcode, PlayerGroupSingle(EventPlayer()), false);
+		DialogControlSetVisible(libcrtx_ui_player_likes, PlayerGroupSingle(EventPlayer()), false);
+		DialogControlSetVisible(libcrtx_ui_player_nfo, PlayerGroupSingle(EventPlayer()), false);
+		
+		if(BankKeyExists(libcrtx_ui_profile[EventPlayer()], "Profile", "Charcode")) {
+			libNtve_gf_SetDialogItemEditorValue(libcrtx_ui_profile_charcode_edit, BankValueGetAsString(libcrtx_ui_profile[EventPlayer()], "Profile", "Charcode"), PlayerGroupSingle(EventPlayer()));		
+		}
+		if(BankKeyExists(libcrtx_ui_profile[EventPlayer()], "Profile", "Likes")) {
+			libNtve_gf_SetDialogItemEditorValue(libcrtx_ui_profile_likes_edit, BankValueGetAsString(libcrtx_ui_profile[EventPlayer()], "Profile", "Likes"), PlayerGroupSingle(EventPlayer()));		
+		}
+		if(BankKeyExists(libcrtx_ui_profile[EventPlayer()], "Profile", "nfo")) {
+			libNtve_gf_SetDialogItemEditorValue(libcrtx_ui_profile_nfo_edit[0], BankValueGetAsString(libcrtx_ui_profile[EventPlayer()], "Profile", "nfo"), PlayerGroupSingle(EventPlayer()));		
+		}
+		
+		libcrtx_ui_profile_edit_on[EventPlayer()] = true;
+		return true;
+	}
+	else {
+		libNtve_gf_SetDialogItemText(libcrtx_ui_profile_btn_edit, StringToText("Edit"), PlayerGroupSingle(EventPlayer()));
+		
+		//get edit values, store into bank
+		if(libNtve_gf_DialogItemEditValue(libcrtx_ui_profile_charcode_edit, EventPlayer()) != "") {
+			val = libNtve_gf_DialogItemEditValue(libcrtx_ui_profile_charcode_edit, EventPlayer());
+			BankValueSetFromString(libcrtx_ui_profile[EventPlayer()], "Profile", "Charcode", val);
+			BankSave(libcrtx_ui_profile[EventPlayer()]);
+		}
+		if(libNtve_gf_DialogItemEditValue(libcrtx_ui_profile_likes_edit, EventPlayer()) != "") {
+			val = libNtve_gf_DialogItemEditValue(libcrtx_ui_profile_likes_edit, EventPlayer());
+			BankValueSetFromString(libcrtx_ui_profile[EventPlayer()], "Profile", "Likes", val);
+			BankSave(libcrtx_ui_profile[EventPlayer()]);
+		}
+		if(libNtve_gf_DialogItemEditValue(libcrtx_ui_profile_nfo_edit[0], EventPlayer()) != "") {
+			val = libNtve_gf_DialogItemEditValue(libcrtx_ui_profile_nfo_edit[0], EventPlayer());
+			BankValueSetFromString(libcrtx_ui_profile[EventPlayer()], "Profile", "nfo", val);
+			BankSave(libcrtx_ui_profile[EventPlayer()]);
+		}
+		
+		//update player's profile
+		if(BankKeyExists(libcrtx_ui_profile[EventPlayer()], "Profile", "Charcode")) {
+			libNtve_gf_SetDialogItemText(libcrtx_ui_player_charcode, StringToText(BankValueGetAsString(libcrtx_ui_profile[EventPlayer()], "Profile", "Charcode")), PlayerGroupSingle(EventPlayer()));		
+			libNtve_gf_SetDialogItemStyle(libcrtx_ui_player_charcode, "Header18", PlayerGroupSingle(EventPlayer()));
+		}
+		if(BankKeyExists(libcrtx_ui_profile[EventPlayer()], "Profile", "Likes")) {
+			libNtve_gf_SetDialogItemText(libcrtx_ui_player_likes, StringToText(BankValueGetAsString(libcrtx_ui_profile[EventPlayer()], "Profile", "Likes")), PlayerGroupSingle(EventPlayer()));		
+		    libNtve_gf_SetDialogItemStyle(libcrtx_ui_player_likes, "Header18", PlayerGroupSingle(EventPlayer()));	
+		}
+		if(BankKeyExists(libcrtx_ui_profile[EventPlayer()], "Profile", "nfo")) {
+			libNtve_gf_SetDialogItemText(libcrtx_ui_player_nfo, StringToText(BankValueGetAsString(libcrtx_ui_profile[EventPlayer()], "Profile", "nfo")), PlayerGroupSingle(EventPlayer()));		
+		    libNtve_gf_SetDialogItemStyle(libcrtx_ui_player_nfo, "Header18", PlayerGroupSingle(EventPlayer()));	
+		}
+		
+		//hide edit boxes
+		DialogControlSetVisible(libcrtx_ui_profile_charcode_edit, PlayerGroupSingle(EventPlayer()), false);
+		DialogControlSetVisible(libcrtx_ui_profile_likes_edit, PlayerGroupSingle(EventPlayer()), false);
+		DialogControlSetVisible(libcrtx_ui_profile_nfo_edit[0], PlayerGroupSingle(EventPlayer()), false);
+
+		DialogControlSetVisible(libcrtx_ui_player_charcode, PlayerGroupSingle(EventPlayer()), true);
+		DialogControlSetVisible(libcrtx_ui_player_likes, PlayerGroupSingle(EventPlayer()), true);
+		DialogControlSetVisible(libcrtx_ui_player_nfo, PlayerGroupSingle(EventPlayer()), true);
+		
+		libcrtx_ui_profile_edit_on[EventPlayer()] = false;
+		return true;	
+	}
+	
+	return true;
+}
+void libcrtx_ui_profile_pic_uniques_update (int player)
+{
+	if(PlayerHandle(player) == "1-S2-1-938669") {
+		libNtve_gf_SetDialogItemImage(libcrtx_ui_player_img, "Cortex\\CortexUI\\Portraits\\thr.dds", PlayerGroupSingle(EventPlayer()));
+		return;
+	}	
+	else if(PlayerHandle(player) == "1-S2-1-698512") {
+		libNtve_gf_SetDialogItemImage(libcrtx_ui_player_img, "Cortex\\CortexUI\\Portraits\\xet.dds", PlayerGroupSingle(EventPlayer()));
+		return;	
+	}
+	else if(PlayerHandle(player) == "1-S2-1-359991") {
+		libNtve_gf_SetDialogItemImage(libcrtx_ui_player_img, "Cortex\\CortexUI\\Portraits\\fru.dds", PlayerGroupSingle(EventPlayer()));
+		return;	
+	}
+	else if(PlayerHandle(player) == "1-S2-1-2045584") {
+		libNtve_gf_SetDialogItemImage(libcrtx_ui_player_img, "Cortex\\CortexUI\\Portraits\\azn.dds", PlayerGroupSingle(EventPlayer()));
+		return;	
+	}
+	else {
+		libNtve_gf_SetDialogItemImage(libcrtx_ui_player_img, "Assets\\Textures\\ui_chatbaricons_zerg_individual.dds", PlayerGroupSingle(EventPlayer()));
+	}
+}
+bool libcrtx_ui_profile_show(bool testConds, bool runActions)
+{
+	int player;
+	
+	player = libcrtx_ui_playerprofile_index[DialogControlGetSelectedItem(libcrtx_ui_profile_list, EventPlayer())];
+	
+	//essential uneditable info (name and handle)
+	libNtve_gf_SetDialogItemText(libcrtx_ui_player_name, PlayerName(player), PlayerGroupSingle(EventPlayer()));
+    libNtve_gf_SetDialogItemStyle(libcrtx_ui_player_name, "CreditsLabel", PlayerGroupSingle(EventPlayer()));
+	libNtve_gf_SetDialogItemText(libcrtx_ui_player_handle, StringToText(PlayerHandle(player)), PlayerGroupSingle(EventPlayer()));
+    libNtve_gf_SetDialogItemStyle(libcrtx_ui_player_handle, "Header18", PlayerGroupSingle(EventPlayer()));
+	libcrtx_ui_profile_pic_uniques_update(player); //temporary
+	
+	//check if player selected is player's prof: allow editing if so
+	if(EventPlayer() == player) {
+		DialogControlSetVisible(libcrtx_ui_profile_btn_edit, PlayerGroupSingle(EventPlayer()), true);
+	}
+	else {
+		DialogControlSetVisible(libcrtx_ui_profile_btn_edit, PlayerGroupSingle(EventPlayer()), false);	
+	}
+		
+	//if player is EventPlayer, checks if was editing:
+	if(player == EventPlayer() && libcrtx_ui_profile_edit_on[EventPlayer()]) {
+		//need to display edit boxes
+		DialogControlSetVisible(libcrtx_ui_profile_charcode_edit, PlayerGroupSingle(EventPlayer()), true);
+		DialogControlSetVisible(libcrtx_ui_profile_likes_edit, PlayerGroupSingle(EventPlayer()), true);
+		DialogControlSetVisible(libcrtx_ui_profile_nfo_edit[0], PlayerGroupSingle(EventPlayer()), true);
+		
+		DialogControlSetVisible(libcrtx_ui_player_charcode, PlayerGroupSingle(EventPlayer()), false);
+		DialogControlSetVisible(libcrtx_ui_player_likes, PlayerGroupSingle(EventPlayer()), false);
+		DialogControlSetVisible(libcrtx_ui_player_nfo, PlayerGroupSingle(EventPlayer()), false);		
+		
+		return true;
+	}
+	else if(player != EventPlayer() && libcrtx_ui_profile_edit_on[EventPlayer()]) { 
+		//need to hide edit boxes
+		DialogControlSetVisible(libcrtx_ui_profile_charcode_edit, PlayerGroupSingle(EventPlayer()), false);
+		DialogControlSetVisible(libcrtx_ui_profile_likes_edit, PlayerGroupSingle(EventPlayer()), false);
+		DialogControlSetVisible(libcrtx_ui_profile_nfo_edit[0], PlayerGroupSingle(EventPlayer()), false);
+
+		DialogControlSetVisible(libcrtx_ui_player_charcode, PlayerGroupSingle(EventPlayer()), true);
+		DialogControlSetVisible(libcrtx_ui_player_likes, PlayerGroupSingle(EventPlayer()), true);
+		DialogControlSetVisible(libcrtx_ui_player_nfo, PlayerGroupSingle(EventPlayer()), true);	
+		
+		//then go on to display normally
+	}
+	//continue to display normally
+	if(BankKeyExists(libcrtx_ui_profile[player], "Profile", "Charcode")) {
+		libNtve_gf_SetDialogItemText(libcrtx_ui_player_charcode, StringToText(BankValueGetAsString(libcrtx_ui_profile[player], "Profile", "Charcode")), PlayerGroupSingle(EventPlayer()));		
+	    libNtve_gf_SetDialogItemStyle(libcrtx_ui_player_charcode, "Header18", PlayerGroupSingle(EventPlayer()));
+	}
+	else {
+		libNtve_gf_SetDialogItemText(libcrtx_ui_player_charcode, StringToText(""), PlayerGroupSingle(EventPlayer()));
+	}
+	if(BankKeyExists(libcrtx_ui_profile[player], "Profile", "Likes")) {
+		libNtve_gf_SetDialogItemText(libcrtx_ui_player_likes, StringToText(BankValueGetAsString(libcrtx_ui_profile[player], "Profile", "Likes")), PlayerGroupSingle(EventPlayer()));		
+		libNtve_gf_SetDialogItemStyle(libcrtx_ui_player_likes, "Header18", PlayerGroupSingle(EventPlayer()));
+	}
+	else {
+		libNtve_gf_SetDialogItemText(libcrtx_ui_player_likes, StringToText(""), PlayerGroupSingle(EventPlayer()));
+	}
+	if(BankKeyExists(libcrtx_ui_profile[player], "Profile", "nfo")) {
+		libNtve_gf_SetDialogItemText(libcrtx_ui_player_nfo, StringToText(BankValueGetAsString(libcrtx_ui_profile[player], "Profile", "nfo")), PlayerGroupSingle(EventPlayer()));		
+		libNtve_gf_SetDialogItemStyle(libcrtx_ui_player_nfo, "Header18", PlayerGroupSingle(EventPlayer()));
+	}
+	else {
+		libNtve_gf_SetDialogItemText(libcrtx_ui_player_nfo, StringToText(""), PlayerGroupSingle(EventPlayer()));
+	}
+	
+	return true;
+}

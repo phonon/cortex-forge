@@ -1,0 +1,193 @@
+// Cortex SC2 Roleplaying Engine
+// Copyright (C) 2009-2011 <http://www.cortexrp.com/>
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; version 2 of the License.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+void libcrtx_command_spawn_resetinstance()
+{
+	libcrtx_command_spawn_instances[EventPlayer()].unitType = "";
+	libcrtx_command_spawn_instances[EventPlayer()].count = 1;
+	libcrtx_command_spawn_instances[EventPlayer()].player = EventPlayer();
+	libcrtx_command_spawn_instances[EventPlayer()].loc = null;
+}
+
+bool libcrtx_command_spawn_parse(string lp_message)
+{
+	bool first = true;
+	string colour; // spelling this british-way since color is a reserved word
+	int misc;
+	string val;
+	bool doneSpawnType = false;
+	int currentParameter = 2;
+
+	//libcrtx_debug("libcrtx_command_spawn_parse(" + lp_message + ")");
+	//libcrtx_debug("param 2 is " + StringWord(lp_message, currentParameter) );
+	while(StringWord(lp_message, currentParameter) != "")
+	{
+		if( first ) {
+			first = false;
+			libcrtx_command_spawn_resetinstance();
+		}
+
+		val = StringWord(lp_message, currentParameter);
+		if( libcrtx_is_integer(val) && StringToInt(val) != 0 ) // integer - spawncount only
+		{
+			// reset when we have a new integer!
+			libcrtx_command_spawn_instances[EventPlayer()].count = libcrtx_boundsInt(StringToInt(val), 0, libcrtx_setting_getint(libcrtx_setting_int_maxspawncount));
+			
+			//libcrtx_debug("caught integer" + IntToString(libcrtx_command_spawn_instances[EventPlayer()].count));
+			//libcrtx_debug("max spawn count " + IntToString(libcrtx_setting_getint(libcrtx_setting_int_maxspawncount)) );
+		}
+		else if( StringSub(val, 1, 1) == "@") // we're redirecting ownership
+		{
+			misc = StringLength(val);
+			// expected param: @red, @blue, @hostile, etc.
+			colour = StringSub(val, 2, misc);
+			// TODO: map colors to player numbers.
+			misc = libcrtx_color_to_player(colour);
+			if( misc != -1 ) {
+				libcrtx_command_spawn_instances[EventPlayer()].player = misc;
+			}
+			libcrtx_debug("caught ownership redirect " + IntToString(misc));
+		}
+		else if( StringSub(val, 1, 1) == "#") // we're redirecting the location
+		{
+			misc = StringLength(val);
+			libcrtx_command_spawn_instances[EventPlayer()].loc = DataTableGetRegion(true, libcrtx_command_region_buildidentifier( StringSub(val, 2, misc) ) );
+		}
+		else // the only remainder isssssss, spawn type!
+		{
+			if(doneSpawnType)
+			{
+				// append it on.
+				libcrtx_command_spawn_instances[EventPlayer()].unitType = libcrtx_command_spawn_instances[EventPlayer()].unitType + val;
+			}
+			else
+			{
+
+				doneSpawnType = true;
+				libcrtx_command_spawn_instances[EventPlayer()].unitType = val;
+				//libcrtx_debug("caught spawn type");
+			}
+		}
+		
+		
+		currentParameter = currentParameter + 1;
+	}
+
+	return true;
+}
+
+void libcrtx_command_spawn_execute()
+{
+	string uType;
+	point p;
+	unitgroup g;
+	unitgroup units_spawned = UnitGroupEmpty();
+	int i = 0;
+	int unit_id;
+	
+	// Are we actually spawning any units at all?
+	if( libcrtx_command_spawn_instances[EventPlayer()].count == 0 ) {
+		return; // count == 0, don't bother.
+	}
+
+	p = libcrtx_spawn_position();
+	if( libcrtx_command_spawn_instances[EventPlayer()].loc ) {
+		p = RegionGetCenter(libcrtx_command_spawn_instances[EventPlayer()].loc);
+	}
+	
+	// What unit are we spawning?
+	// Make sure this is a valid entry in the game catalog.
+	uType = UnitTypeFromString(libcrtx_command_spawn_instances[EventPlayer()].unitType);
+	if( uType == "" || 
+		uType == libcrtx_getspawnertype() || 
+		libcrtx_toolkit_isrestrictedunit(uType) || 
+		!CatalogEntryIsValid(c_gameCatalogUnit, uType) ||
+		UnitTypeTestFlag(uType, c_unitFlagMissile)
+	)
+	{
+		return;
+	}
+
+	// Increment the spawn count throttle.
+	libcrtx_command_spawn_count[EventPlayer()] = libcrtx_command_spawn_count[EventPlayer()] + libcrtx_command_spawn_instances[EventPlayer()].count;
+	if( GameGetMissionTime() - libcrtx_command_spawn_lastevent[EventPlayer()] > libcrtx_setting_getint(libcrtx_setting_int_spawnperiod) ) {
+		libcrtx_command_spawn_lastevent[EventPlayer()] = FixedToInt(GameGetMissionTime());
+	}
+
+	// Can we spawn at the moment (spawn throttle)?
+	if( libcrtx_command_spawn_frozenuntil[EventPlayer()] > GameGetMissionTime() ) {
+		return;
+	}
+	
+	// Create the units
+	// use the loop to assign each unit into the global data table
+	while(i < libcrtx_command_spawn_instances[EventPlayer()].count) {
+		UnitCreate( 1, uType, c_unitCreateIgnorePlacement, libcrtx_command_spawn_instances[EventPlayer()].player, p, 270.0);
+		//set the units id and data table values
+		unit_id = libcrtx_unitCache_next_free_id();
+		UnitSetCustomValue(UnitLastCreated(), 11, IntToFixed(unit_id)); //sets unit id
+		DataTableSetBool(true, IntToString(unit_id) + ".unit", true);
+		UnitSetCustomValue(UnitLastCreated(), 12, 1); //set the unit cache value
+		UnitSetCustomValue(UnitLastCreated(), 16, 0); //set the modelswap flag to 0
+		
+		UnitGroupAdd(units_spawned, UnitLastCreated());
+		i += 1;
+	}
+	
+	// Assign temporary/internal variables for the units we've just spawned.
+	libcrtx_variable_assign_group( EventPlayer(), libcrtx_variable_name_last_spawned, units_spawned );
+	g = libcrtx_variable_get_group( EventPlayer(), libcrtx_variable_name_all_spawned);
+	libNtve_gf_AddUnitGroupToUnitGroup( units_spawned, g );
+	libcrtx_variable_assign_group( EventPlayer(), libcrtx_variable_name_all_spawned, g );
+	libcrtx_chat_set_context( EventPlayer(), units_spawned );
+	
+	// Set return value
+	libcrtx_variable_assign_group( EventPlayer(), libcrtx_variable_name_return, units_spawned );
+}
+
+bool libcrtx_command_spawn(bool testConds, bool runActions)
+{
+	string message;
+
+	//libcrtx_debug("libcrtx_command_spawn()");
+
+	if( !runActions ) {
+		return true;
+	}
+
+	// Spawn Throttle reset check
+	if( GameGetMissionTime() - libcrtx_command_spawn_lastevent[EventPlayer()] > libcrtx_setting_getint(libcrtx_setting_int_spawnperiod) ) {
+		libcrtx_command_spawn_count[EventPlayer()] = 0;
+	}
+
+	// Can we still spawn units? (Spawn Throttle)
+	if( libcrtx_admin_getpermissions(EventPlayer()) < libcrtx_admin_permissionlevel_moderator && (libcrtx_command_spawn_count[EventPlayer()] >= libcrtx_setting_getint(libcrtx_setting_int_maxspawnrate) || libcrtx_command_spawn_frozenuntil[EventPlayer()] > GameGetMissionTime())) {
+		libcrtx_write_error("You cannot spawn that many units so quickly. Please wait a while, and try again.");
+		libcrtx_write_text(PlayerGroupAll(), libcrtx_colored_player_name(EventPlayer()) + StringToText(" is attempting to spawn in excess of " + IntToString(libcrtx_setting_getint(libcrtx_setting_int_maxspawnrate)) + " units in " + IntToString(libcrtx_setting_getint(libcrtx_setting_int_spawnperiod)) + " seconds."));
+		if( libcrtx_command_spawn_frozenuntil[EventPlayer()] < GameGetMissionTime() ) {
+			libcrtx_command_spawn_frozenuntil[EventPlayer()] = GameGetMissionTime() + libcrtx_setting_getint(libcrtx_setting_int_spawntimeout);
+		}
+		// Do not halt execution, move on and allow the command to parse so it can be repeated using @spawn later.
+	}
+
+	message = libcrtx_chat_get_parse_line(EventPlayer());
+	if( libcrtx_command_spawn_parse(message) )
+	{
+		libcrtx_command_spawn_execute();
+	}
+	else
+	{
+		//libcrtx_debug("invalid syntax.");
+	}
+
+	return true;
+}

@@ -1,0 +1,258 @@
+// Cortex Forge Extensions
+// By Xethyr (407)
+//
+// Copyright (C) 2013
+//
+// Cortex Engine by Motive
+// Cortex SC2 Roleplaying Engine
+// Copyright (C) 2009-2011 <http://www.cortexrp.com/>
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; version 2 of the License.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+int libcrtx_ui_previewer;
+string[10000] libcrtx_model_catalog;
+int[libcrtx_max_players][10000] libcrtx_model_catalog_shift;
+
+//globally shared dialog objects of ui:
+int libcrtx_ui_previewer_frame;
+int libcrtx_ui_previewer_list;
+int libcrtx_ui_previewer_filter;
+int libcrtx_ui_previewer_btn_filter;
+int libcrtx_ui_previewer_btn_scaleincrease;
+int libcrtx_ui_previewer_btn_scaledecrease;
+int libcrtx_ui_previewer_btn_angleincrement;
+int libcrtx_ui_previewer_btn_angledecrement;
+
+
+//individual player dialog objects:
+int[libcrtx_max_players] libcrtx_ui_previewer_modelview;
+fixed[libcrtx_max_players] libcrtx_ui_previewer_model_scale;
+fixed[libcrtx_max_players] libcrtx_ui_previewer_model_angle;
+
+
+void libcrtx_ui_previewer_init()
+{
+	int i;
+	int count = CatalogEntryCount(c_gameCatalogModel);
+	
+	DialogCreate(850, 500, c_anchorLeft, 120, -150, true);
+	libcrtx_ui_previewer = DialogLastCreated();
+	
+	//model view outer frame
+    DialogControlCreate(libcrtx_ui_previewer, c_triggerControlTypePortrait);
+	libcrtx_ui_previewer_frame = DialogControlLastCreated();
+    DialogControlSetSize(libcrtx_ui_previewer_frame, PlayerGroupAll(), 460, 460);
+    DialogControlSetPosition(libcrtx_ui_previewer_frame, PlayerGroupAll(), c_anchorRight, 0, 0);
+    libNtve_gf_SetDialogItemRenderType(DialogControlLastCreated(), c_triggerRenderTypeLDR, PlayerGroupAll());	
+	
+	//model list
+    DialogControlCreate(libcrtx_ui_previewer, c_triggerControlTypeListBox);
+	libcrtx_ui_previewer_list = DialogControlLastCreated();
+    DialogControlSetPosition(libcrtx_ui_previewer_list, PlayerGroupAll(), c_anchorLeft, 50, -10);
+    DialogControlSetSize(libcrtx_ui_previewer_list, PlayerGroupAll(), 325, 350);
+	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_previewer, 300, 75, c_anchorTopLeft, 50, 35, StringToText("<s val=\"HelpMenuDialogTitle\">List of models:</s>"), ColorWithAlpha(0,0,0,0), false, 0.0);
+	
+	//model filter
+	DialogControlCreate(libcrtx_ui_previewer, c_triggerControlTypeEditBox);
+	libcrtx_ui_previewer_filter = DialogControlLastCreated();
+	DialogControlSetPosition(libcrtx_ui_previewer_filter, PlayerGroupAll(), c_anchorBottomLeft, 45, 35);
+    DialogControlSetSize(libcrtx_ui_previewer_filter, PlayerGroupAll(), 245, 50);
+    libNtve_gf_SetDialogItemRenderPriority(libcrtx_ui_previewer_filter, 1024, PlayerGroupAll());
+	//model filter button
+	libNtve_gf_CreateDialogItemButton(libcrtx_ui_previewer, 80, 50, c_anchorBottomRight, 0, 0, StringToText(""), StringToText("Filter"), "");
+	libcrtx_ui_previewer_btn_filter = DialogControlLastCreated();
+	DialogControlSetPositionRelative(libcrtx_ui_previewer_btn_filter, PlayerGroupAll(), c_anchorLeft, libcrtx_ui_previewer_filter, c_anchorRight, -5, 0);
+	
+	//create buttons (attached to outer frame)
+	libNtve_gf_CreateDialogItemImage(libcrtx_ui_previewer, 25, 25, c_anchorBottomRight, 0, 0, StringToText(""), "EditorData\\Images\\DataAdd.tga", c_triggerImageTypeNormal, false, Color(100,100,100), c_triggerBlendModeNormal);
+    DialogControlSetPositionRelative(DialogControlLastCreated(), PlayerGroupAll(), c_anchorCenter, libcrtx_ui_previewer_frame, c_anchorBottom, 18, -35);
+	libNtve_gf_CreateDialogItemButton(libcrtx_ui_previewer, 35, 35, c_anchorBottomRight, 0, 0, StringToText(""), StringToText(""), "Assets\\Textures\\ui_challenge_missionbuttonicon_normaloverpressedover.dds");
+  	libcrtx_ui_previewer_btn_scaleincrease = DialogControlLastCreated(); 
+	libNtve_gf_SetDialogItemImage(libcrtx_ui_previewer_btn_scaleincrease, "Assets\\Textures\\ui_challenge_missionbuttonicon_normaloverpressedover.dds", PlayerGroupAll());
+    libNtve_gf_SetDialogItemImageType(libcrtx_ui_previewer_btn_scaleincrease, c_triggerImageTypeNormal, PlayerGroupAll());
+    DialogControlSetPositionRelative(libcrtx_ui_previewer_btn_scaleincrease, PlayerGroupAll(), c_anchorCenter, libcrtx_ui_previewer_frame, c_anchorBottom, 18, -35);
+    libNtve_gf_SetDialogItemRenderPriority(libcrtx_ui_previewer_btn_scaleincrease, 1024, PlayerGroupAll());
+	
+	libNtve_gf_CreateDialogItemImage(libcrtx_ui_previewer, 25, 25, c_anchorBottomRight, 0, 0, StringToText(""), "EditorData\\Images\\ToolbarDeleteValue.tga", c_triggerImageTypeNormal, false, Color(100,100,100), c_triggerBlendModeNormal);
+    DialogControlSetPositionRelative(DialogControlLastCreated(), PlayerGroupAll(), c_anchorCenter, libcrtx_ui_previewer_frame, c_anchorBottom, -18, -35);
+    libNtve_gf_CreateDialogItemButton(libcrtx_ui_previewer, 35, 35, c_anchorBottomRight, 0, 0, StringToText(""), StringToText(""), "Assets\\Textures\\ui_challenge_missionbuttonicon_normaloverpressedover.dds");
+  	libcrtx_ui_previewer_btn_scaledecrease = DialogControlLastCreated();  
+	libNtve_gf_SetDialogItemImage(libcrtx_ui_previewer_btn_scaledecrease, "Assets\\Textures\\ui_challenge_missionbuttonicon_normaloverpressedover.dds", PlayerGroupAll());
+    libNtve_gf_SetDialogItemImageType(libcrtx_ui_previewer_btn_scaledecrease, c_triggerImageTypeNormal, PlayerGroupAll());
+    DialogControlSetPositionRelative(libcrtx_ui_previewer_btn_scaledecrease, PlayerGroupAll(), c_anchorCenter, libcrtx_ui_previewer_frame, c_anchorBottom, -18, -35);
+    libNtve_gf_SetDialogItemRenderPriority(libcrtx_ui_previewer_btn_scaledecrease, 1024, PlayerGroupAll());	
+	
+	libNtve_gf_CreateDialogItemImage(libcrtx_ui_previewer, 25, 25, c_anchorBottomRight, 0, 0, StringToText(""), "Assets\\Textures\\ui_research_frame_available_arrow_right.dds", c_triggerImageTypeNormal, false, Color(100,100,100), c_triggerBlendModeNormal);
+    DialogControlSetPositionRelative(DialogControlLastCreated(), PlayerGroupAll(), c_anchorCenter, libcrtx_ui_previewer_frame, c_anchorBottom, 53, -35);
+    libNtve_gf_CreateDialogItemButton(libcrtx_ui_previewer, 35, 35, c_anchorBottomRight, 0, 0, StringToText(""), StringToText(""), "Assets\\Textures\\ui_challenge_missionbuttonicon_normaloverpressedover.dds");
+  	libcrtx_ui_previewer_btn_angleincrement = DialogControlLastCreated();  
+	libNtve_gf_SetDialogItemImage(libcrtx_ui_previewer_btn_angleincrement, "Assets\\Textures\\ui_challenge_missionbuttonicon_normaloverpressedover.dds", PlayerGroupAll());
+    libNtve_gf_SetDialogItemImageType(libcrtx_ui_previewer_btn_angleincrement, c_triggerImageTypeNormal, PlayerGroupAll());
+    DialogControlSetPositionRelative(libcrtx_ui_previewer_btn_angleincrement, PlayerGroupAll(), c_anchorCenter, libcrtx_ui_previewer_frame, c_anchorBottom, 53, -35);
+    libNtve_gf_SetDialogItemRenderPriority(libcrtx_ui_previewer_btn_angleincrement, 1024, PlayerGroupAll());
+	
+	libNtve_gf_CreateDialogItemImage(libcrtx_ui_previewer, 25, 25, c_anchorBottomRight, 0, 0, StringToText(""), "Assets\\Textures\\ui_research_frame_available_arrow_left.dds", c_triggerImageTypeNormal, false, Color(100,100,100), c_triggerBlendModeNormal);
+    DialogControlSetPositionRelative(DialogControlLastCreated(), PlayerGroupAll(), c_anchorCenter, libcrtx_ui_previewer_frame, c_anchorBottom, -53, -35);
+    libNtve_gf_CreateDialogItemButton(libcrtx_ui_previewer, 35, 35, c_anchorBottomRight, 0, 0, StringToText(""), StringToText(""), "Assets\\Textures\\ui_challenge_missionbuttonicon_normaloverpressedover.dds");
+  	libcrtx_ui_previewer_btn_angledecrement = DialogControlLastCreated();
+	libNtve_gf_SetDialogItemImage(libcrtx_ui_previewer_btn_angledecrement, "Assets\\Textures\\ui_challenge_missionbuttonicon_normaloverpressedover.dds", PlayerGroupAll());
+    libNtve_gf_SetDialogItemImageType(libcrtx_ui_previewer_btn_angledecrement, c_triggerImageTypeNormal, PlayerGroupAll());
+    DialogControlSetPositionRelative(libcrtx_ui_previewer_btn_angledecrement, PlayerGroupAll(), c_anchorCenter, libcrtx_ui_previewer_frame, c_anchorBottom, -53, -35);
+    libNtve_gf_SetDialogItemRenderPriority(libcrtx_ui_previewer_btn_angledecrement, 1024, PlayerGroupAll());
+	
+	
+	//create individual player's actual model-viewing container
+	i = 1;
+	while(i < libcrtx_max_players) {
+		if(PlayerStatus(i) == c_playerStatusActive) {
+			DialogControlCreate(libcrtx_ui_previewer, c_triggerControlTypePortrait);
+			libcrtx_ui_previewer_modelview[i] = DialogControlLastCreated();
+			DialogControlSetSize(libcrtx_ui_previewer_modelview[i], PlayerGroupAll(), 460, 460);
+			DialogControlSetPositionRelative(libcrtx_ui_previewer_modelview[i], PlayerGroupAll(), c_anchorTop, libcrtx_ui_previewer_frame, c_anchorTop, 15, -50);
+			
+			//general parameter set for the dialog object portrait
+			libNtve_gf_SetDialogItemBorderVisible(libcrtx_ui_previewer_modelview[i], false, PlayerGroupAll());
+			libNtve_gf_SetDialogItemBackgroundVisible(libcrtx_ui_previewer_modelview[i], false, PlayerGroupAll());			
+			libNtve_gf_SetDialogItemUseTransition(libcrtx_ui_previewer_modelview[i], false, PlayerGroupAll());
+			libNtve_gf_SetDialogItemRenderType(libcrtx_ui_previewer_modelview[i], c_triggerRenderTypeLDR, PlayerGroupAll());
+			libNtve_gf_SetDialogItemCamera(libcrtx_ui_previewer_modelview[i], "Star2CameraLow01", PlayerGroupAll());
+			libNtve_gf_SetDialogItemModel(libcrtx_ui_previewer_modelview[i], "MercHavenChick", PlayerGroupAll());
+			PortraitWaitForLoad(PortraitGetTriggerControl(libcrtx_ui_previewer_modelview[i]));
+			ActorSend(ActorFromDialogControl(libcrtx_ui_previewer_modelview[i]), "SetScale 0.100000 0.500000");
+			
+			DialogControlSetVisible(libcrtx_ui_previewer_modelview[i], PlayerGroupAll(), false);
+			DialogControlSetVisible(libcrtx_ui_previewer_modelview[i], PlayerGroupSingle(i), true);
+		}
+		i += 1;
+	}
+	
+	//populate the model list
+	i = 1;
+	while(i <= count && i < 10000) {
+		libcrtx_model_catalog[i] = CatalogEntryGet(c_gameCatalogModel, i);
+		DialogControlAddItem(libcrtx_ui_previewer_list, PlayerGroupAll(), StringToText(CatalogEntryGet(c_gameCatalogModel, i)));
+		i += 1;
+	}
+	
+}
+
+void libcrtx_ui_previewer_events_init()
+{
+    TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_previewer_model_select"), c_playerAny, libcrtx_ui_previewer_list, c_triggerControlEventTypeSelectionChanged);
+    TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_previewer_model_filter"), c_playerAny, libcrtx_ui_previewer_btn_filter, c_triggerControlEventTypeClick);
+	TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_previewer_scale_increment"), c_playerAny, libcrtx_ui_previewer_btn_scaleincrease, c_triggerControlEventTypeClick);
+	TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_previewer_scale_decrement"), c_playerAny, libcrtx_ui_previewer_btn_scaledecrease, c_triggerControlEventTypeClick);
+	TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_previewer_angle_increment"), c_playerAny, libcrtx_ui_previewer_btn_angleincrement, c_triggerControlEventTypeClick);
+	TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_previewer_angle_decrement"), c_playerAny, libcrtx_ui_previewer_btn_angledecrement, c_triggerControlEventTypeClick);
+}
+
+bool libcrtx_ui_previewer_model_select(bool testConds, bool runActions)
+{
+	int i;
+	string model;
+	int j;
+	
+	i = DialogControlGetSelectedItem(libcrtx_ui_previewer_list, EventPlayer());
+	j = libcrtx_model_catalog_shift[EventPlayer()][i]; //in case a search was run, the index will be off
+	model = libcrtx_model_catalog[i + j];
+	
+	libNtve_gf_SetDialogItemModel(libcrtx_ui_previewer_modelview[EventPlayer()], model, PlayerGroupSingle(EventPlayer()));
+	ActorSend(ActorFromDialogControl(libcrtx_ui_previewer_modelview[EventPlayer()]), "ModelSwap {" + model + "}");
+	ActorSend(ActorFromDialogControl(libcrtx_ui_previewer_modelview[EventPlayer()]), "SetScale 0.100000 0.500000");
+	ActorSend(ActorFromDialogControl(libcrtx_ui_previewer_modelview[EventPlayer()]), "SetFacing 0");			
+	
+	libcrtx_ui_previewer_model_scale[EventPlayer()] = .1;
+	libcrtx_ui_previewer_model_angle[EventPlayer()] = 0;
+	
+	return true;
+}
+
+bool libcrtx_ui_previewer_model_filter(bool testConds, bool runActions)
+{
+	string filter;
+	int i;
+	int j = 0;
+	int count = CatalogEntryCount(c_gameCatalogModel);
+	
+	if(libNtve_gf_DialogItemEditValue(libcrtx_ui_previewer_filter, EventPlayer()) != "") {
+		filter = libNtve_gf_DialogItemEditValue(libcrtx_ui_previewer_filter, EventPlayer());
+	}
+	else {
+		DialogControlRemoveAllItems(libcrtx_ui_previewer_list, PlayerGroupSingle(EventPlayer()));
+		i = 1;
+		while(i <= count && i < 10000) {
+			DialogControlAddItem(libcrtx_ui_previewer_list, PlayerGroupSingle(EventPlayer()), StringToText(libcrtx_model_catalog[i]));
+			libcrtx_model_catalog_shift[EventPlayer()][i] = 0;
+			i += 1;
+		}
+		return true;
+	}
+	
+	//first remove all from list
+	DialogControlRemoveAllItems(libcrtx_ui_previewer_list, PlayerGroupSingle(EventPlayer()));
+	
+	//repopulate list
+	i = 1;
+	while(i <= count && i < 10000) {
+		DialogControlAddItem(libcrtx_ui_previewer_list, PlayerGroupSingle(EventPlayer()), StringToText(libcrtx_model_catalog[i]));
+		libcrtx_model_catalog_shift[EventPlayer()][i] = 0;
+		i += 1;
+	}
+	
+	//now remove entries that dont match filter
+	i = 1;
+	while(i <= count && i < 10000) {
+		if(!StringContains(libcrtx_model_catalog[i], filter, c_stringAnywhere, c_stringNoCase)) {
+			DialogControlRemoveItem(libcrtx_ui_previewer_list, PlayerGroupSingle(EventPlayer()), i - j);
+			j += 1;
+		}
+		else {
+			libcrtx_model_catalog_shift[EventPlayer()][i - j] = j;
+		}
+		i += 1;
+	}
+	
+	return true;
+}
+
+bool libcrtx_ui_previewer_scale_increment(bool testConds, bool runActions)
+{
+	libcrtx_ui_previewer_model_scale[EventPlayer()] = libcrtx_ui_previewer_model_scale[EventPlayer()] + .025;
+	ActorSend(ActorFromDialogControl(libcrtx_ui_previewer_modelview[EventPlayer()]), "SetScale " + FixedToString(libcrtx_ui_previewer_model_scale[EventPlayer()], 4) +" 0.500000");	
+	
+	return true;
+}
+bool libcrtx_ui_previewer_scale_decrement(bool testConds, bool runActions)
+{
+	if(libcrtx_ui_previewer_model_scale[EventPlayer()] - .025 > 0) {
+		libcrtx_ui_previewer_model_scale[EventPlayer()] = libcrtx_ui_previewer_model_scale[EventPlayer()] - .025;
+	}
+	else {
+		libcrtx_ui_previewer_model_scale[EventPlayer()] = .001;
+	}
+	ActorSend(ActorFromDialogControl(libcrtx_ui_previewer_modelview[EventPlayer()]), "SetScale " + FixedToString(libcrtx_ui_previewer_model_scale[EventPlayer()], 4) +" 0.500000");
+	
+	return true;
+}
+
+bool libcrtx_ui_previewer_angle_increment(bool testConds, bool runActions)
+{
+	libcrtx_ui_previewer_model_angle[EventPlayer()] = libcrtx_ui_previewer_model_angle[EventPlayer()] + 15;
+	ActorSend(ActorFromDialogControl(libcrtx_ui_previewer_modelview[EventPlayer()]), "SetFacing " + FixedToString(libcrtx_ui_previewer_model_angle[EventPlayer()], 0));
+	
+	return true;
+}
+bool libcrtx_ui_previewer_angle_decrement(bool testConds, bool runActions)
+{
+	libcrtx_ui_previewer_model_angle[EventPlayer()] = libcrtx_ui_previewer_model_angle[EventPlayer()] - 15;
+	ActorSend(ActorFromDialogControl(libcrtx_ui_previewer_modelview[EventPlayer()]), "SetFacing " + FixedToString(libcrtx_ui_previewer_model_angle[EventPlayer()], 0));
+	
+	return true;
+}

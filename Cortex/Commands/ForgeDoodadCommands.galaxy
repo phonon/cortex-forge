@@ -1,0 +1,668 @@
+// Cortex Forge Extensions
+// By Xethyr (407)
+//
+// Copyright (C) 2013
+//
+// Cortex Engine by Motive
+// Cortex SC2 Roleplaying Engine
+// Copyright (C) 2009-2011 <http://www.cortexrp.com/>
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; version 2 of the License.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+
+//global variable declarations
+bool[libcrtx_max_players] doodadBrushIsOn;
+actor[libcrtx_max_players] doodadBrushActor;
+string[libcrtx_max_players] doodadBrushModel;
+point[libcrtx_max_players] doodadBrushPoint;
+
+
+bool[libcrtx_max_players] isSelectingActors;
+bool[libcrtx_max_players] isSelectingRegion;
+bool[libcrtx_max_players] hasSelectedRegion;
+fixed[libcrtx_max_players] selectRegionXMin;
+fixed[libcrtx_max_players] selectRegionXMax;
+fixed[libcrtx_max_players] selectRegionYMin;
+fixed[libcrtx_max_players] selectRegionYMax;
+region[libcrtx_max_players] selectedRegion;
+
+
+bool[libcrtx_max_players] doodadBrushTint;
+string[libcrtx_max_players] doodadTint;
+string[libcrtx_max_players] doodadAlpha;
+
+bool[libcrtx_max_players] doodadBrushAngle;
+string[libcrtx_max_players] doodadAngle;
+
+bool[libcrtx_max_players] doodadBrushScale;
+string[libcrtx_max_players] doodadScale;
+
+bool[libcrtx_max_players] doodadBrushHeight;
+string[libcrtx_max_players] doodadHeight;
+
+bool[libcrtx_max_players] doodadBrushAnimspeed;
+string[libcrtx_max_players] doodadAnimspeed;
+
+
+//Initiates Forge mouse click/movement updates and sets initial parameters for doodad brush to false
+void libcrtx_forge_doodad_init()
+{
+	int i = 0;
+	while (i < libcrtx_max_players) {
+		doodadBrushIsOn[i] = false;
+		doodadBrushTint[i] = false;
+		doodadBrushAngle[i] = false;
+		doodadBrushScale[i] = false;
+		doodadBrushHeight[i] = false;
+		
+		isSelectingActors[i] = false;
+		i += 1;
+	}
+	//adds "doodad" status to all doodads on map. used for differentiation between units and doodads||models
+	libNtve_gf_SendActorMessageToGameRegion( RegionEntireMap(), "StatusSet isDoodad 1");
+
+	TriggerAddEventMouseMoved(TriggerCreate("libcrtx_forge_doodadBrushUpdate"), c_playerAny);
+	TriggerAddEventMouseClicked(TriggerCreate("libcrtx_command_doodadPlant"), c_playerAny, c_mouseButtonLeft, true);
+	
+	TriggerAddEventMouseClicked(TriggerCreate("libcrtx_command_selectActorsInitiate"), c_playerAny, c_mouseButtonLeft, true);
+	TriggerAddEventMouseClicked(TriggerCreate("libcrtx_forge_selectActorsSetRegion"), c_playerAny, c_mouseButtonLeft, false);
+	TriggerAddEventMouseMoved(TriggerCreate("libcrtx_forge_selectActorsUpdate"), c_playerAny);
+}
+
+//Turns on doodad brush, anchors doodad "splat" to mouse
+bool libcrtx_command_doodadbrush(bool testConds, bool runActions) 
+{
+	string brushModel = StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 2 );
+	
+	if(brushModel == null && doodadBrushIsOn[EventPlayer()] == false) {
+		return true;
+	}
+	
+	if(brushModel == null && doodadBrushIsOn[EventPlayer()])
+	{
+		ActorSend(doodadBrushActor[EventPlayer()], "Destroy");
+		
+		doodadBrushTint[EventPlayer()] = false;
+		doodadBrushScale[EventPlayer()] = false;
+		doodadBrushIsOn[EventPlayer()] = false;
+
+		return true;
+	}
+	
+	brushModel = libcrtx_param_catalog(c_gameCatalogModel, brushModel);
+	if(brushModel == null)
+	{
+		libcrtx_write(PlayerGroupSingle(EventPlayer()), "<c val=\"ff0000\">Unable to create model</c>: No such model exists.");
+		return true;
+	}
+
+	//deletes current doodad brush if already existing
+	if(doodadBrushIsOn[EventPlayer()]) {
+		ActorSend(doodadBrushActor[EventPlayer()], "Destroy");
+	}
+	//incase player is selecting actors. cancels that
+	if(isSelectingActors[EventPlayer()]) {
+		isSelectingActors[EventPlayer()] = false;
+		isSelectingRegion[EventPlayer()] = false;
+		if(hasSelectedRegion[EventPlayer()]) {
+			libNtve_gf_SendActorMessageToGameRegion(selectedRegion[EventPlayer()] , "HaloStop");
+			hasSelectedRegion[EventPlayer()] = false;
+		}
+	}
+	
+	//clears any existing parameters of previous doodad
+	doodadBrushTint[EventPlayer()] = false;
+	doodadBrushAngle[EventPlayer()] = false;
+	doodadBrushScale[EventPlayer()] = false;
+	doodadBrushHeight[EventPlayer()] = false;
+	doodadBrushAnimspeed[EventPlayer()] = false;
+	
+	//creates splat for doodad brush
+    libNtve_gf_CreateModelAtPoint(brushModel, doodadBrushPoint[EventPlayer()]);
+    doodadBrushActor[EventPlayer()] = libNtve_gf_ActorLastCreated();
+    ActorSend(doodadBrushActor[EventPlayer()], "SetOpacity 0.500000");
+	
+    doodadBrushIsOn[EventPlayer()] = true;
+	doodadBrushModel[EventPlayer()] = brushModel;
+	return true;
+}
+
+//updates doodad brush splat and point position
+bool libcrtx_forge_doodadBrushUpdate(bool runConditions, bool runActions)
+{
+	if (doodadBrushIsOn[EventPlayer()] && doodadBrushHeight[EventPlayer()] != true) {
+		ActorSend(doodadBrushActor[EventPlayer()], libNtve_gf_SetPosition (EventMouseMovedPosXWorld(), EventMouseMovedPosYWorld(), EventMouseMovedPosZWorld()));
+	}
+	if (doodadBrushIsOn[EventPlayer()] && doodadBrushHeight[EventPlayer()]) {
+		ActorSend(doodadBrushActor[EventPlayer()], libNtve_gf_SetPosition (EventMouseMovedPosXWorld(), EventMouseMovedPosYWorld(), EventMouseMovedPosZWorld() + StringToFixed(doodadHeight[EventPlayer()])));
+	}
+	
+	doodadBrushPoint[EventPlayer()] = Point( EventMouseMovedPosXWorld(), EventMouseMovedPosYWorld() );
+	
+	//Temporarily disabled point height because of issues of spawning
+	//PointSetHeight(doodadBrushPoint[EventPlayer()], EventMouseMovedPosZWorld());
+	
+	return true;
+
+}
+	
+//Places doodad at point
+bool libcrtx_command_doodadPlant(bool testConds, bool runActions)
+{
+	if (doodadBrushIsOn[EventPlayer()]) {	
+		libNtve_gf_CreateModelAtPoint(doodadBrushModel[EventPlayer()], doodadBrushPoint[EventPlayer()]);
+		
+		//if tint is true, doodads placed will be tinted
+		if(doodadBrushTint[EventPlayer()]) {
+			ActorSend(libNtve_gf_ActorLastCreated(), "SetTintColor " + doodadTint[EventPlayer()]);
+			ActorSend(libNtve_gf_ActorLastCreated(), "SetOpacity " + doodadAlpha[EventPlayer()]);
+		}
+		//if scale is true, doodads placed will be scaled
+		if (doodadBrushScale[EventPlayer()]) {	
+			ActorSend(libNtve_gf_ActorLastCreated(), "SetScale " + doodadScale[EventPlayer()]);
+		}
+		//if angle is true, doodads placed will have the specified angle
+		if (doodadBrushAngle[EventPlayer()]) {	
+			ActorSend(libNtve_gf_ActorLastCreated(), "SetFacing " + doodadAngle[EventPlayer()]);
+		}
+		//if height is true, doodads placed will be at the specified height
+		if (doodadBrushHeight[EventPlayer()]) {	
+			ActorSend(libNtve_gf_ActorLastCreated(), "SetHeight " + doodadHeight[EventPlayer()]);
+		}
+		//if animspeed is true, doodads placed will be at the specified height
+		if (doodadBrushAnimspeed[EventPlayer()]) {	
+			ActorSend(doodadBrushActor[EventPlayer()], "AnimSetTimeScaleGlobal " + doodadAnimspeed[EventPlayer()]);
+		}
+		
+		//sets status "isDoodad" as a marker
+		ActorSend(libNtve_gf_ActorLastCreated(), "StatusSet isDoodad 1");
+	}
+	
+	return true;
+}
+
+//
+// Below Contain Doodad Region Selection Commands - - -
+//
+
+//activates selecting regions for actors
+bool libcrtx_command_selectActors(bool testConds, bool runActions)
+{
+	if(isSelectingActors[EventPlayer()]) {
+		isSelectingActors[EventPlayer()] = false;
+		isSelectingRegion[EventPlayer()] = false;
+		if(hasSelectedRegion[EventPlayer()]) {
+			libNtve_gf_SendActorMessageToGameRegion(selectedRegion[EventPlayer()] , "HaloStop");
+			hasSelectedRegion[EventPlayer()] = false;
+		}
+		
+		libcrtx_write(PlayerGroupSingle(EventPlayer()), "<c val=\"ff0000\">No longer selecting actors.</c>");
+		return true;
+	}
+	
+	isSelectingActors[EventPlayer()] = true;
+	libcrtx_write(PlayerGroupSingle(EventPlayer()), "<c val=\"ff0000\">Now selecting actors with mouse drag.</c>");
+	
+	if(doodadBrushIsOn[EventPlayer()]) {
+		ActorSend(doodadBrushActor[EventPlayer()], "Destroy");
+	}
+	
+	doodadBrushIsOn[EventPlayer()] = false;
+	
+	return true;
+}
+//sets X min and Y min based on initial click point
+bool libcrtx_command_selectActorsInitiate(bool testConds, bool runActions)
+{
+	if(isSelectingActors[EventPlayer()]) {
+		if(hasSelectedRegion[EventPlayer()]) {
+		    libNtve_gf_SendActorMessageToGameRegionWithFilters(selectedRegion[EventPlayer()], c_actorIntersectAgainstCenter, "HaloStop", "Doodad,Model", "IsStatus isDoodad 1");
+			hasSelectedRegion[EventPlayer()] = false;
+		}
+		
+		selectRegionXMin[EventPlayer()] = EventMouseClickedPosXWorld();
+		selectRegionYMin[EventPlayer()] = EventMouseClickedPosYWorld();
+		selectRegionXMax[EventPlayer()] = EventMouseClickedPosXWorld();
+		selectRegionYMax[EventPlayer()] = EventMouseClickedPosYWorld();
+		
+		isSelectingRegion[EventPlayer()] = true;
+	}
+	
+	return true;
+}
+//dynamically update region and puts halo around unit
+bool libcrtx_forge_selectActorsUpdate(bool runConditions, bool runActions)
+{
+	region selectRegion;
+	region changeInRegionX;
+	region changeInRegionY;
+	fixed selectRegionXMaxOld;
+	fixed selectRegionYMaxOld;
+	fixed regionAreaOld;
+	fixed regionAreaNew;
+	
+	if(isSelectingRegion[EventPlayer()]) {
+	
+		selectRegionXMaxOld = selectRegionXMax[EventPlayer()];
+		selectRegionYMaxOld = selectRegionYMax[EventPlayer()];
+		selectRegionXMax[EventPlayer()] = EventMouseMovedPosXWorld();
+		selectRegionYMax[EventPlayer()] = EventMouseMovedPosYWorld();
+		
+		
+		//calculates region areas; if area increases, assuming new doodads will be added; if area decreases, assuming doodads will be removed
+		regionAreaOld = AbsF((selectRegionXMaxOld - selectRegionXMin[EventPlayer()])*(selectRegionYMaxOld - selectRegionYMin[EventPlayer()]));
+		regionAreaNew = AbsF((selectRegionXMax[EventPlayer()] - selectRegionXMin[EventPlayer()])*(selectRegionYMax[EventPlayer()] - selectRegionYMin[EventPlayer()]));
+		
+		//Updates selected region if area increases
+		if(regionAreaNew > regionAreaOld) {
+			selectRegion = RegionRect(selectRegionXMin[EventPlayer()], selectRegionYMin[EventPlayer()], selectRegionXMax[EventPlayer()] , selectRegionYMax[EventPlayer()]);
+			//Testing filters
+			//libNtve_gf_SendActorMessageToGameRegion(selectRegion, "HaloStart");
+			//libNtve_gf_SendActorMessageToGameRegion(selectRegion, "HaloSetColor " + libNtve_gf_ConvertColorToString(ColorFromIndex((PlayerGetColorIndex(EventPlayer(), false)), c_teamColorDiffuse)));
+
+			libNtve_gf_SendActorMessageToGameRegionWithFilters(selectRegion, c_actorIntersectAgainstCenter, "HaloStart", "Doodad,Model", "IsStatus isDoodad 1");
+			libNtve_gf_SendActorMessageToGameRegionWithFilters(selectRegion, c_actorIntersectAgainstCenter, "HaloSetColor " + libNtve_gf_ConvertColorToString(ColorFromIndex((PlayerGetColorIndex(EventPlayer(), false)), c_teamColorDiffuse)), "Doodad,Model", "IsStatus isDoodad 1");
+			
+			return true;
+		}
+		
+		//Updates selected region if area decreases by creating region that is change in Region
+		if(regionAreaNew < regionAreaOld) {
+			changeInRegionX = RegionRect(selectRegionXMaxOld, selectRegionYMaxOld, selectRegionXMax[EventPlayer()], selectRegionYMin[EventPlayer()]);
+			changeInRegionY = RegionRect(selectRegionXMaxOld, selectRegionYMaxOld, selectRegionXMin[EventPlayer()] , selectRegionYMax[EventPlayer()]);
+
+			libNtve_gf_SendActorMessageToGameRegion(changeInRegionX, "HaloStop");
+			libNtve_gf_SendActorMessageToGameRegion(changeInRegionY, "HaloStop");
+			
+			return true;
+		}
+	}
+	
+	return true;
+		
+}
+//Sets the region, sets hasSelectedRegion to true
+bool libcrtx_forge_selectActorsSetRegion(bool testConds, bool runActions)
+{
+	if(isSelectingActors[EventPlayer()]) {
+		if(isSelectingRegion[EventPlayer()]) {
+			selectRegionXMax[EventPlayer()] = EventMouseClickedPosXWorld();
+			selectRegionYMax[EventPlayer()] = EventMouseClickedPosYWorld();
+			
+			selectedRegion[EventPlayer()] = RegionRect(selectRegionXMin[EventPlayer()], selectRegionYMin[EventPlayer()], selectRegionXMax[EventPlayer()], selectRegionYMax[EventPlayer()]);
+			isSelectingRegion[EventPlayer()] = false;
+			hasSelectedRegion[EventPlayer()] = true;
+			
+			return true;
+		}
+	}
+	
+	return true;
+}
+//
+// Below contain region and doodad placement actor message commands
+//
+//removes all halos in map in area in case of _selectactors issues
+bool libcrtx_command_clearHalo(bool testConds, bool runActions)
+{	
+	string paramRadius = StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 2 );
+	fixed radius;
+	
+	if( libcrtx_admin_getpermissions( EventPlayer() ) < libcrtx_admin_permissionlevel_moderator ) {
+		libcrtx_write(PlayerGroupSingle(EventPlayer()), "Only moderators or admins can use _clearhalo");
+		return true;
+	}
+	
+	if(paramRadius == "") {
+		radius = 5.0;
+	}
+	else {
+		radius = StringToFixed(paramRadius);
+		if(radius == 0.0) {
+			radius = 5.0;
+		}
+	}
+
+	libNtve_gf_SendActorMessageToGameRegion( (RegionCircle( libcrtx_spawn_position(), radius)), "HaloStop");
+	
+	return true;
+}
+//removes all actors in radius around spawn location via "Destroy" actor message, which should be able to remove stains
+bool libcrtx_command_destroy(bool testConds, bool runActions)
+{
+	string paramRadius = StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 2 );
+	fixed radius;
+	
+	if( libcrtx_admin_getpermissions( EventPlayer() ) < libcrtx_admin_permissionlevel_moderator ) {
+		libcrtx_write(PlayerGroupSingle(EventPlayer()), "Only moderators or admins can use _destroy");
+		return true;
+	}
+	
+	if(paramRadius == "") {
+		radius = 5.0;
+	}
+	else {
+		radius = StringToFixed(paramRadius);
+		if(radius == 0.0) {
+			radius = 5.0;
+		}
+	}
+	
+	libNtve_gf_SendActorMessageToGameRegion( (RegionCircle( libcrtx_spawn_position(), radius)), "Destroy");
+	
+	return true;
+}
+//dummed down vers of DESTROY for normal users
+bool libcrtx_command_removeAreaActors(bool testConds, bool runActions)
+{
+	//DEAL WITH CURSOR SPLAT DESTRUCTION
+	
+	string paramRadius = StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 2 );
+	fixed radius;
+	
+	if(paramRadius == "") {
+		radius = 5.0;
+	}
+	else {
+		radius = StringToFixed(paramRadius);
+		if(radius == 0.0) {
+			radius = 5.0;
+		}
+	}
+	//Testing filters
+	//libNtve_gf_SendActorMessageToGameRegion( (RegionCircle( libcrtx_spawn_position(), radius)), "Destroy");
+	
+	libNtve_gf_SendActorMessageToGameRegionWithFilters( (RegionCircle( libcrtx_spawn_position(), radius)), c_actorIntersectAgainstCenter, "Destroy", "Doodad,Model", "IsStatus isDoodad 1");
+
+	return true;
+}
+//removes actors in selected region
+bool libcrtx_command_removeActors(bool testConds, bool runActions)
+{
+	if(hasSelectedRegion[EventPlayer()]) {
+	//Testing filters
+	//libNtve_gf_SendActorMessageToGameRegion( selectedRegion[EventPlayer()], "Destroy");
+	
+	libNtve_gf_SendActorMessageToGameRegionWithFilters( selectedRegion[EventPlayer()], c_actorIntersectAgainstCenter, "Destroy", "Doodad,Model", "IsStatus isDoodad 1");
+
+	}
+	return true;
+}
+bool libcrtx_command_tintDoodad(bool testConds, bool runActions)
+{
+	string paremR;
+	string paremG;
+	string paremB;
+	string paremAlpha;
+	string paremHDR;
+	
+	int ttR;
+	int ttG;
+	int ttB;
+	fixed ttAlpha;
+	fixed ttHDR;
+	
+	paremR = StringWord(libcrtx_chat_get_parse_line(EventPlayer()), 2 );
+	paremG = StringWord(libcrtx_chat_get_parse_line(EventPlayer()), 3 );
+	paremB = StringWord(libcrtx_chat_get_parse_line(EventPlayer()), 4 );
+	paremAlpha = StringWord(libcrtx_chat_get_parse_line(EventPlayer()), 5 );
+	paremHDR = StringWord(libcrtx_chat_get_parse_line(EventPlayer()), 6 );
+	
+	ttR = StringToInt(paremR);
+	ttR = libcrtx_boundsInt(ttR, 0, 255);
+	
+	ttG = StringToInt(paremG);
+	ttG = libcrtx_boundsInt(ttG, 0, 255);	
+
+	ttB = StringToInt(paremB);
+	ttB = libcrtx_boundsInt(ttB, 0, 255);
+	
+	ttAlpha = StringToFixed(paremAlpha);
+	ttAlpha = libcrtx_boundsFixed(ttAlpha, 0, 1);
+	
+	if(paremAlpha == "" ) {
+		ttAlpha = 1.0;
+	}
+
+	if( paremHDR == "" ) {
+		ttHDR = 1.0;
+	}
+	else
+	{
+		ttHDR = StringToFixed(paremHDR);
+	}
+	
+	//saves the Tint (and opacity) for use
+	doodadTint[EventPlayer()] = "{" + IntToString(ttR) + "," + IntToString(ttG) + "," + IntToString(ttB) + " " + FixedToString(ttHDR, c_fixedPrecisionAny) + "}";
+	doodadAlpha[EventPlayer()] = "{" + FixedToString(ttAlpha, c_fixedPrecisionAny) + "}";
+	
+	//sets the selected actors to the tint
+	if(hasSelectedRegion[EventPlayer()]) {
+		libNtve_gf_SendActorMessageToGameRegionWithFilters( selectedRegion[EventPlayer()], c_actorIntersectAgainstCenter, "SetTintColor " + doodadTint[EventPlayer()], "Doodad,Model", "IsStatus isDoodad 1");
+		libNtve_gf_SendActorMessageToGameRegionWithFilters( selectedRegion[EventPlayer()], c_actorIntersectAgainstCenter, "SetOpacity " + doodadAlpha[EventPlayer()], "Doodad,Model", "IsStatus isDoodad 1");
+
+		return true;
+	}
+
+	//allows doodads placed to have tint
+	if (doodadBrushIsOn[EventPlayer()]) {	
+		ActorSend(doodadBrushActor[EventPlayer()], "SetTintColor " + doodadTint[EventPlayer()]);
+		doodadBrushTint[EventPlayer()] = true;
+		
+		return true;
+	}
+	
+	return true;
+}
+//essentially the @scale command
+bool libcrtx_command_scaleDoodad(bool testConds, bool runActions) 
+{
+	fixed scaleX;
+	fixed scaleY;
+	fixed scaleZ;
+	string x;
+	string y;
+	string z;
+	
+	x = StringWord(libcrtx_chat_get_parse_line(EventPlayer()), 2);
+	y = StringWord(libcrtx_chat_get_parse_line(EventPlayer()), 3);
+	z = StringWord(libcrtx_chat_get_parse_line(EventPlayer()), 4);
+	
+	if( libcrtx_is_float(x) ) {
+		scaleX = StringToFixed(x);
+	}
+	
+	if( libcrtx_is_float(y) ) {
+		scaleY = StringToFixed(y);
+	}
+	
+	if( libcrtx_is_float(z) ) {
+		scaleZ = StringToFixed(z);
+	}
+	
+	if(scaleZ == 0.0) {
+		scaleZ = scaleX;
+	}
+	
+	if(scaleY == 0.0) {
+		scaleY = scaleX;
+	}
+	
+	// Verify bounds.
+	scaleX = MinF( libcrtx_setting_getfixed(libcrtx_setting_fixed_maxscale), scaleX );
+	scaleX = MaxF( libcrtx_setting_getfixed(libcrtx_setting_fixed_minscale), scaleX );
+	
+	scaleY = MinF( libcrtx_setting_getfixed(libcrtx_setting_fixed_maxscale), scaleY );
+	scaleY = MaxF( libcrtx_setting_getfixed(libcrtx_setting_fixed_minscale), scaleY );
+	
+	scaleZ = MinF( libcrtx_setting_getfixed(libcrtx_setting_fixed_maxscale), scaleZ );
+	scaleZ = MaxF( libcrtx_setting_getfixed(libcrtx_setting_fixed_minscale), scaleZ );
+
+	//save the scale string for use
+	doodadScale[EventPlayer()] = FixedToString(scaleX, c_fixedPrecisionAny) + "," + FixedToString(scaleY, c_fixedPrecisionAny) + "," + FixedToString(scaleZ, c_fixedPrecisionAny);
+	
+	//sets doodads in region to the scale
+	if(hasSelectedRegion[EventPlayer()]) {
+		libNtve_gf_SendActorMessageToGameRegionWithFilters( selectedRegion[EventPlayer()], c_actorIntersectAgainstCenter, "SetScale " + doodadScale[EventPlayer()], "Doodad,Model", "IsStatus isDoodad 1");
+
+		return true;
+	}
+
+	//allows doodads placed to have the scale
+	if (doodadBrushIsOn[EventPlayer()]) {	
+		ActorSend(doodadBrushActor[EventPlayer()], "SetScale " + doodadScale[EventPlayer()]);
+		doodadBrushScale[EventPlayer()] = true;
+		
+		return true;
+	}
+	
+	return true;
+}
+bool libcrtx_command_angleDoodad(bool testConds, bool runActions)
+{
+	fixed angle;
+	string paremAngle;
+	
+	paremAngle = StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 2 );
+	if( paremAngle != "" ) {
+		angle = StringToFixed( paremAngle );
+	}
+	
+	//saves angle parameter for use
+	if( paremAngle == "" ) {
+		doodadAngle[EventPlayer()] = "0.0";
+	}
+	else {
+		doodadAngle[EventPlayer()] = FixedToString(angle, c_fixedPrecisionAny);
+	}
+	
+	//sets doodads in region to the angle
+	if(hasSelectedRegion[EventPlayer()]) {
+		libNtve_gf_SendActorMessageToGameRegionWithFilters( selectedRegion[EventPlayer()], c_actorIntersectAgainstCenter, "SetFacing " + doodadAngle[EventPlayer()], "Doodad,Model", "IsStatus isDoodad 1");
+
+		return true;
+	}
+
+	//allows doodads placed to have the angle
+	if (doodadBrushIsOn[EventPlayer()]) {	
+		ActorSend(doodadBrushActor[EventPlayer()], "SetFacing " + doodadAngle[EventPlayer()]);
+		doodadBrushAngle[EventPlayer()] = true;
+		
+		return true;
+	}
+	
+	return true;
+}
+bool libcrtx_command_heightDoodad(bool testConds, bool runActions)
+{
+	string paremHeight;
+	fixed height;
+	
+	paremHeight = StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 2 );
+	
+	if( paremHeight != "" ) {
+		height = StringToFixed( paremHeight );
+	}
+	
+	//saves height parameter for use
+	if( paremHeight == "" ) {
+		doodadHeight[EventPlayer()] = "0.0";
+	}
+	else {
+		doodadHeight[EventPlayer()] = FixedToString(height, c_fixedPrecisionAny);
+	}
+	
+	//sets doodads in region to the height
+	if(hasSelectedRegion[EventPlayer()]) {
+		libNtve_gf_SendActorMessageToGameRegionWithFilters( selectedRegion[EventPlayer()], c_actorIntersectAgainstCenter, "SetHeight " + doodadHeight[EventPlayer()], "Doodad,Model", "IsStatus isDoodad 1");
+
+		return true;
+	}
+
+	//allows doodads placed to have the angle
+	if (doodadBrushIsOn[EventPlayer()]) {	
+		ActorSend(doodadBrushActor[EventPlayer()], "SetHeight " + doodadHeight[EventPlayer()]);
+		doodadBrushHeight[EventPlayer()] = true;
+		
+		return true;
+	}
+	
+	return true;
+}
+bool libcrtx_command_modelswapDoodad(bool testConds, bool runActions)
+{
+
+	string model = StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 2 );
+	
+	//if doodad brush is on, _modelswap is the same as _doodad
+	if(doodadBrushIsOn[EventPlayer()]) {
+		libcrtx_command_doodadbrush(false, true);
+		
+		return true;
+	}
+
+	if(hasSelectedRegion[EventPlayer()]) {
+		model = libcrtx_param_catalog(c_gameCatalogModel, model);
+		if(model == null)
+		{
+			libcrtx_write(PlayerGroupSingle(EventPlayer()), "<c val=\"ff0000\">Unable to create model</c>: No such model exists.");
+			return true;
+		}
+		
+		libNtve_gf_SendActorMessageToGameRegionWithFilters( selectedRegion[EventPlayer()], c_actorIntersectAgainstCenter, "ModelSwap " + model, "Doodad,Model", "IsStatus isDoodad 1");
+	}
+	
+	return true;
+}
+bool libcrtx_command_animspeedDoodad(bool testConds, bool runActions)
+{
+	string paremTimeScale = StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 2 );
+	fixed timeScale;
+	
+	if( paremTimeScale != "" ) {
+		timeScale = StringToFixed( paremTimeScale );
+	}
+	
+	//saves animspeed paramenter for use
+	if( paremTimeScale == "" ) {
+		doodadAnimspeed[EventPlayer()] = "1.0";
+	}
+	else {
+		if( timeScale < 0 || timeScale > 10 ) {
+			doodadAnimspeed[EventPlayer()] = "1.0";
+		}
+		else {
+			doodadAnimspeed[EventPlayer()] = FixedToString(timeScale, c_fixedPrecisionAny);
+		}
+	}	
+
+	//sets doodads in region to the animspeed
+	if(hasSelectedRegion[EventPlayer()]) {
+		libNtve_gf_SendActorMessageToGameRegionWithFilters( selectedRegion[EventPlayer()], c_actorIntersectAgainstCenter, "AnimSetTimeScaleGlobal " + doodadAnimspeed[EventPlayer()], "Doodad,Model", "IsStatus isDoodad 1");
+
+		return true;
+	}
+
+	//allows doodads placed to have the animspeed
+	if (doodadBrushIsOn[EventPlayer()]) {	
+		ActorSend(doodadBrushActor[EventPlayer()], "AnimSetTimeScaleGlobal " + doodadAnimspeed[EventPlayer()]);
+		doodadBrushAnimspeed[EventPlayer()] = true;
+		
+		return true;
+	}
+	
+	return true;
+}
+
+
+
+
+
+

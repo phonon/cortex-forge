@@ -1,0 +1,147 @@
+// Cortex SC2 Roleplaying Engine
+// Copyright (C) 2009-2011 <http://www.cortexrp.com/>
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; version 2 of the License.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+const string libcrtx_cortexid_bank = "CortexID";
+const string libcrtx_cortexid_bank_authsection = "Auth";
+const int libcrtx_cortexid_version = 3;
+
+const string libcrtx_cortexid_bank_writesection = libcrtx_cortexid_bank_authsection + IntToString(libcrtx_cortexid_version);
+
+// CortexID Player Flags:
+const int c_cortexIdPlayerFlagPrefersSpawnerUnit = (1 << 0);
+const int c_cortexIdPlayerFlagPrefersAnon = (1 << 1);
+
+// CortexID Spec 2.0:
+// One bank "CortexID" contains the necessary auth information for a player. 
+// Because the map may upgrade itself and different terrains will always be at different versions (stupid authors)
+// we must maintain different versions of the same auth in different sections.
+// Ex: since this is 2.0 we'll store as: "Auth2.0" section
+// if 3.0 comes out we'll search for "Auth2.0" and upgrade accordingly to the new format.
+// The GUID is stored in integer form [-INT_MAX, INT_MAX] encrypted with the version number to make things extra fun and exciting.
+
+// CortexID Spec 3.0:
+// The GUID flag is deprecated, and for previous versions only. The new GUID is the result of PlayerHandle() native.
+// The admin test will be changed to reflect reading this GUID, hashing it, and comparing it to the expected value.
+
+string libcrtx_cortexid_get_guid(int player)
+{
+	return PlayerHandle(player);
+}
+
+void libcrtx_cortexid_init_for_player(int player)
+{
+	bank b = BankLoad( libcrtx_cortexid_bank, player );
+	
+	BankValueSetFromInt(b, libcrtx_cortexid_bank_writesection, "PlayerFlags", 0);
+	BankSave( b );
+}
+
+bool libcrtx_cortexid_has_playerflag(int player, int flags)
+{
+	bank b = BankLoad( libcrtx_cortexid_bank, player);
+	int cflags = BankValueGetAsInt(b, libcrtx_cortexid_bank_writesection, "PlayerFlags");
+	return (cflags & flags) != 0;
+}
+
+void libcrtx_cortexid_set_playerflag(int player, int flags)
+{
+	bank b = BankLoad( libcrtx_cortexid_bank, player);
+	int cflags = BankValueGetAsInt(b, libcrtx_cortexid_bank_writesection, "PlayerFlags");
+	cflags |= flags;
+	BankValueSetFromInt(b, libcrtx_cortexid_bank_writesection, "PlayerFlags", cflags);
+	BankSave(b);
+}
+
+void libcrtx_cortexid_unset_playerflag(int player, int flags)
+{
+	bank b = BankLoad( libcrtx_cortexid_bank, player);
+	int cflags = BankValueGetAsInt(b, libcrtx_cortexid_bank_writesection, "PlayerFlags");
+	cflags &= ~flags;
+	BankValueSetFromInt(b, libcrtx_cortexid_bank_writesection, "PlayerFlags", cflags);
+	BankSave(b);
+}
+
+bool libcrtx_cortexid_has_version(int player, int version)
+{
+	bank b = BankLoad(libcrtx_cortexid_bank, player);
+	return BankSectionExists(b, libcrtx_cortexid_bank_authsection + IntToString(version));
+}
+
+// Attempts to update us to the latest CortexID version.
+void libcrtx_cortexid_update(int player)
+{
+	const int currVersion = libcrtx_cortexid_version;
+	bank b = BankLoad(libcrtx_cortexid_bank, player);
+	// Let's find out the next version we have.
+	int version = currVersion - 1;
+	string guid;
+	string newguid;
+	while(version >= 2) // 2.0 was original CortexID ;)
+	{
+		if( libcrtx_cortexid_has_version(player, version) )
+		{
+			// We have this version! Update us to currVersion!
+			if( version == 2 )
+			{
+				// Add PlayerFlags field to default value: mouse spawner. :)
+				BankValueSetFromInt(b, libcrtx_cortexid_bank_authsection + IntToString(3), "PlayerFlags", 0);
+				BankSave(b);
+			}
+			
+			if( version + 1 != libcrtx_cortexid_version ) {
+				libcrtx_cortexid_update(player); // recursion, oh my!
+			}
+			return;
+		} else if( version == 2 )
+		{
+			// It appears we have no ID! :O 
+			libcrtx_cortexid_init_for_player(player);
+			return;
+		}
+	}
+}
+
+void libcrtx_cortexid_init()
+{
+	int i = 0;
+	while( i != libcrtx_max_players )
+	{
+		if( PlayerType(i) != c_playerTypeUser ) {
+			i = i + 1;
+			continue;
+		}
+
+		if( libcrtx_cortexid_has_version(i, libcrtx_cortexid_version) ) 
+		{
+			i = i + 1;
+			continue;
+		} else {
+			// We're out of date! :(
+			libcrtx_cortexid_update(i);
+		}
+
+		i = i + 1;
+	}
+}
+
+bool libcrtx_cortexid_is_superadmin(int player)
+{
+	// The administrator hash of Cortex. Empty string for not allowed ever.
+	const string expectedHash = "474c37a49f8dea7b2dd592d7e4736f0a6e4fcf548be0f616321a085754926c8f";
+	bank b = BankLoad( libcrtx_cortexid_bank, player );
+	string guid = libcrtx_cortexid_get_guid(player);
+	string hash;
+	libHash_InitializeHashInput();
+	libHash_AddStringToHashInput(guid);
+	hash = libHash_GenerateSha256HashCode();
+	return (hash == expectedHash && expectedHash != "");
+}

@@ -1,0 +1,119 @@
+// Cortex Forge Extensions
+// By Xethyr (407)
+//
+// Copyright (C) 2013
+//
+// NOTE: Blacklists have been traditionally disapproved by Motive (or, TheBlackMan). He has repeatedly
+// stated that blacklists shall never be included in Cortex. Fuck that. Therefore, blacklists shall
+// be my justifications for calling my commands extensions to Cortex rather than an official patch.
+// 
+// Cortex Engine by Motive
+// Cortex SC2 Roleplaying Engine
+// Copyright (C) 2009-2011 <http://www.cortexrp.com/>
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; version 2 of the License.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+bool libcrtx_command_blacklist (bool checkConds, bool runActions)
+{
+	string subCommand;
+	string subParameter;
+	int player;
+	string pHandle;
+	string pName;
+	string action;
+	int i = 0;
+	
+	subCommand = StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 2 );
+	subParameter = StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 3 );
+	action = StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 4 );
+
+	//add player name and handle to blacklist
+	if(subCommand == "add") {
+		if(subParameter == "-h") { //if syntax is blacklist add -h ____, then allows direct handle blacklisting
+			pHandle = StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 4 );
+			action = StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 5 );
+			pName = "Player handle";
+			
+			libcrtx_blacklist_add(EventPlayer(), pHandle, StringToText(pName), action);
+			
+			return true;
+		}
+		else {
+			player = libcrtx_color_to_player(StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 3 ));
+			if( player == -1 ) {
+				return true;
+			}
+			if(player == 0 || player == 14 || player == 15) {
+				libcrtx_write_error("Error: cannot add non-user players to blacklist");
+				return true;
+			}
+			pHandle = PlayerHandle(player);
+		}
+		if(action == "ban") {
+			action = "2";
+		}
+		else {
+			action = "1"; //action 2 bans player and must be specified. else player is just disabled
+		}
+		
+		if(pHandle == PlayerHandle(EventPlayer())) {
+			libcrtx_write_error("Error: cannot blacklist yourself");
+	
+			return true;
+		}
+		while(i < BankKeyCount(libcrtx_blacklist_bank[player], "blacklist")) {
+			if(pHandle == StringWord(BankKeyName(libcrtx_blacklist_bank[player], "blacklist", i), 2)) {
+				libcrtx_write_error("Error: player already exists on blacklist");
+
+				return true;
+			}
+			i += 1;
+		}
+		
+		libcrtx_blacklist_add(EventPlayer(), pHandle, PlayerName(player), action);
+		libcrtx_write_text(PlayerGroupSingle(EventPlayer()), PlayerName(player) + StringToText(" was added to blacklist."));
+
+		//libcrtx_write_text(PlayerGroupSingle(EventPlayer()), StringToText(" was added to blacklist."));
+		return true;
+	}
+	//remove player name and handle from blacklist
+	//syntax is "blacklist remove ID"
+	if(subCommand == "remove") {
+		if(libcrtx_blacklist_player_index(EventPlayer(), subParameter) >= 0) {
+			i = libcrtx_blacklist_player_index(EventPlayer(), subParameter);
+			pHandle = BankKeyName(libcrtx_blacklist_bank[EventPlayer()], "blacklist", i);
+			//Note: variable pHandle is not actually the player handle, but a key that contains
+			//blacklist id - player handle - action
+			//see blacklist_add
+			libcrtx_write_text(PlayerGroupSingle(EventPlayer()), BankValueGetAsText(libcrtx_blacklist_bank[EventPlayer()], "blacklist", pHandle) + StringToText(" was removed blacklist."));
+			//libcrtx_write_text(PlayerGroupSingle(EventPlayer()), StringToText(" was removed blacklist."));
+
+			libcrtx_blacklist_remove(EventPlayer(), pHandle);
+
+			return true;
+		}
+		if(libcrtx_blacklist_player_index(EventPlayer(), subParameter) == -1) {
+			libcrtx_write_error("No players on blacklist.");
+			return true;
+		}
+		if(libcrtx_blacklist_player_index(EventPlayer(), subParameter) == -2) {
+			libcrtx_write_error("Player does not exist on blacklist.");
+			return true;
+		}
+		return true;
+	}
+	//list blacklist in a table (ID: + Handle: + Name:)
+	if(subCommand == "list") {
+		libcrtx_blacklist_list(EventPlayer());
+		return true;
+	}
+	
+	return true;
+}

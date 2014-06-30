@@ -1,0 +1,277 @@
+// Cortex Forge Extensions
+// By Xethyr (407)
+//
+// Copyright (C) 2013
+//
+// Cortex Engine by Motive
+// Cortex SC2 Roleplaying Engine
+// Copyright (C) 2009-2011 <http://www.cortexrp.com/>
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; version 2 of the License.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+int libcrtx_ui_aliases;
+
+int libcrtx_ui_aliases_list;
+int libcrtx_ui_aliases_btn_delete;
+
+int libcrtx_ui_aliases_frame;
+int libcrtx_ui_aliases_commands;
+int libcrtx_ui_aliases_rename_box;
+int libcrtx_ui_aliases_edit_box;
+int libcrtx_ui_aliases_btn_rename;
+int libcrtx_ui_aliases_btn_edit;
+int libcrtx_ui_aliases_info_text;
+
+bool[libcrtx_max_players] libcrtx_ui_aliases_selection_on;
+bool[libcrtx_max_players] libcrtx_ui_aliases_is_deleting;
+
+void libcrtx_ui_aliases_init()
+{
+	int i = 1;
+	int n;
+	int count;
+	
+	DialogCreate(850, 500, c_anchorLeft, 120, -150, true);
+	libcrtx_ui_aliases = DialogLastCreated();
+	
+	//list for aliases
+	DialogControlCreate(libcrtx_ui_aliases, c_triggerControlTypeListBox);
+	libcrtx_ui_aliases_list = DialogControlLastCreated();
+    DialogControlSetPosition(libcrtx_ui_aliases_list, PlayerGroupAll(), c_anchorLeft, 40, 0);
+    DialogControlSetSize(libcrtx_ui_aliases_list, PlayerGroupAll(), 160, 350);
+	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_aliases, 300, 75, c_anchorTopLeft, 40, 40, StringToText("<s val=\"ChatDisplay\">Aliases</s>"), ColorWithAlpha(0,0,0,0), false, 0.0);
+	
+	//delete button for aliases
+	libNtve_gf_CreateDialogItemButton(libcrtx_ui_aliases, 125, 40, c_anchorBottomRight, 0, 0, StringToText(""), StringToText("Delete"), "");
+    libcrtx_ui_aliases_btn_delete = DialogControlLastCreated();
+	DialogControlSetPositionRelative(libcrtx_ui_aliases_btn_delete, PlayerGroupAll(), c_anchorTop, libcrtx_ui_aliases_list, c_anchorBottom, 0, 5);
+	
+	//frame for alias actions
+    DialogControlCreate(libcrtx_ui_aliases, c_triggerControlTypePortrait);
+	libcrtx_ui_aliases_frame = DialogControlLastCreated();
+    DialogControlSetSize(libcrtx_ui_aliases_frame, PlayerGroupAll(), 625, 500);
+    DialogControlSetPosition(libcrtx_ui_aliases_frame, PlayerGroupAll(), c_anchorRight, 0, 0);
+    libNtve_gf_SetDialogItemRenderType(DialogControlLastCreated(), c_triggerRenderTypeLDR, PlayerGroupAll());	
+	
+	//alias commands writeout box
+	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_aliases, 566, 186, c_anchorTopLeft, 50, 35, StringToText(""), ColorWithAlpha(0,0,0,0), false, 0.0);
+    libcrtx_ui_aliases_commands = DialogControlLastCreated();
+	DialogControlSetPositionRelative(libcrtx_ui_aliases_commands, PlayerGroupAll(), c_anchorTop, libcrtx_ui_aliases_frame, c_anchorTop, 0, 65);
+	libNtve_gf_SetDialogItemRenderPriority(libcrtx_ui_aliases_commands, 1024, PlayerGroupAll());
+
+	libNtve_gf_CreateDialogItemImage(libcrtx_ui_aliases, 580, 200, c_anchorBottomRight, 0, 0, StringToText(""), "Assets\\Textures\\ui_research_frame_outer.dds", c_triggerImageTypeBorder, false, Color(100,100,100), c_triggerBlendModeNormal);
+    DialogControlSetPositionRelative(DialogControlLastCreated(), PlayerGroupAll(), c_anchorCenter, libcrtx_ui_aliases_commands, c_anchorCenter, 0, 0);
+	libNtve_gf_SetDialogItemRenderPriority(DialogControlLastCreated(), 1024, PlayerGroupAll());
+	
+	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_aliases, 300, 50, c_anchorTopLeft, 40, 40, StringToText("<s val=\"ChatDisplay\">Commands:</s>"), ColorWithAlpha(0,0,0,0), false, 0.0);
+    DialogControlSetPositionRelative(DialogControlLastCreated(), PlayerGroupAll(), c_anchorBottomLeft, libcrtx_ui_aliases_commands, c_anchorTopLeft, 0, 10);
+	libNtve_gf_SetDialogItemRenderPriority(DialogControlLastCreated(), 1024, PlayerGroupAll());
+
+	
+	//alias rename edit box;
+	DialogControlCreate(libcrtx_ui_aliases, c_triggerControlTypeEditBox);
+	libcrtx_ui_aliases_rename_box = DialogControlLastCreated();
+    DialogControlSetSize(libcrtx_ui_aliases_rename_box, PlayerGroupAll(), 400, 50);
+    DialogControlSetPositionRelative(libcrtx_ui_aliases_rename_box, PlayerGroupAll(), c_anchorTopLeft, libcrtx_ui_aliases_commands, c_anchorBottomLeft, 0, 25);
+    libNtve_gf_SetDialogItemRenderPriority(libcrtx_ui_aliases_rename_box, 1024, PlayerGroupAll());
+	
+	libNtve_gf_CreateDialogItemImage(libcrtx_ui_aliases, 400, 50, c_anchorBottomRight, 0, 0, StringToText(""), "Assets\\Textures\\ui_research_frame_outer.dds", c_triggerImageTypeBorder, false, Color(100,100,100), c_triggerBlendModeNormal);
+    DialogControlSetPositionRelative(DialogControlLastCreated(), PlayerGroupAll(), c_anchorCenter, libcrtx_ui_aliases_rename_box, c_anchorCenter, 0, 0);
+	libNtve_gf_SetDialogItemRenderPriority(DialogControlLastCreated(), 1000, PlayerGroupAll());
+	
+	//alias rename button
+	libNtve_gf_CreateDialogItemButton(libcrtx_ui_aliases, 125, 45, c_anchorBottomRight, 0, 0, StringToText(""), StringToText("Rename"), "");
+    libcrtx_ui_aliases_btn_rename = DialogControlLastCreated();
+	DialogControlSetPositionRelative(libcrtx_ui_aliases_btn_rename, PlayerGroupAll(), c_anchorLeft, libcrtx_ui_aliases_rename_box, c_anchorRight, 15, 0);	
+	
+	//alias commands edit box
+	DialogControlCreate(libcrtx_ui_aliases, c_triggerControlTypeEditBox);
+	libcrtx_ui_aliases_edit_box = DialogControlLastCreated();
+    DialogControlSetSize(libcrtx_ui_aliases_edit_box, PlayerGroupAll(), 580, 50);
+    DialogControlSetPositionRelative(libcrtx_ui_aliases_edit_box, PlayerGroupAll(), c_anchorTopLeft, libcrtx_ui_aliases_rename_box, c_anchorBottomLeft, 0, 25);
+    libNtve_gf_SetDialogItemRenderPriority(libcrtx_ui_aliases_edit_box, 1024, PlayerGroupAll());
+	
+	libNtve_gf_CreateDialogItemImage(libcrtx_ui_aliases, 580, 50, c_anchorBottomRight, 0, 0, StringToText(""), "Assets\\Textures\\ui_research_frame_outer.dds", c_triggerImageTypeBorder, false, Color(100,100,100), c_triggerBlendModeNormal);
+    DialogControlSetPositionRelative(DialogControlLastCreated(), PlayerGroupAll(), c_anchorCenter, libcrtx_ui_aliases_edit_box, c_anchorCenter, 0, 0);
+	libNtve_gf_SetDialogItemRenderPriority(DialogControlLastCreated(), 1000, PlayerGroupAll());
+
+	//alias commands edit button
+	libNtve_gf_CreateDialogItemButton(libcrtx_ui_aliases, 75, 45, c_anchorBottomRight, 0, 0, StringToText(""), StringToText("Edit"), "");
+    libcrtx_ui_aliases_btn_edit = DialogControlLastCreated();
+	DialogControlSetPositionRelative(libcrtx_ui_aliases_btn_edit, PlayerGroupAll(), c_anchorTopRight, libcrtx_ui_aliases_edit_box, c_anchorBottomRight, -15, 0);		
+	
+	//info label at bottom of frame
+	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_aliases, 500, 50, c_anchorTopLeft, 50, 35, StringToText(""), ColorWithAlpha(0,0,0,0), false, 0.0);
+	libcrtx_ui_aliases_info_text = DialogControlLastCreated();
+	DialogControlSetPositionRelative(libcrtx_ui_aliases_info_text, PlayerGroupAll(), c_anchorBottom, libcrtx_ui_aliases_frame, c_anchorBottom, 0, 15);		
+	
+	
+	//populate alias list for players
+	while(i < libcrtx_max_players) {
+		if(PlayerStatus(i) == c_playerStatusActive) {
+			if(BankKeyCount(libcrtx_alias_banks[i], "aliases") != 0) {
+				count = BankKeyCount(libcrtx_alias_banks[i], "aliases");
+				n = 0;
+				while(n < count) {
+					DialogControlAddItem(libcrtx_ui_aliases_list, PlayerGroupSingle(i), StringToText(BankKeyName(libcrtx_alias_banks[i], "aliases", n)));
+					n += 1;
+				}
+			}
+		}
+		i += 1;
+	}
+	
+}
+void libcrtx_ui_aliases_events_init()
+{
+
+    TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_aliases_selected"), c_playerAny, libcrtx_ui_aliases_list, c_triggerControlEventTypeSelectionChanged);
+    TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_aliases_delete"), c_playerAny, libcrtx_ui_aliases_btn_delete, c_triggerControlEventTypeClick);
+    TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_aliases_rename"), c_playerAny, libcrtx_ui_aliases_btn_rename, c_triggerControlEventTypeClick);
+    TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_aliases_edit"), c_playerAny, libcrtx_ui_aliases_btn_edit, c_triggerControlEventTypeClick);
+
+}
+void libcrtx_ui_aliases_list_populate(int player)
+{
+	int count = BankKeyCount(libcrtx_alias_banks[player], "aliases");
+	int n = 0;
+	
+	DialogControlRemoveAllItems(libcrtx_ui_aliases_list, PlayerGroupSingle(player));	
+	
+	while(n < count) {
+		DialogControlAddItem(libcrtx_ui_aliases_list, PlayerGroupSingle(player), StringToText(BankKeyName(libcrtx_alias_banks[player], "aliases", n)));
+		n += 1;
+	}
+	
+}
+void libcrtx_ui_aliases_nfo_clear(int player)
+{
+	libNtve_gf_SetDialogItemText(libcrtx_ui_aliases_commands, StringToText(""), PlayerGroupSingle(player));
+	libNtve_gf_SetDialogItemEditorValue(libcrtx_ui_aliases_rename_box, "", PlayerGroupSingle(player));
+	libNtve_gf_SetDialogItemEditorValue(libcrtx_ui_aliases_edit_box, "", PlayerGroupSingle(player));
+}
+bool libcrtx_ui_aliases_selected(bool testConds, bool runActions)
+{
+	string s;
+	
+	if(libcrtx_ui_aliases_is_deleting[EventPlayer()]) { //triggered by libcrtx_ui_aliases_delete's populate function call
+		libcrtx_ui_aliases_is_deleting[EventPlayer()] = false;
+		return true;
+	}
+	
+	s = BankValueGetAsString(libcrtx_alias_banks[EventPlayer()], "aliases", BankKeyName(libcrtx_alias_banks[EventPlayer()], "aliases", DialogControlGetSelectedItem(libcrtx_ui_aliases_list, EventPlayer()) - 1));
+	libcrtx_ui_aliases_selection_on[EventPlayer()] = true;
+	
+	libNtve_gf_SetDialogItemText(libcrtx_ui_aliases_commands, StringToText(s), PlayerGroupSingle(EventPlayer()));
+	libNtve_gf_SetDialogItemEditorValue(libcrtx_ui_aliases_rename_box, BankKeyName(libcrtx_alias_banks[EventPlayer()], "aliases", DialogControlGetSelectedItem(libcrtx_ui_aliases_list, EventPlayer()) - 1), PlayerGroupSingle(EventPlayer()));
+	libNtve_gf_SetDialogItemEditorValue(libcrtx_ui_aliases_edit_box, s, PlayerGroupSingle(EventPlayer()));
+	
+	return true;
+}
+bool libcrtx_ui_aliases_delete(bool testConds, bool runActions)
+{
+	if(!libcrtx_ui_aliases_selection_on[EventPlayer()]) {
+		return true;
+	}
+	libcrtx_ui_aliases_is_deleting[EventPlayer()] = true;
+	
+	libcrtx_alias_destroy(BankKeyName(libcrtx_alias_banks[EventPlayer()], "aliases", DialogControlGetSelectedItem(libcrtx_ui_aliases_list, EventPlayer()) - 1));
+	libcrtx_ui_aliases_list_populate(EventPlayer()); //immediately triggers Event Selection Changed
+	libcrtx_ui_aliases_nfo_clear(EventPlayer());
+	
+	libcrtx_ui_aliases_selection_on[EventPlayer()] = false;
+
+	return true;
+}
+bool libcrtx_ui_aliases_rename(bool testConds, bool runActions)
+{
+	string cmd;
+	string name;
+	int count;
+	int n = 0;
+	
+	if(libNtve_gf_DialogItemEditValue(libcrtx_ui_aliases_rename_box, EventPlayer()) == "") {
+		libNtve_gf_SetDialogItemText(libcrtx_ui_aliases_info_text, StringToText("<c val=\"FF0000\">Error: cannot have a blank alias name</c>"), PlayerGroupSingle(EventPlayer()));
+		DialogControlFadeTransparency(libcrtx_ui_aliases_info_text, PlayerGroupSingle(EventPlayer()), 0, 0);
+		DialogControlFadeTransparency(libcrtx_ui_aliases_info_text, PlayerGroupSingle(EventPlayer()), 3.5, 100);
+		return true;
+	}
+	
+	name = libNtve_gf_DialogItemEditValue(libcrtx_ui_aliases_rename_box, EventPlayer());
+	
+	if(name == BankKeyName(libcrtx_alias_banks[EventPlayer()], "aliases", DialogControlGetSelectedItem(libcrtx_ui_aliases_list, EventPlayer()) - 1)) {
+		return true;
+	}
+
+	cmd = BankValueGetAsString(libcrtx_alias_banks[EventPlayer()], "aliases", BankKeyName(libcrtx_alias_banks[EventPlayer()], "aliases", DialogControlGetSelectedItem(libcrtx_ui_aliases_list, EventPlayer()) - 1));
+	
+	libcrtx_alias_destroy(BankKeyName(libcrtx_alias_banks[EventPlayer()], "aliases", DialogControlGetSelectedItem(libcrtx_ui_aliases_list, EventPlayer()) - 1));
+	libcrtx_alias_create(name, cmd);
+	
+	libcrtx_ui_aliases_list_populate(EventPlayer());
+	
+	//reselect the item
+	count = BankKeyCount(libcrtx_alias_banks[EventPlayer()], "aliases");
+	while(n < count) {
+		if(BankKeyName(libcrtx_alias_banks[EventPlayer()], "aliases", n) == name) {
+			DialogControlSelectItem(libcrtx_ui_aliases_list, PlayerGroupSingle(EventPlayer()), n + 1);
+			return true;
+		}
+		n += 1;
+	}
+	
+	return true;
+}
+bool libcrtx_ui_aliases_edit(bool testConds, bool runActions)
+{
+	string cmd;
+	string name;
+	int count;
+	int n = 0;
+	
+	if(libNtve_gf_DialogItemEditValue(libcrtx_ui_aliases_edit_box, EventPlayer()) == "") {
+		libNtve_gf_SetDialogItemText(libcrtx_ui_aliases_info_text, StringToText("<c val=\"FF0000\">Error: cannot have a blank alias</c>"), PlayerGroupSingle(EventPlayer()));
+		DialogControlFadeTransparency(libcrtx_ui_aliases_info_text, PlayerGroupSingle(EventPlayer()), 0, 0);
+		DialogControlFadeTransparency(libcrtx_ui_aliases_info_text, PlayerGroupSingle(EventPlayer()), 3.5, 100);
+		return true;
+	}	
+	
+	cmd = libNtve_gf_DialogItemEditValue(libcrtx_ui_aliases_edit_box, EventPlayer());
+
+	if(cmd == BankValueGetAsString(libcrtx_alias_banks[EventPlayer()], "aliases", BankKeyName(libcrtx_alias_banks[EventPlayer()], "aliases", DialogControlGetSelectedItem(libcrtx_ui_aliases_list, EventPlayer()) - 1))) {
+		return true;
+	}
+	if(StringContains(cmd, "alias ", c_stringAnywhere, false)) {
+		libNtve_gf_SetDialogItemText(libcrtx_ui_aliases_info_text, StringToText("<c val=\"FF0000\">Error: cannot have \"Alias\" inside an alias</c>"), PlayerGroupSingle(EventPlayer()));
+		DialogControlFadeTransparency(libcrtx_ui_aliases_info_text, PlayerGroupSingle(EventPlayer()), 0, 0);		
+		DialogControlFadeTransparency(libcrtx_ui_aliases_info_text, PlayerGroupSingle(EventPlayer()), 3.5, 100);		
+		return true;
+	}
+	
+	name = BankKeyName(libcrtx_alias_banks[EventPlayer()], "aliases", DialogControlGetSelectedItem(libcrtx_ui_aliases_list, EventPlayer()) - 1);
+	
+	libcrtx_alias_destroy(BankKeyName(libcrtx_alias_banks[EventPlayer()], "aliases", DialogControlGetSelectedItem(libcrtx_ui_aliases_list, EventPlayer()) - 1));
+	libcrtx_alias_create(name, cmd);
+	
+	libcrtx_ui_aliases_list_populate(EventPlayer());
+	
+	//reselect the item
+	count = BankKeyCount(libcrtx_alias_banks[EventPlayer()], "aliases");
+	while(n < count) {
+		if(BankKeyName(libcrtx_alias_banks[EventPlayer()], "aliases", n) == name) {
+			DialogControlSelectItem(libcrtx_ui_aliases_list, PlayerGroupSingle(EventPlayer()), n + 1);
+			return true;
+		}
+		n += 1;
+	}
+	
+	return true;
+}
+//    DialogControlSelectItem(DialogControlLastCreated(), PlayerGroupAll(), 1);

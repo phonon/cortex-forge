@@ -1,0 +1,586 @@
+// Cortex Forge Extensions
+// By Xethyr (407)
+//
+// Copyright (C) 2013
+//
+// Cortex Engine by Motive
+// Cortex SC2 Roleplaying Engine
+// Copyright (C) 2009-2011 <http://www.cortexrp.com/>
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; version 2 of the License.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+//files caches commands applied onto a unit
+
+//caches are GLOBAL: player does not matter
+
+//Units custom value cache architecture (overwritables):
+//Index: | 11 - ID on data table | 12 - number of caches (>= 1) | 
+// | 13 - tint | 14 - scale | 15 - animspeed | 16 - modelswap | 17 - play | 18 - statbars <== {1 - need override, 0 - nope}
+// | 19 - damage | 20 - range | 21 - height | 22 - invulnerable | 23 - setname
+//Data table architecture
+//type: string | Name: UNITID.lastcmd (last command used)
+//type: string | Name: UNITID.CACHENUMBER
+
+//cached commands: behavior, weapons, damage, range,
+//modelswap, attach, tint, scale, animspeed, height, play
+
+int cache_string_limit = 255;
+int cache_overwrite_check_limit = 10;
+int unit_cache_limit = -1;
+
+int libcrtx_unitCache_next_free_id()
+{
+	int id = 1;
+	
+	while(DataTableValueExists(true, IntToString(id) + ".unit")) {
+		id += 1;
+	}
+	
+	return id;
+}
+void libcrtx_map_unitCache_id_init() //check map for existing units and assign them IDs
+{
+    unitgroup g;
+	int unit_id;
+	
+	g = UnitGroup(null, c_playerAny, RegionEntireMap(), UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
+
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone())
+	{
+		unit_id = libcrtx_unitCache_next_free_id();
+		UnitSetCustomValue(UnitGroupLoopCurrent(), 11, IntToFixed(unit_id)); //sets unit id
+		DataTableSetBool(true, IntToString(unit_id) + ".unit", true);
+		UnitSetCustomValue(UnitGroupLoopCurrent(), 12, 1); //set the unit cache value	
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+	
+	TriggerAddEventUnitCreated(TriggerCreate("libcrtx_event_unitcreated_unitCache_create"), null, null, null);
+	TriggerAddEventUnitDied(TriggerCreate("libcrtx_event_unitdeath_unitCache_remove"), null);
+
+	return;
+}
+void libcrtx_unitCache_update_add(unit subject, string unit_id, string user_command)
+{
+	string cache;
+	
+	if(user_command == "") {
+		return;
+	}
+	
+	if(DataTableValueExists(true, unit_id + "." + FixedToString(UnitGetCustomValue(subject, 12), 0))) {
+		cache = DataTableGetString(true, unit_id + "." + FixedToString(UnitGetCustomValue(subject, 12), 0));
+	}
+	else {
+		cache = "";
+	}
+	
+	if(cache == "") {
+		cache = user_command;
+		DataTableSetString(true, unit_id + "." + FixedToString(UnitGetCustomValue(subject, 12), 0), cache);
+		return;	
+	}
+	else if(StringLength(cache + "; " + user_command) <= cache_string_limit) {
+		cache = cache + "; " + user_command;
+		DataTableSetString(true, unit_id + "." + FixedToString(UnitGetCustomValue(subject, 12), 0), cache);
+		return;
+	}
+	else {
+		UnitSetCustomValue(subject, 12, UnitGetCustomValue(subject, 12) + 1);
+		DataTableSetString(true, unit_id + "." + FixedToString(UnitGetCustomValue(subject, 12), 0), user_command);
+		return;
+	}
+	
+}
+void libcrtx_unitCache_update_overwrite(unit subject, string unit_id, string crtx_command, string user_command)
+{
+	bool cmdFound = false;
+	int unit_caches = FixedToInt(UnitGetCustomValue(subject, 12));
+	string cache;
+	string cache_next;
+	string cmd_next;
+	int x;
+	int pos_start;
+	int pos_end;
+	int i = 0;
+	
+	//narrow to a certain cache number
+	//overwrite check added because if check limit is too large, A LOT OF LAG
+	while(i < unit_caches && i < cache_overwrite_check_limit) {
+		if(StringContains(DataTableGetString(true, unit_id + "." + IntToString(unit_caches - i)), crtx_command, c_stringAnywhere, c_stringNoCase)) {
+			break;
+		}
+		i += 1;
+	}
+	if(i == cache_overwrite_check_limit || i == unit_caches) { //past overwrite limit or doesnt exist: simply add the command
+		libcrtx_unitCache_update_add(subject, unit_id, user_command);
+		return;
+	}
+	
+	//search through cache(s) to find previous command
+	while(!cmdFound && i < unit_caches) {
+		cache = DataTableGetString(true, unit_id + "." + IntToString(unit_caches - i));
+		pos_start = StringLength(cache);
+		
+		x = 1;
+		while(StringWord(cache, x + 1) != "") {
+			x += 1;
+		}
+		//libcrtx_write_success("cache_length: " + IntToString(StringLength(cache)) + "  pos_start: " + IntToString(pos_start) + "  x: " + IntToString(x));		
+		
+		while(x > 0) {
+			if(StringContains(StringWord(cache, x), crtx_command, c_stringAnywhere, c_stringNoCase)) { //found match
+				cmdFound = true;
+
+				if(x != 1) { //if not first command, set position to ';'
+					pos_start = pos_start - StringLength(StringWord(cache, x)); //sets position to '@'
+					while(StringSub(cache, pos_start, pos_start) != ";") { //not first cmd: finds the ';'
+						pos_start -= 1;
+					}
+				}
+				else { //this is the first command
+					pos_start = 1;
+				}
+				//libcrtx_write_success("pos: " + IntToString(pos_start) + ": " + StringSub(cache, pos_start, pos_start));
+				break;
+			}
+			pos_start = pos_start - StringLength(StringWord(cache, x));
+			while(StringSub(cache, pos_start, pos_start) == " ") {
+				pos_start -= 1;
+			}
+			//libcrtx_write_success("word: " + StringWord(cache,x) + " | pos_start changed to: " + IntToString(pos_start));
+			x -= 1;
+		}
+		if(cmdFound) {
+			//libcrtx_write_success("command found: " + StringWord(cache, x));
+			break;
+		}
+		//reached beginning of current cache. must check previous cache for the crtx command
+		i += 1;
+	}
+	
+	//find the end pos of the command; search till find the '@' of the next command
+	pos_end = pos_start;
+	if(pos_start == 1) {
+		while(pos_end < StringLength(cache)) {
+			if(StringSub(cache, pos_end + 1, pos_end + 1) == "@") {
+				break;
+			}
+			pos_end += 1;
+		}
+	}
+	else {
+		while(pos_end < StringLength(cache)) {
+			if(StringSub(cache, pos_end + 1, pos_end + 1) == ";") {
+				break;
+			}
+			pos_end += 1;
+		}	
+	}
+	
+	//libcrtx_write_success(IntToString(pos_start) + "to" + IntToString(pos_end) + ": " + StringSub(cache, pos_start, pos_end));
+	
+	
+	//remove the previous command
+	cache = StringReplace(cache, "", pos_start, pos_end);
+	//libcrtx_write_success("cache = \"" + cache + "\"");
+	
+	if(i == 0) { //latest cache: only need to update this one
+		if(cache == "") { //if cache empty, delete
+			DataTableValueRemove(true, unit_id + "." + IntToString(unit_caches));	
+		}
+		else { //otherwise update it!
+			DataTableSetString(true, unit_id + "." + IntToString(unit_caches), cache);
+		}
+	}
+	
+	//otherwise update all proceeding caches to ensure they have max possible length < 256
+	while(i > 0) {
+		cache_next = DataTableGetString(true, unit_id + "." + IntToString(unit_caches - i + 1));
+		
+		pos_start = 1;
+		pos_end = 1;
+		while(pos_end < StringLength(cache_next)) {
+			if(StringSub(cache_next, pos_end, pos_end + 1) == "; ") {
+				pos_end += 1; //to include the space for removal
+				break;
+			}
+			pos_end += 1;
+		}
+		
+		cmd_next = StringSub(cache_next, pos_start, pos_end);
+		if(StringLength(cache + "; " + cmd_next) <= cache_string_limit) { //remove comand from next cache, add to previous
+			cache = cache + "; " + cmd_next;
+			cache_next = StringReplace(cache_next, "", pos_start, pos_end);
+			
+			DataTableSetString(true, unit_id + "." + IntToString(unit_caches - i), cache);
+			if(cache_next == "") { //the latest cache is now empty; update unit
+				DataTableValueRemove(true, unit_id + "." + IntToString(unit_caches - i + 1));
+				UnitSetCustomValue(subject, 12, IntToFixed(unit_caches - 1));
+				unit_caches = unit_caches - 1;
+				break;
+			}
+			else {
+				DataTableSetString(true, unit_id + "." + IntToString(unit_caches - i + 1), cache_next);
+			}
+			
+			//now the check repeats
+		}
+		else {
+			//go to the next cache
+			i -= 1; 
+			cache = DataTableGetString(true, unit_id + "." + IntToString(unit_caches - i));
+		}
+	}
+	
+	//now add the new command to the caches
+	libcrtx_unitCache_update_add(subject, unit_id, user_command);
+	
+}
+void libcrtx_unitCache_update(unit subject, string crtx_command, string user_command)
+{
+	string unit_id = FixedToString(UnitGetCustomValue(subject, 11), 0);
+	string cache = "";
+	
+	//if map has cache limit, checks for limit
+	if(FixedToInt(UnitGetCustomValue(subject, 12)) > unit_cache_limit && unit_cache_limit != -1) {
+		return;
+	}
+	
+	cache = DataTableGetString(true, unit_id + "." + FixedToString(UnitGetCustomValue(subject, 12), 0));
+	
+	//VISUALS - attach, modelswap, tint, scale, animspeed, play
+	if(crtx_command == "@attach") {
+		libcrtx_unitCache_update_add(subject, unit_id, user_command);
+		UnitSetCustomValue(subject, 13, 0); //"reset" tint
+		UnitSetCustomValue(subject, 14, 0); //"reset" scale
+		UnitSetCustomValue(subject, 15, 0); //"reset" animspeed
+		UnitSetCustomValue(subject, 16, 0); //"reset" modelswap
+		UnitSetCustomValue(subject, 17, 0); //"reset" play
+		UnitSetCustomValue(subject, 18, 0); //"reset" statbars
+		return;
+	}
+	else if(crtx_command == "@tint") {
+		if(UnitGetCustomValue(subject, 13) != 1) {
+			libcrtx_unitCache_update_add(subject, unit_id, user_command);
+			UnitSetCustomValue(subject, 13, 1);
+			return;
+		}
+		else {
+			libcrtx_unitCache_update_overwrite(subject, unit_id, crtx_command, user_command);
+			return;
+		}
+	}
+	else if(crtx_command == "@scale") {
+		if(UnitGetCustomValue(subject, 14) != 1) {
+			libcrtx_unitCache_update_add(subject, unit_id, user_command);
+			UnitSetCustomValue(subject, 14, 1);
+			return;
+		}
+		else {
+			libcrtx_unitCache_update_overwrite(subject, unit_id, crtx_command, user_command);
+			return;
+		}
+	}
+	else if(crtx_command == "@animspeed") {
+		if(UnitGetCustomValue(subject, 15) != 1) {
+			libcrtx_unitCache_update_add(subject, unit_id, user_command);
+			UnitSetCustomValue(subject, 15, 1);
+			return;
+		}
+		else {
+			libcrtx_unitCache_update_overwrite(subject, unit_id, crtx_command, user_command);
+			return;
+		}
+	}
+	else if(crtx_command == "@modelswap") {
+		if(UnitGetCustomValue(subject, 16) != 2) {
+			libcrtx_unitCache_update_add(subject, unit_id, user_command);
+			UnitSetCustomValue(subject, 16, UnitGetCustomValue(subject, 16) + 1);
+			return;
+		}
+		else {
+			libcrtx_unitCache_update_overwrite(subject, unit_id, crtx_command, user_command);
+			return;
+		}
+	}
+	else if(crtx_command == "@play") {
+		if(UnitGetCustomValue(subject, 17) != 1) {
+			libcrtx_unitCache_update_add(subject, unit_id, user_command);
+			UnitSetCustomValue(subject, 17, 1);
+			return;
+		}
+		else {
+			libcrtx_unitCache_update_overwrite(subject, unit_id, crtx_command, user_command);
+			return;
+		}
+	}
+	else if(crtx_command == "@statbars") {
+		if(UnitGetCustomValue(subject, 18) != 1) {
+			libcrtx_unitCache_update_add(subject, unit_id, user_command);
+			UnitSetCustomValue(subject, 18, 1);
+			return;
+		}
+		else {
+			libcrtx_unitCache_update_overwrite(subject, unit_id, crtx_command, user_command);
+			return;
+		}
+	}
+	//always overwrite when used
+	else if(crtx_command == "@adddamage") {
+		if(UnitGetCustomValue(subject, 19) != 1) {
+			libcrtx_unitCache_update_add(subject, unit_id, user_command);
+			UnitSetCustomValue(subject, 19, 1);
+			return;
+		}
+		else {
+			libcrtx_unitCache_update_overwrite(subject, unit_id, crtx_command, user_command);
+			return;
+		}
+	}
+	else if(crtx_command == "@addrange") {
+		if(UnitGetCustomValue(subject, 20) != 1) {
+			libcrtx_unitCache_update_add(subject, unit_id, user_command);
+			UnitSetCustomValue(subject, 20, 1);
+			return;
+		}
+		else {
+			libcrtx_unitCache_update_overwrite(subject, unit_id, crtx_command, user_command);
+			return;
+		}
+	}
+	else if(crtx_command == "@height") {
+		if(UnitGetCustomValue(subject, 21) != 1) {
+			libcrtx_unitCache_update_add(subject, unit_id, user_command);
+			UnitSetCustomValue(subject, 21, 1);
+			return;
+		}
+		else {
+			libcrtx_unitCache_update_overwrite(subject, unit_id, crtx_command, user_command);
+			return;
+		}
+	}
+	else if(crtx_command == "@invulnerable") {
+		if(UnitGetCustomValue(subject, 22) != 1 && user_command != "") {
+			libcrtx_unitCache_update_add(subject, unit_id, user_command);
+			UnitSetCustomValue(subject, 22, 1);
+			return;
+		}
+		else if(UnitGetCustomValue(subject, 22) == 1 && user_command == "") {
+			libcrtx_unitCache_update_overwrite(subject, unit_id, crtx_command, user_command);
+			UnitSetCustomValue(subject, 22, 0);
+			return;
+		}
+		else {
+			return;
+		}
+	}
+	else if(crtx_command == "@setname") {
+		if(UnitGetCustomValue(subject, 23) != 1) {
+			libcrtx_unitCache_update_add(subject, unit_id, user_command);
+			UnitSetCustomValue(subject, 23, 1);
+			return;
+		}
+		else {
+			libcrtx_unitCache_update_overwrite(subject, unit_id, crtx_command, user_command);
+			return;
+		}
+	}
+	else if(crtx_command == "@subtitle") {
+		libcrtx_unitCache_update_overwrite(subject, unit_id, crtx_command, user_command);
+		return;
+	}
+	else if(crtx_command == "@face") {
+		libcrtx_unitCache_update_overwrite(subject, unit_id, crtx_command, user_command);
+		return;
+	}
+	else if(crtx_command == "@renameall") {
+		libcrtx_unitCache_update_overwrite(subject, unit_id, crtx_command, user_command);
+		return;
+	}
+	else if(crtx_command == "@color") {
+		libcrtx_unitCache_update_overwrite(subject, unit_id, crtx_command, user_command);
+		return;
+	}
+	//never overwrite
+	else if(crtx_command == "@addbehavior") {
+		libcrtx_unitCache_update_add(subject, unit_id, user_command);
+		return;
+	}
+	else if(crtx_command == "@removebehavior") {
+		libcrtx_unitCache_update_add(subject, unit_id, user_command);
+		return;
+	}
+	else if(crtx_command == "@addweapon") {
+		libcrtx_unitCache_update_add(subject, unit_id, user_command);
+		return;
+	}
+	else if(crtx_command == "@removeweapon") {
+		libcrtx_unitCache_update_add(subject, unit_id, user_command);
+		return;
+	}
+	else if(crtx_command == "@effect") {
+		libcrtx_unitCache_update_add(subject, unit_id, user_command);
+		return;
+	}
+
+}
+void libcrtx_unitCache_remove(unit subject)
+{
+	string unit_id = FixedToString(UnitGetCustomValue(subject, 11), 0);
+	int i = 1;
+	
+	DataTableValueRemove(true, unit_id + ".unit");
+	while(DataTableValueExists(true, unit_id + "." + IntToString(i))) {
+		DataTableValueRemove(true, unit_id + "." + IntToString(i));
+		i += 1;
+	}
+}
+unit libcrtx_unitCache_undo(unit subject_orig, int undo_iterations)
+{
+	int cache = 1;
+	int iterations = undo_iterations;
+	int pos_start;
+	string unit_cache_current;
+	string unit_id;
+	string unit_id_old = FixedToString(UnitGetCustomValue(subject_orig, 11), 0);
+	unit subject_undo;
+	unitgroup g;
+	
+	//create new and remove old
+	UnitCreate(1, UnitGetType(subject_orig), c_unitCreateIgnorePlacement, UnitGetOwner(subject_orig), 
+		UnitGetPosition(subject_orig), UnitGetFacing(subject_orig));
+
+	subject_undo = UnitLastCreated();
+	//set new undo unit cache
+	unit_id = IntToString(libcrtx_unitCache_next_free_id());
+	UnitSetCustomValue(subject_undo, 11, StringToFixed(unit_id)); //sets unit id
+	DataTableSetBool(true, unit_id + ".unit", true);
+	UnitSetCustomValue(subject_undo, 12, 1); //set the unit cache value
+	UnitSetCustomValue(UnitLastCreated(), 16, 0); //set the modelswap flag to 0
+	
+	//set undo units properties
+	UnitSetState(subject_undo, c_unitStateHidden, 
+		UnitTestState(subject_orig, c_unitStateHidden));
+	UnitSetState(subject_undo, c_unitStateHighlightable, 
+		UnitTestState(subject_orig, c_unitStateHighlightable));
+	UnitSetState(subject_undo, c_unitStateIgnoreTerrainZ, 
+		UnitTestState(subject_orig, c_unitStateIgnoreTerrainZ));
+	UnitSetState(subject_undo, c_unitStateFidget, 
+		UnitTestState(subject_orig, c_unitStateFidget));
+	UnitSetState(subject_undo, c_unitStateTargetable, 
+		UnitTestState(subject_orig, c_unitStateTargetable));
+	UnitSetState(subject_undo, c_unitStateTooltipable, 
+		UnitTestState(subject_orig, c_unitStateTooltipable));
+	UnitSetState(subject_undo, c_unitStateCursorable, 
+		UnitTestState(subject_orig, c_unitStateCursorable));
+	UnitSetState(subject_undo, c_unitStateHighlighted, 
+		UnitTestState(subject_orig, c_unitStateHighlighted));
+	UnitSetState(subject_undo, c_unitStateUsingSupply, 
+		UnitTestState(subject_orig, c_unitStateUsingSupply));
+	UnitSetPropertyFixed(subject_undo, c_unitPropLifeMax, 
+		UnitGetPropertyFixed(subject_orig, c_unitPropLifeMax, true));
+	UnitSetPropertyFixed(subject_undo, c_unitPropLife, 
+		UnitGetPropertyFixed(subject_orig, c_unitPropLife, true));
+	UnitSetPropertyFixed(subject_undo, c_unitPropLifeRegen, 
+		UnitGetPropertyFixed(subject_orig, c_unitPropLifeRegen, true));
+	UnitSetPropertyFixed(subject_undo, c_unitPropEnergyMax, 
+		UnitGetPropertyFixed(subject_orig, c_unitPropEnergyMax, true));
+	UnitSetPropertyFixed(subject_undo, c_unitPropEnergy, 
+		UnitGetPropertyFixed(subject_orig, c_unitPropEnergy, true));
+	UnitSetPropertyFixed(subject_undo, c_unitPropEnergyRegen, 
+		UnitGetPropertyFixed(subject_orig, c_unitPropEnergyRegen, true));
+	UnitSetPropertyFixed(subject_undo, c_unitPropShieldsMax, 
+		UnitGetPropertyFixed(subject_orig, c_unitPropShieldsMax, true));
+	UnitSetPropertyFixed(subject_undo, c_unitPropShields, 
+		UnitGetPropertyFixed(subject_orig, c_unitPropShields, true));
+	UnitSetPropertyFixed(subject_undo, c_unitPropShieldsRegen, 
+		UnitGetPropertyFixed(subject_orig, c_unitPropShieldsRegen, true));
+	UnitSetPropertyFixed(subject_undo, c_unitPropKills, 
+		UnitGetPropertyFixed(subject_orig, c_unitPropKills, true));
+	UnitSetPropertyFixed(subject_undo, c_unitPropMovementSpeed, 
+		UnitGetPropertyFixed(subject_orig, c_unitPropMovementSpeed, true));
+	UnitSetPropertyFixed(subject_undo, c_unitPropResources, 
+		UnitGetPropertyFixed(subject_orig, c_unitPropResources, true));
+
+		
+	//undo iterations listed in original units cache
+	cache = FixedToInt(UnitGetCustomValue(subject_orig, 12));
+	while(iterations > 0 && cache > 0) {
+		if(DataTableValueExists(true, unit_id_old + "." + IntToString(cache))) {
+			unit_cache_current = DataTableGetString(true, unit_id_old + "." + IntToString(cache));
+			pos_start = StringLength(unit_cache_current);
+			
+			while(pos_start > 0 && iterations > 0) {
+				if(StringSub(unit_cache_current, pos_start, pos_start) == ";") {
+					//command found: remove it
+					unit_cache_current = StringReplace(unit_cache_current, "", pos_start, StringLength(unit_cache_current));
+					iterations -= 1;
+				}
+				pos_start -= 1;
+			}
+			if(pos_start == 0) {
+				DataTableValueRemove(true, unit_id_old + "." + IntToString(cache));
+				iterations -= 1;
+			}
+			else {
+				DataTableSetString(true, unit_id_old + "." + IntToString(cache), unit_cache_current);		
+			}
+		}
+		cache -= 1;
+	}
+	
+	
+	//remove the old unit
+	UnitRemove(subject_orig);
+	
+	//now parse all the commands from original unit to the new unit
+	libcrtx_unitCache_isCopying[UnitGetOwner(subject_undo)] = true;
+	
+	cache = 1;
+	g = UnitGroupEmpty();
+	UnitGroupAdd(g, subject_undo);
+	libcrtx_chat_set_context(UnitGetOwner(subject_undo), g);
+	while(DataTableValueExists(true, unit_id_old + "." + IntToString(cache))) {
+		libcrtx_chat_parsechat(UnitGetOwner(subject_undo), DataTableGetString(true, unit_id_old + "." + IntToString(cache)), libcrtx_chat_recursion_limit);		
+		cache += 1;
+	}
+	libcrtx_unitCache_isCopying[UnitGetOwner(subject_undo)] = false;
+	
+	//remove old unit's cache
+	libcrtx_unitCache_remove(subject_orig);
+	
+	//finally, write how many commands undid and return the unit
+	libcrtx_write_success("(Unit: " + UnitGetType(subject_undo) + ") " + "Undid " + IntToString(undo_iterations - iterations) + " commands");
+	return subject_undo;
+}
+bool libcrtx_event_unitdeath_unitCache_remove(bool testConds, bool runActions)
+{	
+	libcrtx_unitCache_remove(EventUnit());
+	return true;
+}
+bool libcrtx_event_unitcreated_unitCache_create(bool testConds, bool runActions)
+{
+	int unit_id;
+	
+	if(UnitGetCustomValue(EventUnitCreatedUnit(), 11) >= 1) {
+		return true;
+	}
+	
+	unit_id = libcrtx_unitCache_next_free_id();
+	
+	UnitSetCustomValue(EventUnitCreatedUnit(), 11, IntToFixed(unit_id)); //sets unit id
+	DataTableSetBool(true, IntToString(unit_id) + ".unit", true);
+	UnitSetCustomValue(EventUnitCreatedUnit(), 12, 1); //set the unit cache value
+	UnitSetCustomValue(UnitLastCreated(), 16, 0); //set the modelswap flag to 0
+	
+	return true;
+}

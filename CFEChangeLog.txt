@@ -1,0 +1,42 @@
+[7/9/2013] Forge Extensions v1.0
+GENERAL:
+Added unit cache system:
+• Units now have "caches" in the global data table that store certain commands used on them:
+{@attach, @tint, @scale, @animspeed, @modelswap, @play, @statbars, @adddamage, @addrange, @height, @invulnerable, @setname, @subtitle, @face, @renameall, @addbehavior, @removebehavior, @addweapon, @removeweapon, @effect}
+• Added greentext, sage, and Anonymous ツ
+• Added file in trigger library that allows editing game settings
+• Forge RPG removed
+
+ADDED COMMANDS:
+• @subtitle _____
+• @cache # - views unit's cache number and the commands inside each
+• @undo # - undos a certain number of command (rebuilds the unit using cache)
+• @copy +visual - the +visual parameter now copies a unit's visuals too
+• gamesetup save NAME | gamesetup load NAME - allows loading and saving all units and their commands (e.g. their visual)
+• gamesetup list | gamesetup remove NAME | gamesetup removeall
+• toggleanon
+• !xml on|off - to toggle map xml options ingame
+
+MODIFIED COMMANDS:
+• @copy +visual
++{@addbehavior,@removebehavior,@attach,@addweapon,@removeweapon} now display Errors when invalid types are used rather than continuing with execution
++{@addweapon,@removeweapon} now use catalogs rather than toolkit ("because toolkit sucks :P")
+• "repeat" requires secure to be off or moderator+ permissions
+
+
+=====================PRE PUBLIC RELEASE:=========================================
+
+[7/9/2013] Forge Extensions v.2
+• Added all commands to "Commands" UI frame
+• Added "Aliases" frame
+• Implemented "ban" option for blacklists
+
+
+[6/29/2013] Forge Extensions v.1
+First beta public-testing release
+Major Features:
+• UI
+• Blacklists
+• Mouse-clicked doodad placement
+• Unit Formations and Squads
+

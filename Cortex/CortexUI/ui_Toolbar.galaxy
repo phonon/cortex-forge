@@ -1,0 +1,308 @@
+// Cortex Forge Extensions
+// By Xethyr (407)
+//
+// Copyright (C) 2013
+//
+// Cortex Engine by Motive
+// Cortex SC2 Roleplaying Engine
+// Copyright (C) 2009-2011 <http://www.cortexrp.com/>
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; version 2 of the License.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+include "Cortex/CortexUI/ui_About.galaxy"
+include "Cortex/CortexUI/ui_PlayerProfiles.galaxy"
+include "Cortex/CortexUI/ui_Commands.galaxy"
+include "Cortex/CortexUI/ui_Catalogs.galaxy"
+include "Cortex/CortexUI/ui_Previewer.galaxy"
+include "Cortex/CortexUI/ui_Aliases.galaxy"
+include "Cortex/CortexUI/ui_CamsRegs.galaxy"
+include "Cortex/CortexUI/ui_fRPG.galaxy"
+include "Cortex/CortexUI/ui_BlistPerms.galaxy"
+
+int libcrtx_ui_toolbar;
+int libcrtx_ui_toolbar_logo;
+
+int[9] libcrtx_ui_toolbar_btn;
+bool[libcrtx_max_players][9] libcrtx_ui_panel_on;
+
+void libcrtx_ui_toolbar_init()
+{
+    DialogCreate(140, 615, c_anchorLeft, -51, -150, true);
+	libcrtx_ui_toolbar = DialogLastCreated();
+
+	DialogSetVisible(libcrtx_ui_toolbar, PlayerGroupAll(), true);
+	
+	//logo create:
+    DialogCreate(120, 120, c_anchorCenter, 0, 0, true);
+	libcrtx_ui_toolbar_logo = DialogLastCreated();
+    DialogSetVisible(libcrtx_ui_toolbar_logo, PlayerGroupAll(), true);
+    DialogSetPositionRelative(libcrtx_ui_toolbar_logo, c_anchorCenter, libcrtx_ui_toolbar, c_anchorRight, -35, 0);
+    libNtve_gf_CreateDialogItemButton(libcrtx_ui_toolbar_logo, 120, 120, c_anchorCenter, 0, 0, StringToText("About"), StringToText(""), "Cortex\\CortexUI\\CrtxFrgRaptLogo.dds");
+    libNtve_gf_SetDialogItemImage(DialogControlLastCreated(), "Cortex\\CortexUI\\CrtxFrgRaptLogo.dds", PlayerGroupAll());
+    libNtve_gf_SetDialogItemImageType(DialogControlLastCreated(), c_triggerImageTypeNormal, PlayerGroupAll());
+    DialogSetImageVisible(libcrtx_ui_toolbar_logo, false);
+	libcrtx_ui_toolbar_btn[0] = DialogControlLastCreated();
+	
+	//above logo buttons:
+    libNtve_gf_CreateDialogItemImage(libcrtx_ui_toolbar, 50, 50, c_anchorTopRight, 31, 31, StringToText(""), "Assets\\Textures\\btn-techupgrade-terran-consumption.dds", c_triggerImageTypeNormal, false, Color(75,75,75), c_triggerBlendModeNormal);
+    libNtve_gf_CreateDialogItemButton(libcrtx_ui_toolbar, 65, 65, c_anchorTopRight, 25, 25, StringToText("Player Profiles"), StringToText(""), "Assets\\Textures\\ui_techpurchase_techbutton_available_normaloverpressedover.dds");
+    libNtve_gf_SetDialogItemImage(DialogControlLastCreated(), "Assets\\Textures\\ui_techpurchase_techbutton_selected_normalpressed.dds", PlayerGroupAll());
+    libNtve_gf_SetDialogItemImageType(DialogControlLastCreated(), c_triggerImageTypeBorder, PlayerGroupAll());
+	libcrtx_ui_toolbar_btn[1] = DialogControlLastCreated();
+	
+    libNtve_gf_CreateDialogItemImage(libcrtx_ui_toolbar, 50, 46, c_anchorTopRight, 31, 90, StringToText(""), "Assets\\Textures\\ui-editoricon-triggereditor_newelement.dds", c_triggerImageTypeNormal, false, Color(100,90,100), c_triggerBlendModeAdd);
+    libNtve_gf_CreateDialogItemButton(libcrtx_ui_toolbar, 65, 65, c_anchorTopRight, 25, 80, StringToText("Commands Guide"), StringToText(""), "Assets\\Textures\\ui_techpurchase_techbutton_available_normaloverpressedover.dds");
+    libNtve_gf_SetDialogItemImage(DialogControlLastCreated(), "Assets\\Textures\\ui_techpurchase_techbutton_selected_normalpressed.dds", PlayerGroupAll());
+    libNtve_gf_SetDialogItemImageType(DialogControlLastCreated(), c_triggerImageTypeBorder, PlayerGroupAll());
+	libcrtx_ui_toolbar_btn[2] = DialogControlLastCreated();
+
+    libNtve_gf_CreateDialogItemImage(libcrtx_ui_toolbar, 37, 37, c_anchorTopRight, 38, 149, StringToText(""), "Assets\\Textures\\ui-editoricon-toolbar_find.dds", c_triggerImageTypeNormal, false, Color(100,80,100), c_triggerBlendModeAdd);
+    libNtve_gf_CreateDialogItemButton(libcrtx_ui_toolbar, 65, 65, c_anchorTopRight, 25, 135, StringToText("Search Catalogs"), StringToText(""), "Assets\\Textures\\ui_techpurchase_techbutton_available_normaloverpressedover.dds");
+    libNtve_gf_SetDialogItemImage(DialogControlLastCreated(), "Assets\\Textures\\ui_techpurchase_techbutton_selected_normalpressed.dds", PlayerGroupAll());
+    libNtve_gf_SetDialogItemImageType(DialogControlLastCreated(), c_triggerImageTypeBorder, PlayerGroupAll());
+	libcrtx_ui_toolbar_btn[3] = DialogControlLastCreated();
+	
+    libNtve_gf_CreateDialogItemImage(libcrtx_ui_toolbar, 48, 48, c_anchorTopRight, 33, 200, StringToText(""), "Assets\\Textures\\ui_btn_aicommand_commandcard_autoai.dds", c_triggerImageTypeNormal, false, Color(100,100,100), c_triggerBlendModeNormal);
+    libNtve_gf_CreateDialogItemButton(libcrtx_ui_toolbar, 65, 65, c_anchorTopRight, 25, 190, StringToText("Model Previewer"), StringToText(""), "Assets\\Textures\\ui_techpurchase_techbutton_available_normaloverpressedover.dds");
+    libNtve_gf_SetDialogItemImage(DialogControlLastCreated(), "Assets\\Textures\\ui_techpurchase_techbutton_selected_normalpressed.dds", PlayerGroupAll());
+    libNtve_gf_SetDialogItemImageType(DialogControlLastCreated(), c_triggerImageTypeBorder, PlayerGroupAll());
+	libcrtx_ui_toolbar_btn[4] = DialogControlLastCreated();
+	
+	//buttons below logo:
+	libNtve_gf_CreateDialogItemImage(libcrtx_ui_toolbar, 36, 36, c_anchorBottomRight, 39, 203, StringToText(""), "Assets\\Textures\\ui-editoricon-triggereditor_newpresetvalue.dds", c_triggerImageTypeNormal, false, Color(100,15,100), c_triggerBlendModeNormal);
+	libNtve_gf_CreateDialogItemImage(libcrtx_ui_toolbar, 36, 36, c_anchorBottomRight, 39, 203, StringToText(""), "Assets\\Textures\\ui-editoricon-triggereditor_newpresetvalue.dds", c_triggerImageTypeNormal, false, Color(100,35,100), c_triggerBlendModeAdd);
+	libNtve_gf_CreateDialogItemImage(libcrtx_ui_toolbar, 36, 36, c_anchorBottomRight, 39, 203, StringToText(""), "Assets\\Textures\\ui-editoricon-triggereditor_newpresetvalue.dds", c_triggerImageTypeNormal, false, Color(100,35,100), c_triggerBlendModeAdd);
+	libNtve_gf_CreateDialogItemButton(libcrtx_ui_toolbar, 65, 65, c_anchorBottomRight, 25, 190, StringToText("Aliases"), StringToText(""), "Assets\\Textures\\ui_techpurchase_techbutton_available_normaloverpressedover.dds");
+	libNtve_gf_SetDialogItemImage(DialogControlLastCreated(), "Assets\\Textures\\ui_techpurchase_techbutton_selected_normalpressed.dds", PlayerGroupAll());
+	libNtve_gf_SetDialogItemImageType(DialogControlLastCreated(), c_triggerImageTypeBorder, PlayerGroupAll());
+	libcrtx_ui_toolbar_btn[5] = DialogControlLastCreated();
+
+	libNtve_gf_CreateDialogItemImage(libcrtx_ui_toolbar, 49, 49, c_anchorBottomRight, 35, 143, StringToText(""), "Assets\\Textures\\ui-editoricon-terraineditor_pathingnotdense.dds", c_triggerImageTypeNormal, false, Color(100,90,100), c_triggerBlendModeNormal);	
+	libNtve_gf_CreateDialogItemImage(libcrtx_ui_toolbar, 49, 49, c_anchorBottomRight, 35, 143, StringToText(""), "Assets\\Textures\\ui-editoricon-terraineditor_pathingnotdense.dds", c_triggerImageTypeNormal, false, Color(100,90,100), c_triggerBlendModeAdd);
+	//libNtve_gf_CreateDialogItemImage(libcrtx_ui_toolbar, 35, 35, c_anchorBottomRight, 40, 155, StringToText(""), "Assets\\Textures\\ui_tutorial_cameraicon.dds", c_triggerImageTypeNormal, false, Color(100,100,100), c_triggerBlendModeNormal);
+	libNtve_gf_CreateDialogItemButton(libcrtx_ui_toolbar, 65, 65, c_anchorBottomRight, 25, 135, StringToText("Cameras and Regions"), StringToText(""), "Assets\\Textures\\ui_techpurchase_techbutton_available_normaloverpressedover.dds");
+	libNtve_gf_SetDialogItemImage(DialogControlLastCreated(), "Assets\\Textures\\ui_techpurchase_techbutton_selected_normalpressed.dds", PlayerGroupAll());
+	libNtve_gf_SetDialogItemImageType(DialogControlLastCreated(), c_triggerImageTypeBorder, PlayerGroupAll());
+	libcrtx_ui_toolbar_btn[6] = DialogControlLastCreated();
+
+	libNtve_gf_CreateDialogItemImage(libcrtx_ui_toolbar, 41, 41, c_anchorBottomRight, 35, 92, StringToText(""), "Assets\\Textures\\btn-upgrade-protoss-groundweaponslevel0.dds", c_triggerImageTypeNormal, false, Color(100,100,100), c_triggerBlendModeNormal);
+	libNtve_gf_CreateDialogItemButton(libcrtx_ui_toolbar, 65, 65, c_anchorBottomRight, 25, 80, StringToText("ForgeRPG Data"), StringToText(""), "Assets\\Textures\\ui_techpurchase_techbutton_available_normaloverpressedover.dds");
+	libNtve_gf_SetDialogItemImage(DialogControlLastCreated(), "Assets\\Textures\\ui_techpurchase_techbutton_selected_normalpressed.dds", PlayerGroupAll());
+	libNtve_gf_SetDialogItemImageType(DialogControlLastCreated(), c_triggerImageTypeBorder, PlayerGroupAll());
+	libcrtx_ui_toolbar_btn[7] = DialogControlLastCreated();
+	
+	libNtve_gf_CreateDialogItemImage(libcrtx_ui_toolbar, 41, 41, c_anchorBottomRight, 37, 35, StringToText(""), "Assets\\Textures\\btn-techupgrade-terran-immortalityprotocol.dds", c_triggerImageTypeNormal, false, Color(100,100,100), c_triggerBlendModeNormal);
+	libNtve_gf_CreateDialogItemButton(libcrtx_ui_toolbar, 65, 65, c_anchorBottomRight, 25, 25, StringToText("Blacklist and Permissions"), StringToText(""), "Assets\\Textures\\ui_techpurchase_techbutton_available_normaloverpressedover.dds");
+	libNtve_gf_SetDialogItemImage(DialogControlLastCreated(), "Assets\\Textures\\ui_techpurchase_techbutton_selected_normalpressed.dds", PlayerGroupAll());
+	libNtve_gf_SetDialogItemImageType(DialogControlLastCreated(), c_triggerImageTypeBorder, PlayerGroupAll());
+	libcrtx_ui_toolbar_btn[8] = DialogControlLastCreated();
+	
+}
+
+void libcrtx_ui_toolbar_events_init()
+{
+	TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_toolbar_about"), c_playerAny, libcrtx_ui_toolbar_btn[0], c_triggerControlEventTypeClick);
+
+	TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_toolbar_playerprofiles"), c_playerAny, libcrtx_ui_toolbar_btn[1], c_triggerControlEventTypeClick);
+	TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_toolbar_commands"), c_playerAny, libcrtx_ui_toolbar_btn[2], c_triggerControlEventTypeClick);
+	TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_toolbar_catalogs"), c_playerAny, libcrtx_ui_toolbar_btn[3], c_triggerControlEventTypeClick);
+	TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_toolbar_previewer"), c_playerAny, libcrtx_ui_toolbar_btn[4], c_triggerControlEventTypeClick);
+	TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_toolbar_aliases"), c_playerAny, libcrtx_ui_toolbar_btn[5], c_triggerControlEventTypeClick);
+	TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_toolbar_camsregs"), c_playerAny, libcrtx_ui_toolbar_btn[6], c_triggerControlEventTypeClick);
+	TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_toolbar_fRPG"), c_playerAny, libcrtx_ui_toolbar_btn[7], c_triggerControlEventTypeClick);
+	TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_toolbar_blistperms"), c_playerAny, libcrtx_ui_toolbar_btn[8], c_triggerControlEventTypeClick);
+}
+void libcrtx_ui_panels_off()
+{
+	int i = 0;
+	
+	while(i <= 8) {
+		libcrtx_ui_panel_on[EventPlayer()][i] = false;
+		i += 1;
+	}
+	DialogSetVisible(libcrtx_ui_playerprofiles, PlayerGroupSingle(EventPlayer()), false);
+	DialogSetVisible(libcrtx_ui_commands, PlayerGroupSingle(EventPlayer()), false);
+	DialogSetVisible(libcrtx_ui_catalogs, PlayerGroupSingle(EventPlayer()), false);
+	DialogSetVisible(libcrtx_ui_previewer, PlayerGroupSingle(EventPlayer()), false);
+	DialogSetVisible(libcrtx_ui_aliases, PlayerGroupSingle(EventPlayer()), false);
+	DialogSetVisible(libcrtx_ui_camsregs, PlayerGroupSingle(EventPlayer()), false);
+	DialogSetVisible(libcrtx_ui_fRPG, PlayerGroupSingle(EventPlayer()), false);
+	DialogSetVisible(libcrtx_ui_blistperms, PlayerGroupSingle(EventPlayer()), false);
+
+}
+void libcrtx_ui_btn_on(int i)
+{
+    libNtve_gf_SetDialogItemToggled(libcrtx_ui_toolbar_btn[i], true, PlayerGroupSingle(EventPlayer()));
+}
+void libcrtx_ui_btn_off(int i)
+{
+    libNtve_gf_SetDialogItemToggled(libcrtx_ui_toolbar_btn[i], false, PlayerGroupSingle(EventPlayer()));
+}
+void libcrtx_ui_btn_off_all()
+{
+	int i = 1;
+	while(i <= 8) {
+		libNtve_gf_SetDialogItemToggled(libcrtx_ui_toolbar_btn[i], false, PlayerGroupSingle(EventPlayer()));
+		i += 1;
+	}
+}
+bool libcrtx_ui_toolbar_about(bool testConds, bool runActions)
+{
+	if(libcrtx_ui_panel_on[EventPlayer()][0]) {
+		DialogSetVisible(libcrtx_ui_about, PlayerGroupSingle(EventPlayer()), false);
+		libcrtx_ui_panel_on[EventPlayer()][0] = false;
+		libNtve_gf_SetDialogItemToggled(libcrtx_ui_toolbar_btn[0], false, PlayerGroupSingle(EventPlayer()));
+	}
+	else {
+		DialogSetVisible(libcrtx_ui_about, PlayerGroupSingle(EventPlayer()), true);
+		libcrtx_ui_panel_on[EventPlayer()][0] = true;
+		libNtve_gf_SetDialogItemToggled(libcrtx_ui_toolbar_btn[0], true, PlayerGroupSingle(EventPlayer()));
+	}
+	
+	return true;
+}
+bool libcrtx_ui_toolbar_playerprofiles(bool testConds, bool runActions)
+{
+	if(libcrtx_ui_panel_on[EventPlayer()][1]) {
+		DialogSetVisible(libcrtx_ui_playerprofiles, PlayerGroupSingle(EventPlayer()), false);
+		libcrtx_ui_panel_on[EventPlayer()][1] = false;
+		libcrtx_ui_btn_off(1);
+	}
+	else {
+		libcrtx_ui_panels_off();
+		libcrtx_ui_btn_off_all();
+		DialogSetVisible(libcrtx_ui_playerprofiles, PlayerGroupSingle(EventPlayer()), true);
+		libcrtx_ui_panel_on[EventPlayer()][1] = true;
+		libcrtx_ui_btn_on(1);
+	}
+	
+	return true;
+}
+bool libcrtx_ui_toolbar_commands(bool testConds, bool runActions)
+{
+	if(libcrtx_ui_panel_on[EventPlayer()][2]) {
+		DialogSetVisible(libcrtx_ui_commands, PlayerGroupSingle(EventPlayer()), false);
+		libcrtx_ui_panel_on[EventPlayer()][2] = false;
+		libcrtx_ui_btn_off(2);
+	}
+	else {
+		libcrtx_ui_panels_off();
+		libcrtx_ui_btn_off_all();
+		DialogSetVisible(libcrtx_ui_commands, PlayerGroupSingle(EventPlayer()), true);
+		libcrtx_ui_panel_on[EventPlayer()][2] = true;
+		libcrtx_ui_btn_on(2);
+	}
+	
+	return true;
+}
+bool libcrtx_ui_toolbar_catalogs(bool testConds, bool runActions)
+{
+	if(libcrtx_ui_panel_on[EventPlayer()][3]) {
+		DialogSetVisible(libcrtx_ui_catalogs, PlayerGroupSingle(EventPlayer()), false);
+		libcrtx_ui_panel_on[EventPlayer()][3] = false;
+		libcrtx_ui_btn_off(3);
+	}
+	else {
+		libcrtx_ui_panels_off();
+		libcrtx_ui_btn_off_all();
+		DialogSetVisible(libcrtx_ui_catalogs, PlayerGroupSingle(EventPlayer()), true);
+		libcrtx_ui_panel_on[EventPlayer()][3] = true;
+		libcrtx_ui_btn_on(3);
+	}
+	
+	return true;
+}
+bool libcrtx_ui_toolbar_previewer(bool testConds, bool runActions)
+{
+	if(libcrtx_ui_panel_on[EventPlayer()][4]) {
+		DialogSetVisible(libcrtx_ui_previewer, PlayerGroupSingle(EventPlayer()), false);
+		libcrtx_ui_panel_on[EventPlayer()][4] = false;
+		libcrtx_ui_btn_off(4);
+	}
+	else {
+		libcrtx_ui_panels_off();
+		libcrtx_ui_btn_off_all();
+		DialogSetVisible(libcrtx_ui_previewer, PlayerGroupSingle(EventPlayer()), true);
+		libcrtx_ui_panel_on[EventPlayer()][4] = true;
+		libcrtx_ui_btn_on(4);
+	}
+	
+	return true;
+}
+bool libcrtx_ui_toolbar_aliases(bool testConds, bool runActions)
+{
+	if(libcrtx_ui_panel_on[EventPlayer()][5]) {
+		DialogSetVisible(libcrtx_ui_aliases, PlayerGroupSingle(EventPlayer()), false);
+		libcrtx_ui_panel_on[EventPlayer()][5] = false;
+		libcrtx_ui_btn_off(5);
+	}
+	else {
+		libcrtx_ui_panels_off();
+		libcrtx_ui_btn_off_all();
+		DialogSetVisible(libcrtx_ui_aliases, PlayerGroupSingle(EventPlayer()), true);
+		libcrtx_ui_panel_on[EventPlayer()][5] = true;
+		libcrtx_ui_btn_on(5);
+		
+		libcrtx_ui_aliases_list_populate(EventPlayer());
+	}
+	
+	return true;
+}
+bool libcrtx_ui_toolbar_camsregs(bool testConds, bool runActions)
+{
+	if(libcrtx_ui_panel_on[EventPlayer()][6]) {
+		DialogSetVisible(libcrtx_ui_camsregs, PlayerGroupSingle(EventPlayer()), false);
+		libcrtx_ui_panel_on[EventPlayer()][6] = false;
+		libcrtx_ui_btn_off(6);
+	}
+	else {
+		libcrtx_ui_panels_off();
+		libcrtx_ui_btn_off_all();
+		DialogSetVisible(libcrtx_ui_camsregs, PlayerGroupSingle(EventPlayer()), true);
+		libcrtx_ui_panel_on[EventPlayer()][6] = true;
+		libcrtx_ui_btn_on(6);
+	}
+	
+	return true;
+}
+bool libcrtx_ui_toolbar_fRPG(bool testConds, bool runActions)
+{
+	if(libcrtx_ui_panel_on[EventPlayer()][7]) {
+		DialogSetVisible(libcrtx_ui_fRPG, PlayerGroupSingle(EventPlayer()), false);
+		libcrtx_ui_panel_on[EventPlayer()][7] = false;
+		libcrtx_ui_btn_off(7);
+	}
+	else {
+		libcrtx_ui_panels_off();
+		libcrtx_ui_btn_off_all();
+		DialogSetVisible(libcrtx_ui_fRPG, PlayerGroupSingle(EventPlayer()), true);
+		libcrtx_ui_panel_on[EventPlayer()][7] = true;
+		libcrtx_ui_btn_on(7);
+	}
+	
+	return true;
+}
+bool libcrtx_ui_toolbar_blistperms(bool testConds, bool runActions)
+{
+	if(libcrtx_ui_panel_on[EventPlayer()][8]) {
+		DialogSetVisible(libcrtx_ui_blistperms, PlayerGroupSingle(EventPlayer()), false);
+		libcrtx_ui_panel_on[EventPlayer()][8] = false;
+		libcrtx_ui_btn_off(8);
+	}
+	else {
+		libcrtx_ui_panels_off();
+		libcrtx_ui_btn_off_all();
+		DialogSetVisible(libcrtx_ui_blistperms, PlayerGroupSingle(EventPlayer()), true);
+		libcrtx_ui_panel_on[EventPlayer()][8] = true;
+		libcrtx_ui_btn_on(8);
+	}
+	
+	return true;
+}

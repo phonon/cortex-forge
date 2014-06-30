@@ -1,0 +1,1260 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TriggerData>
+    <Name>CortexHelper</Name>
+    <Root>
+        <Item Type="CustomScript" Id="1D8C2E9F"/>
+        <Item Type="CustomScript" Id="442602E1"/>
+        <Item Type="Trigger" Id="742138A0"/>
+        <Item Type="Trigger" Id="346F4BB5"/>
+    </Root>
+    <Element Type="Comment" Id="28E3C7D4">
+        <Name>Comment: 'Genius! Galaxy is incapable o...'</Name>
+        <Comment>
+            Genius! Galaxy is incapable of preloading.
+            Oh, and we can't even use a loop! :)
+        </Comment>
+    </Element>
+    <Element Type="CustomScript" Id="1D8C2E9F">
+        <Identifier>IncludeCortex</Identifier>
+        <Name>Include CortexEngine</Name>
+        <ScriptCode>
+            include "Cortex/Cortex"
+        </ScriptCode>
+    </Element>
+    <Element Type="CustomScript" Id="442602E1">
+        <Name>Map Settings</Name>
+        <ScriptCode>
+            void libcrtx_set_map_settings()
+            {
+                //DO NOT EDIT THESE VARIABLES:
+                fixed min_scale;
+                fixed max_scale;
+                int max_spawn_count;
+                int max_spawn_rate_limit; //per period
+                int spawn_period;
+                int spawn_timeout;
+            
+                //====================CORTEX INFO:=======================
+                //enter the name of the terrainer (optional)
+                libcrtx_map_terrainer = "";
+            
+            
+                //==================GAME SETTINGS:=======================
+                //DO NOT EDIT SETTINGS UNLESS YOU KNOW WHAT YOU'RE DOING
+                //DO NOT EDIT LINES AFTER "//" (THESE ARE COMMENTS)
+                
+                //================General Game Settings:=================
+                //allow xml (true or false, can be changed ingame with !xml)
+                libcrtx_setting_use_xml = true;
+                //default secure mode (true or false, can be changed ingame with !secure)
+                libcrtx_secure_mode = true;
+                
+                //==================Command Settings:=====================
+                
+                //minimum scale (for @scale):
+                min_scale = .05;
+                //maximum scale (for @scale):
+                max_scale = 10.0;
+                //maximum spawn number (an integer) for one @spawn or @copy command:
+                max_spawn_count = 24;
+                //maximum spawn number (an integer) for @spawn and @copy per period (seconds):
+                max_spawn_rate_limit = 100;
+                //spawn period (an integer, in seconds):
+                spawn_period = 60;
+                //the timeout (an integer, in seconds) if a player goes over the spawn rate limit:
+                spawn_timeout = 30;
+            
+                //=================Unit Cache Settings:==================
+                //maximum unit caches (-1 for infinite, recommended)
+                unit_cache_limit = -1;
+                //max number of caches checked for overwriting commands
+                cache_overwrite_check_limit = 10;
+            
+            
+            
+                //DO NOT EDIT THESE FUNCTIONS:
+                libcrtx_setting_setfixed(libcrtx_setting_fixed_minscale, min_scale);
+                libcrtx_setting_setfixed(libcrtx_setting_fixed_maxscale, max_scale);
+                libcrtx_setting_setint(libcrtx_setting_int_maxspawncount, max_spawn_count);
+                libcrtx_setting_setint(libcrtx_setting_int_maxspawnrate, max_spawn_rate_limit);
+                libcrtx_setting_setint(libcrtx_setting_int_spawnperiod, spawn_period);
+                libcrtx_setting_setint(libcrtx_setting_int_spawntimeout, spawn_timeout);
+            }
+        </ScriptCode>
+    </Element>
+    <Element Type="Trigger" Id="346F4BB5">
+        <Identifier>SetupBanks2</Identifier>
+        <Name>Initialize Cortex Engine</Name>
+        <Event Type="FunctionCall" Id="58C31289"/>
+        <Action Type="FunctionCall" Id="9FE59995"/>
+        <Action Type="FunctionCall" Id="C248087C"/>
+    </Element>
+    <Element Type="Trigger" Id="742138A0">
+        <Identifier>SetupBanks</Identifier>
+        <Name>Preload Banks</Name>
+        <Event Type="FunctionCall" Id="24AD79CC"/>
+        <Action Type="Comment" Id="28E3C7D4"/>
+        <Action Type="FunctionCall" Id="5B63B6AF"/>
+        <Action Type="FunctionCall" Id="89C9C705"/>
+        <Action Type="FunctionCall" Id="5BD5C600"/>
+        <Action Type="FunctionCall" Id="D63C816B"/>
+        <Action Type="FunctionCall" Id="514DBB1C"/>
+        <Action Type="FunctionCall" Id="38E90DC4"/>
+        <Action Type="FunctionCall" Id="7DDA001F"/>
+        <Action Type="FunctionCall" Id="0B195928"/>
+        <Action Type="FunctionCall" Id="8AAB4E61"/>
+        <Action Type="FunctionCall" Id="EE892E6D"/>
+        <Action Type="FunctionCall" Id="B92F8F96"/>
+        <Action Type="FunctionCall" Id="077371BD"/>
+        <Action Type="FunctionCall" Id="7278167A"/>
+        <Action Type="FunctionCall" Id="0CF603EB"/>
+        <Action Type="FunctionCall" Id="4A8161AD"/>
+        <Action Type="FunctionCall" Id="0DB1007B"/>
+        <Action Type="FunctionCall" Id="A487A441"/>
+        <Action Type="FunctionCall" Id="9841CBD9"/>
+        <Action Type="FunctionCall" Id="677B2F5B"/>
+        <Action Type="FunctionCall" Id="157F38B5"/>
+        <Action Type="FunctionCall" Id="69C9F402"/>
+        <Action Type="FunctionCall" Id="DB85811F"/>
+        <Action Type="FunctionCall" Id="049103B0"/>
+        <Action Type="FunctionCall" Id="A891EF67"/>
+        <Action Type="FunctionCall" Id="DB7D6746"/>
+        <Action Type="FunctionCall" Id="4D893AAF"/>
+        <Action Type="FunctionCall" Id="992CF4DF"/>
+        <Action Type="FunctionCall" Id="C0153979"/>
+        <Action Type="FunctionCall" Id="27906D21"/>
+        <Action Type="FunctionCall" Id="84E86E72"/>
+        <Action Type="FunctionCall" Id="BA222AF3"/>
+        <Action Type="FunctionCall" Id="3CBE0A0D"/>
+        <Action Type="FunctionCall" Id="5E002F82"/>
+        <Action Type="FunctionCall" Id="D6D102FA"/>
+        <Action Type="FunctionCall" Id="BDA0855F"/>
+        <Action Type="FunctionCall" Id="643BAA67"/>
+        <Action Type="FunctionCall" Id="463F1AAA"/>
+        <Action Type="FunctionCall" Id="466D5DDC"/>
+        <Action Type="FunctionCall" Id="B73EDEAF"/>
+        <Action Type="FunctionCall" Id="9A5F6FA6"/>
+        <Action Type="FunctionCall" Id="EF77882E"/>
+        <Action Type="FunctionCall" Id="FB7359EA"/>
+        <Action Type="FunctionCall" Id="A334F3AE"/>
+        <Action Type="FunctionCall" Id="BBCBD318"/>
+        <Action Type="FunctionCall" Id="FB4197FA"/>
+        <Action Type="FunctionCall" Id="F92239F3"/>
+        <Action Type="FunctionCall" Id="57046E84"/>
+        <Action Type="FunctionCall" Id="DE4E9A1A"/>
+        <Action Type="FunctionCall" Id="F648435F"/>
+        <Action Type="FunctionCall" Id="084ABABF"/>
+        <Action Type="FunctionCall" Id="4605019D"/>
+        <Action Type="FunctionCall" Id="120EA7FD"/>
+        <Action Type="FunctionCall" Id="101E10C8"/>
+        <Action Type="FunctionCall" Id="121A4544"/>
+        <Action Type="FunctionCall" Id="FFEF4287"/>
+        <Action Type="FunctionCall" Id="F137F5AB"/>
+        <Action Type="FunctionCall" Id="FE20F933"/>
+        <Action Type="FunctionCall" Id="DF4876F7"/>
+        <Action Type="FunctionCall" Id="9F22005B"/>
+        <Action Type="FunctionCall" Id="16226BA7"/>
+    </Element>
+    <Element Type="FunctionCall" Id="049103B0">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="21100C5C"/>
+        <Parameter Type="Param" Id="71F78C03"/>
+    </Element>
+    <Element Type="FunctionCall" Id="077371BD">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="49E89433"/>
+        <Parameter Type="Param" Id="4E32FBA1"/>
+    </Element>
+    <Element Type="FunctionCall" Id="084ABABF">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="03CA13ED"/>
+        <Parameter Type="Param" Id="538C6464"/>
+    </Element>
+    <Element Type="FunctionCall" Id="0B195928">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="52E863F6"/>
+        <Parameter Type="Param" Id="9E0FD736"/>
+    </Element>
+    <Element Type="FunctionCall" Id="0CF603EB">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="65191A8E"/>
+        <Parameter Type="Param" Id="C544C927"/>
+    </Element>
+    <Element Type="FunctionCall" Id="0DB1007B">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="42ADC368"/>
+        <Parameter Type="Param" Id="1FCCD35B"/>
+    </Element>
+    <Element Type="FunctionCall" Id="101E10C8">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="E9E556CB"/>
+        <Parameter Type="Param" Id="B233E9CE"/>
+    </Element>
+    <Element Type="FunctionCall" Id="120EA7FD">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="E510FABE"/>
+        <Parameter Type="Param" Id="AABA53D2"/>
+    </Element>
+    <Element Type="FunctionCall" Id="121A4544">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="2F2082BF"/>
+        <Parameter Type="Param" Id="3C493C31"/>
+    </Element>
+    <Element Type="FunctionCall" Id="157F38B5">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="7247FFE3"/>
+        <Parameter Type="Param" Id="E7E5E638"/>
+    </Element>
+    <Element Type="FunctionCall" Id="16226BA7">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="482417E1"/>
+        <Parameter Type="Param" Id="077CB9D9"/>
+    </Element>
+    <Element Type="FunctionCall" Id="24AD79CC">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="00000120"/>
+    </Element>
+    <Element Type="FunctionCall" Id="27906D21">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="8547690B"/>
+        <Parameter Type="Param" Id="9B569DCF"/>
+    </Element>
+    <Element Type="FunctionCall" Id="38E90DC4">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="6A1C782B"/>
+        <Parameter Type="Param" Id="920287B9"/>
+    </Element>
+    <Element Type="FunctionCall" Id="3CBE0A0D">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="C9AE0C2C"/>
+        <Parameter Type="Param" Id="50872066"/>
+    </Element>
+    <Element Type="FunctionCall" Id="4605019D">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="58142441"/>
+        <Parameter Type="Param" Id="5494C208"/>
+    </Element>
+    <Element Type="FunctionCall" Id="463F1AAA">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="6BC68116"/>
+        <Parameter Type="Param" Id="B6D45B21"/>
+    </Element>
+    <Element Type="FunctionCall" Id="466D5DDC">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="B56848E0"/>
+        <Parameter Type="Param" Id="DAC6A417"/>
+    </Element>
+    <Element Type="FunctionCall" Id="4A8161AD">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="AB0B3AAD"/>
+        <Parameter Type="Param" Id="0719B257"/>
+    </Element>
+    <Element Type="FunctionCall" Id="4D893AAF">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="2F8E8918"/>
+        <Parameter Type="Param" Id="19F2D2A5"/>
+    </Element>
+    <Element Type="FunctionCall" Id="514DBB1C">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="FE998F5C"/>
+        <Parameter Type="Param" Id="1A838553"/>
+    </Element>
+    <Element Type="FunctionCall" Id="57046E84">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="9D96ED19"/>
+        <Parameter Type="Param" Id="B519E062"/>
+    </Element>
+    <Element Type="FunctionCall" Id="58C31289">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="00000120"/>
+    </Element>
+    <Element Type="FunctionCall" Id="5B63B6AF">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="8EDD1723"/>
+        <Parameter Type="Param" Id="168E5069"/>
+    </Element>
+    <Element Type="FunctionCall" Id="5BD5C600">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="218E33A0"/>
+        <Parameter Type="Param" Id="4F70B9C0"/>
+    </Element>
+    <Element Type="FunctionCall" Id="5E002F82">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="E69C8881"/>
+        <Parameter Type="Param" Id="60F720DB"/>
+    </Element>
+    <Element Type="FunctionCall" Id="643BAA67">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="24E2CC62"/>
+        <Parameter Type="Param" Id="01A95E12"/>
+    </Element>
+    <Element Type="FunctionCall" Id="677B2F5B">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="37FF8E07"/>
+        <Parameter Type="Param" Id="4B271085"/>
+    </Element>
+    <Element Type="FunctionCall" Id="69C9F402">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="55E5110D"/>
+        <Parameter Type="Param" Id="20F31EB1"/>
+    </Element>
+    <Element Type="FunctionCall" Id="7278167A">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="64D634A8"/>
+        <Parameter Type="Param" Id="7D07A379"/>
+    </Element>
+    <Element Type="FunctionCall" Id="7DDA001F">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="3D3F37C5"/>
+        <Parameter Type="Param" Id="952A627F"/>
+    </Element>
+    <Element Type="FunctionCall" Id="84E86E72">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="891A2DFE"/>
+        <Parameter Type="Param" Id="74A8C0E6"/>
+    </Element>
+    <Element Type="FunctionCall" Id="89C9C705">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="38E12427"/>
+        <Parameter Type="Param" Id="89510FC3"/>
+    </Element>
+    <Element Type="FunctionCall" Id="8AAB4E61">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="F6AD6154"/>
+        <Parameter Type="Param" Id="BDF31C45"/>
+    </Element>
+    <Element Type="FunctionCall" Id="9841CBD9">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="1029FEC7"/>
+        <Parameter Type="Param" Id="A5F7E421"/>
+    </Element>
+    <Element Type="FunctionCall" Id="992CF4DF">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="B52B1557"/>
+        <Parameter Type="Param" Id="09288AB7"/>
+    </Element>
+    <Element Type="FunctionCall" Id="9A5F6FA6">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="99A7948A"/>
+        <Parameter Type="Param" Id="315097DC"/>
+    </Element>
+    <Element Type="FunctionCall" Id="9F22005B">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="024296AF"/>
+        <Parameter Type="Param" Id="3908A668"/>
+    </Element>
+    <Element Type="FunctionCall" Id="9FE59995">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="00000123"/>
+        <ScriptCode>
+            libcrtx_InitLib();
+        </ScriptCode>
+    </Element>
+    <Element Type="FunctionCall" Id="A334F3AE">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="40C018F8"/>
+        <Parameter Type="Param" Id="227E76C7"/>
+    </Element>
+    <Element Type="FunctionCall" Id="A487A441">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="A2BF8F2A"/>
+        <Parameter Type="Param" Id="9D8A16F5"/>
+    </Element>
+    <Element Type="FunctionCall" Id="A891EF67">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="E5C49C2C"/>
+        <Parameter Type="Param" Id="0E3E7273"/>
+    </Element>
+    <Element Type="FunctionCall" Id="B73EDEAF">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="890A26ED"/>
+        <Parameter Type="Param" Id="5EBE2A51"/>
+    </Element>
+    <Element Type="FunctionCall" Id="B92F8F96">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="7C42785B"/>
+        <Parameter Type="Param" Id="0EBEC5C4"/>
+    </Element>
+    <Element Type="FunctionCall" Id="BA222AF3">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="5C81F9E5"/>
+        <Parameter Type="Param" Id="DDDEE604"/>
+    </Element>
+    <Element Type="FunctionCall" Id="BBCBD318">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="A731206C"/>
+        <Parameter Type="Param" Id="3F22978F"/>
+    </Element>
+    <Element Type="FunctionCall" Id="BDA0855F">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="1FE9FDE7"/>
+        <Parameter Type="Param" Id="D07FB942"/>
+    </Element>
+    <Element Type="FunctionCall" Id="C0153979">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="BF812127"/>
+        <Parameter Type="Param" Id="2D04BAC8"/>
+    </Element>
+    <Element Type="FunctionCall" Id="C248087C">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="00000123"/>
+        <ScriptCode>
+            libcrtx_set_map_settings();
+        </ScriptCode>
+    </Element>
+    <Element Type="FunctionCall" Id="D63C816B">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="5C7D714C"/>
+        <Parameter Type="Param" Id="AB02ED8D"/>
+    </Element>
+    <Element Type="FunctionCall" Id="D6D102FA">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="CE3DD27A"/>
+        <Parameter Type="Param" Id="572855FA"/>
+    </Element>
+    <Element Type="FunctionCall" Id="DB7D6746">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="20D7AF56"/>
+        <Parameter Type="Param" Id="CBCED700"/>
+    </Element>
+    <Element Type="FunctionCall" Id="DB85811F">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="D81B5E42"/>
+        <Parameter Type="Param" Id="96C59481"/>
+    </Element>
+    <Element Type="FunctionCall" Id="DE4E9A1A">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="38EAF0BC"/>
+        <Parameter Type="Param" Id="2AA5DCDF"/>
+    </Element>
+    <Element Type="FunctionCall" Id="DF4876F7">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="14BD0033"/>
+        <Parameter Type="Param" Id="96EC87BB"/>
+    </Element>
+    <Element Type="FunctionCall" Id="EE892E6D">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="6F7F7382"/>
+        <Parameter Type="Param" Id="3D583442"/>
+    </Element>
+    <Element Type="FunctionCall" Id="EF77882E">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="89F9B255"/>
+        <Parameter Type="Param" Id="19E52781"/>
+    </Element>
+    <Element Type="FunctionCall" Id="F137F5AB">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="E5A3F0E4"/>
+        <Parameter Type="Param" Id="129DE22A"/>
+    </Element>
+    <Element Type="FunctionCall" Id="F648435F">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="4361B96A"/>
+        <Parameter Type="Param" Id="E9C26752"/>
+    </Element>
+    <Element Type="FunctionCall" Id="F92239F3">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="52C35A47"/>
+        <Parameter Type="Param" Id="DAE2C5DD"/>
+    </Element>
+    <Element Type="FunctionCall" Id="FB4197FA">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="6DFA7C10"/>
+        <Parameter Type="Param" Id="520CD814"/>
+    </Element>
+    <Element Type="FunctionCall" Id="FB7359EA">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="4814DDAC"/>
+        <Parameter Type="Param" Id="CD4CA460"/>
+    </Element>
+    <Element Type="FunctionCall" Id="FE20F933">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="140AF02B"/>
+        <Parameter Type="Param" Id="5FD88E37"/>
+    </Element>
+    <Element Type="FunctionCall" Id="FFEF4287">
+        <Name></Name>
+        <FunctionDef Type="FunctionDef" Library="Ntve" Id="7D278C76"/>
+        <Parameter Type="Param" Id="D204AB68"/>
+        <Parameter Type="Param" Id="3F19000F"/>
+    </Element>
+    <Element Type="Param" Id="01A95E12">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>Cortexblacklist</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="024296AF">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>14</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="03CA13ED">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>5</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="0719B257">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>Cortexalias</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="077CB9D9">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>CortexSetup</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="09288AB7">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>CortexID</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="0E3E7273">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>CortexID</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="0EBEC5C4">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>Cortexalias</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="1029FEC7">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>3</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="129DE22A">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>CortexSetup</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="140AF02B">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>12</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="14BD0033">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>13</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="168E5069">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>Cortexalias</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="19E52781">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>Cortexblacklist</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="19F2D2A5">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>CortexID</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="1A838553">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>Cortexalias</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="1FCCD35B">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>CortexID</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="1FE9FDE7">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>5</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="20D7AF56">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>10</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="20F31EB1">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>CortexID</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="21100C5C">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>8</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="218E33A0">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>3</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="227E76C7">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>Cortexblacklist</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="24E2CC62">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>6</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="2AA5DCDF">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>CortexSetup</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="2D04BAC8">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>CortexID</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="2F2082BF">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>9</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="2F8E8918">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>11</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="315097DC">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>Cortexblacklist</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="37FF8E07">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>4</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="38E12427">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>2</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="38EAF0BC">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>3</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="3908A668">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>CortexSetup</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="3C493C31">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>CortexSetup</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="3D3F37C5">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>7</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="3D583442">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>Cortexalias</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="3F19000F">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>CortexSetup</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="3F22978F">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>Cortexblacklist</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="40C018F8">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>13</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="42ADC368">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>1</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="4361B96A">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>4</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="4814DDAC">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>12</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="482417E1">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>15</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="49E89433">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>12</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="4B271085">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>CortexID</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="4E32FBA1">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>Cortexalias</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="4F70B9C0">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>Cortexalias</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="50872066">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>Cortexblacklist</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="520CD814">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>Cortexblacklist</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="52C35A47">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>1</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="52E863F6">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>8</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="538C6464">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>CortexSetup</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="5494C208">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>CortexSetup</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="55E5110D">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>6</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="572855FA">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>Cortexblacklist</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="58142441">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>6</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="5C7D714C">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>4</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="5C81F9E5">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>1</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="5EBE2A51">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>Cortexblacklist</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="5FD88E37">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>CortexSetup</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="60F720DB">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>Cortexblacklist</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="64D634A8">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>13</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="65191A8E">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>14</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="6A1C782B">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>6</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="6BC68116">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>7</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="6DFA7C10">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>15</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="6F7F7382">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>10</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="71F78C03">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>CortexID</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="7247FFE3">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>5</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="74A8C0E6">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>CortexID</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="7C42785B">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>11</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="7D07A379">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>Cortexalias</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="8547690B">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>14</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="890A26ED">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>9</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="891A2DFE">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>15</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="89510FC3">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>Cortexalias</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="89F9B255">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>11</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="8EDD1723">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>1</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="920287B9">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>Cortexalias</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="952A627F">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>Cortexalias</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="96C59481">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>CortexID</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="96EC87BB">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>CortexSetup</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="99A7948A">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>10</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="9B569DCF">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>CortexID</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="9D8A16F5">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>CortexID</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="9D96ED19">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>2</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="9E0FD736">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>Cortexalias</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="A2BF8F2A">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>2</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="A5F7E421">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>CortexID</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="A731206C">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>14</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="AABA53D2">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>CortexSetup</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="AB02ED8D">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>Cortexalias</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="AB0B3AAD">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>15</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="B233E9CE">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>CortexSetup</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="B519E062">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>CortexSetup</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="B52B1557">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>12</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="B56848E0">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>8</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="B6D45B21">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>Cortexblacklist</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="BDF31C45">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>Cortexalias</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="BF812127">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>13</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="C544C927">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>Cortexalias</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="C9AE0C2C">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>2</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="CBCED700">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>CortexID</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="CD4CA460">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>Cortexblacklist</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="CE3DD27A">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>4</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="D07FB942">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>Cortexblacklist</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="D204AB68">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>10</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="D81B5E42">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>7</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="DAC6A417">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>Cortexblacklist</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="DAE2C5DD">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>CortexSetup</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="DDDEE604">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>Cortexblacklist</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="E510FABE">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>7</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="E5A3F0E4">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>11</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="E5C49C2C">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>9</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="E69C8881">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>3</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="E7E5E638">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>CortexID</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="E9C26752">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="437A2BAF"/>
+        <Value>CortexSetup</Value>
+        <ValueType Type="string"/>
+    </Element>
+    <Element Type="Param" Id="E9E556CB">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>8</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="F6AD6154">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>9</Value>
+        <ValueType Type="int"/>
+    </Element>
+    <Element Type="Param" Id="FE998F5C">
+        <Name></Name>
+        <ParameterDef Type="ParamDef" Library="Ntve" Id="6B3940B7"/>
+        <Value>5</Value>
+        <ValueType Type="int"/>
+    </Element>
+</TriggerData>

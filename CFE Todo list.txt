@@ -1,0 +1,30 @@
+!mapbounds
+
+!camera view - lock player view to mod+ cam
+
+camera ______ [TIME] - add time parameter (shouldnt be hard, just change var)
+
+sound command
+
+@attach+
+
+!weather rain|snow|hail|sandstorm|disco #region
+MAKE SURE WEATHER ACTORS SET STATUS = "isWeather 1"
+
+
+Finish UI
+
+-Utilities sub panel - Search Catalogs | Search XML Styles
+
+
+Link the ABOUT UI panel to the Cortex version, terrain maker, and link to forums
+
+
+Add to trigger library a parameter file to set settings
+Have trigger library settings
+- POINT TO PAN MAP TO
+- Use Blacklist
+
+
+Finish fRPG? Even worth it? (nope)
+-10 year project

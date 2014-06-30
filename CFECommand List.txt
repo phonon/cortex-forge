@@ -1,0 +1,102 @@
+
+	Cortex Forge Extension Command List
+
+===============================================================
+	Key:
+===============================================================
+
+	[VAR-TYPE DESCRIPTION] indicates a user-input text
+	*[ ] asterick indicates the input is optional
+	{VAL1||VAL2||...} indicates optional command parameters
+	//	indicates a comment (not part of command)
+
+
+	Prefix Guide:
+	(none)..........General command
+	! ..............Admin command
+	# ..............Region command
+	@ ..............Unit command
+	% ..............UI or fRPG command
+	_ ..............Doodad (actor) command
+	$ ..............Variable call
+	
+	Quick Variable Guide:
+	int.............integer
+	fixed...........real number
+	string..........text, usually for names
+	color...........string name for player color
+	preset..........constant string parameter
+	
+===============================================================
+	Commands:
+===============================================================
+
+  New Commands:
+
+	blacklist add [color PlayerColor]
+	blacklist add -h [string PlayerHandle]
+	blacklist remove [int ID]
+	blacklist list
+	camera [preset CamProperty] *[fixed val]
+	camera reset
+	camera create [string name]
+	camera remove [string name]
+	camera view [string name]
+	camera list
+	camera removeall
+	delay [fixed time] //basically "wait", 0s < time <= 300s
+	vision [color Player] {on||off}
+	repeat [int count]
+	ui {game||cortex} {on||off}
+	toggleanon
+	gamesetup save [string name]
+	gamesetup load [string name]
+	gamesetup list
+	gamesetup remove [string name]
+	gamesetup removeall
+	
+	!setting [string setting] [val]
+	!setting list
+	!fruit {[int amount]||"remove"}
+	!xml on||off
+	
+	#reveal [string region] [color player] {on||off}
+	
+	@statbars {on||off}
+	@form {rect||circle||star}
+		@form rect {-a||attack} [int row] [int col] [fixed spacing] [fixed angle]
+		@form circle [fixed radius] [fixed angle]
+		@form star [int points] [fixed dist] [int rows] [fixed spacing] [fixed angle]
+	@squad {dynamic||static||fluid}
+		@squad break
+	@subtitle [string text]
+	@cache {[int number]}
+	@undo [int iterations]
+	@copy {+visual};
+	
+	_doodad [string model]
+	_selectactors
+	_removearea [fixed radius]
+	_clearhalo [fixed radius]
+	_tint [fixed R] [fixed G] [fixed B] [fixed Alpha] [fixed HDR]
+	_scale [fixed X] [fixed Y] [fixed Z]
+	_height [fixed Z]
+	_face [fixed Angle]
+	_modelswap [string model_name] [int variation]
+	_destroy [fixed radius]
+
+
+  Modified Commands:
+	
+	//Added +val{%} support for certain unit props
+	//e.g. @maxlife +10
+	//Allows '0' for max-vitals (e.g. @maxshields 0)
+	@maxlife {+}[fixed val]{%}
+	@life {+}[fixed val]{%}
+	@maxshields {+}[fixed val]{%}
+	@shields {+}[fixed val]{%}
+	@maxenergy {+}[fixed val]{%}
+	@energy {+}[fixed val]{%}
+	@speed {+}[fixed val]
+	@face {+}[fixed angle]
+	@copy {+visual}

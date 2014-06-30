@@ -1,0 +1,95 @@
+// Cortex SC2 Roleplaying Engine
+// Copyright (C) 2009-2011 <http://www.cortexrp.com/>
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; version 2 of the License.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// Load all Cortex dependencies
+include "Cortex/Common/lib/libactionbar.galaxy"
+include "Cortex/Common/lib/libstarcode.galaxy"
+include "Cortex/Common/lib/libhashlib.galaxy"
+
+// Cortex Git revision
+const string libcrtx_version_branch = "master";
+const string libcrtx_version_commit = "96406eac101dd694cd3b534d313635da607e3d9d";
+
+// Cortex Engine Version:
+// Version in form major.minor.bugfix.hotfix
+// ex: "0.10.1a" when concatenated
+const int libcrtx_version_major = 2;
+const int libcrtx_version_minor = 1;
+const int libcrtx_version_bugfix = 0;
+const string libcrtx_version_hotfix = "";
+
+// Forge Extensions Version
+// Version in form major.minor.bugfix.hotfix
+// ex: "0.10.1a" when concatenated
+const int libcrtx_frg_version_major = 1;
+const int libcrtx_frg_version_minor = 2;
+const int libcrtx_frg_version_bugfix = 0;
+const string libcrtx_frg_version_hotfix = "";
+
+// Max players supported by SC2.
+const int libcrtx_max_players = 16;
+
+// Custom value indeces
+const int libcrtx_unit_custom_value_guid = 0;
+const int libcrtx_unit_custom_value_texttag = 1;
+const int libcrtx_unit_custom_value_waygate = 2;
+
+// Prefix for all banks.
+const string libcrtx_bank_prefix = "Cortex";
+
+//map's terrainer string for credits
+string libcrtx_map_terrainer = "";
+
+// Returns a 7-character long version of the Git commit hash, referred to as a commit-ish.
+string libcrtx_get_commitish()
+{
+	return StringSub(libcrtx_version_commit, 1, 7);
+}
+
+// Human-readable version string will read for example:
+// Cortex (0.10.1a r123)
+string libcrtx_get_versionstring()
+{
+	return "Cortex (" +
+		IntToString(libcrtx_version_major) + "." +
+		IntToString(libcrtx_version_minor) + "." + 
+		IntToString(libcrtx_version_bugfix) + 
+		libcrtx_version_hotfix +
+		") (" + libcrtx_version_branch + "/" + libcrtx_get_commitish() +
+		")";
+}
+
+// The fully-qualified internal unittype name for the spawner. 
+// See libcrtx_set_spawner().
+static string libcrtx_spawnertype = "";
+void libcrtx_set_spawner(string lp_unittype)
+{
+	libcrtx_spawnertype = UnitTypeFromString(lp_unittype);
+}
+
+string libcrtx_getspawnertype()
+{
+	return libcrtx_spawnertype;
+}
+
+// Footer includes due to required things being in this file. :(
+include "Cortex/Common/Debug.galaxy"
+include "Cortex/Common/Settings.galaxy"
+include "Cortex/Common/Variables.galaxy"
+include "Cortex/Common/LabelManager.galaxy"
+include "Cortex/Common/Admin.galaxy"
+include "Cortex/Common/SharedData.galaxy"
+include "Cortex/Common/CortexID.galaxy"
+include "Cortex/Common/Utility.galaxy"
+include "Cortex/Common/ComputerAI.galaxy"
+include "Cortex/Common/Log.galaxy"
+include "Cortex/Common/ForgeBlacklist.galaxy"

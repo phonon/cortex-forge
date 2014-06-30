@@ -1,0 +1,143 @@
+// Cortex Forge Extensions
+// By Xethyr (407)
+//
+// Copyright (C) 2013
+//
+// Cortex Engine by Motive
+// Cortex SC2 Roleplaying Engine
+// Copyright (C) 2009-2011 <http://www.cortexrp.com/>
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; version 2 of the License.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+include "Cortex/ForgeRPG/ForgeRPGDefinitions.galaxy"
+
+void fRPG_ability_create(int player, int id, string abilName)
+{
+	//"oneshot" default ability type
+	BankValueSetFromString(fRPG_bank[player], "Abil", IntToString(id) + " id oneshot " + fRPG_item_icon_default, "");
+	BankValueSetFromString(fRPG_bank[player], "Abil", IntToString(id) + " nfo " + abilName, "");
+	BankSave(fRPG_bank[player]);
+	
+	libcrtx_write(PlayerGroupSingle(player), "Ability ID: " + IntToString(id) + " created with name " + abilName);
+}
+void fRPG_ability_delete(int player, int id)
+{
+	int count = BankKeyCount(fRPG_bank[player], "Abil");
+	
+	while(count >= 0) {
+		if(StringToInt(StringWord(BankKeyName(fRPG_bank[player], "Abil", count), 1)) == id) {
+			BankKeyRemove(fRPG_bank[player], "Abil", BankKeyName(fRPG_bank[player], "Abil", count));
+			BankSave(fRPG_bank[player]);
+			fRPG_ability_delete(player, id); //recursive!
+		}
+		count -= 1;
+	}
+}
+int fRPG_next_free_ability (int player)
+{
+	int i = 1;
+	int count;
+
+	//if(BankKeyCount(fRPG_bank[player], "Abil") == 0) {
+	//	return 1;
+	//}
+	
+	while(i<101) {
+		count = BankKeyCount(fRPG_bank[player], "Abil");
+		while(count >= 0) {
+			if(i == StringToInt(StringWord(BankKeyName(fRPG_bank[player], "Abil", count), 1))) {
+				break;
+			}
+			
+			if(count <= 0) {
+				return i;
+			}
+			count -= 1;
+		}
+		i += 1;
+	}
+
+	return -1;
+}
+bool fRPG_isAbil (int player, int abilID) 
+{
+	int count = BankKeyCount(fRPG_bank[player], "Abil");
+	
+	while(count >= 0) {
+		if(abilID == StringToInt(StringWord(BankKeyName(fRPG_bank[player], "Abil", count), 1))) {
+			return true;
+		}
+		count -= 1;
+	}
+	
+	return false;
+}
+void fRPG_abil_set_name (int player, int id, string name)
+{
+	int i;
+	int count = BankKeyCount(fRPG_bank[player], "Abil");
+	string s;
+	string key;
+	
+	while(count >= 0) {
+		s = BankKeyName(fRPG_bank[player], "Abil", count);
+		if(StringToInt(StringWord(s, 1)) == id && StringWord(s, 2) == "nfo") {
+			BankValueSetFromString(fRPG_bank[player], "Abil", s, name);
+			BankSave(fRPG_bank[player]);
+				
+			libcrtx_write(PlayerGroupSingle(player), "Item ID: " + IntToString(id) + " name set to " + name);
+			return;
+		}
+		count -= 1;
+	}
+
+}
+void fRPG_abil_set_type (int player, int id, string type)
+{
+	int count;
+	int i = 1;
+	string abilType;
+	string s;
+	string name;
+	string key;
+	
+	while( StringWord(fRPG_abil_types, i) != "" ) {
+		if( StringEqual(type, StringWord(fRPG_abil_types, i), false) ) {
+			abilType = StringWord(fRPG_abil_types, i);
+			i = -1;
+			break;
+		}
+		i += 1;
+	}
+	
+	if( i != -1 ) {
+		libcrtx_write(PlayerGroupSingle(player), "<c val=\"ff0000\">Error</c>: Invalid ability type.<n/>You can obtain a list of ability types by typing <c val=\"00ff00\">%ability types</c>.");
+		return;
+	}
+	
+	
+	count = BankKeyCount(fRPG_bank[player], "Items");
+	while(count >= 0) {
+		s = BankKeyName(fRPG_bank[player], "Items", count);
+		if(StringToInt(StringWord(s, 1)) == id && StringWord(s, 2) != "nfo" && StringWord(s, 2) != "cmd" && StringWord(s, 2) != "vis") {			
+				name = BankValueGetAsString(fRPG_bank[player], "Items", s);
+				i = StringFind(s, StringWord(s, 2), false);
+				key = StringReplace(s, abilType, i, i + StringLength(StringWord(s, 2)) - 1);
+				
+				BankKeyRemove(fRPG_bank[player], "Items", s);
+				BankValueSetFromString(fRPG_bank[player], "Items", key, name);
+				BankSave(fRPG_bank[player]);
+				
+				libcrtx_write(PlayerGroupSingle(player), "Item ID: " + IntToString(id) + " item type set to " + abilType);
+				return;
+			}
+		count -= 1;
+	}
+}

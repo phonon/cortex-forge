@@ -1,0 +1,36 @@
+// Cortex Forge Extensions
+// By Xethyr (407)
+//
+// Copyright (C) 2013
+//
+// Cortex Engine by Motive
+// Cortex SC2 Roleplaying Engine
+// Copyright (C) 2009-2011 <http://www.cortexrp.com/>
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; version 2 of the License.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+int libcrtx_ui_about;
+
+void libcrtx_ui_about_init()
+{
+	string cortexVers = "Cortex v" + IntToString(libcrtx_version_major) + "." + IntToString(libcrtx_version_minor) + "." + IntToString(libcrtx_version_bugfix) + libcrtx_version_hotfix;
+	string forgeVers = "Forge Extensions v" +IntToString(libcrtx_frg_version_major) + "." + IntToString(libcrtx_frg_version_minor) + "." + IntToString(libcrtx_frg_version_bugfix) + libcrtx_frg_version_hotfix;
+	
+	DialogCreate(250, 350, c_anchorLeft, 120, -150, true);
+	libcrtx_ui_about = DialogLastCreated();
+	
+	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_about, 150, 50, c_anchorTopLeft, 35, 35, StringToText("<s val=\"ChatDisplay\">About:</s>"), ColorWithAlpha(0,0,0,0), false, 0.0);
+	
+	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_about, 200, 50, c_anchorTopLeft, 35, 75, StringToText("<s val=\"Header18\">" + cortexVers + "</n>by Motive</s>"), ColorWithAlpha(0,0,0,0), false, 0.0);
+	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_about, 200, 100, c_anchorTopLeft, 35, 125, StringToText("<s val=\"Header18\">" + forgeVers + "</n>by Xethyr</s>"), ColorWithAlpha(0,0,0,0), false, 0.0);
+	
+	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_about, 200, 100, c_anchorBottom, 10, 25, StringToText("<s val=\"Header18\">Join our official group Roleplaying and the forums at cortexrp.com/forums!</s>"), ColorWithAlpha(0,0,0,0), false, 0.0);
+
+}

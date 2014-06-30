@@ -1,0 +1,121 @@
+// Cortex Forge Extensions
+// By Xethyr (407)
+//
+// Copyright (C) 2013
+//
+// Cortex Engine by Motive
+// Cortex SC2 Roleplaying Engine
+// Copyright (C) 2009-2011 <http://www.cortexrp.com/>
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; version 2 of the License.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+//definition for variable item
+
+struct item {
+	string name;
+	string type;
+	string description;
+	string icon;
+	string commands; //if item.commands = -a #, the item will activate an ability on use instead
+	int charges;
+	string visual;
+};
+//definition for ability
+struct ability {
+	string name;
+	string type;
+	string icon;
+	fixed range;
+	fixed radius;
+	string description;
+	string commands;
+};
+//definition for attribute
+struct attribute{
+	string name;
+	string description;
+	string commands;
+	int gain;
+	bool passive;
+};
+//definition for hero
+struct hero {
+	string name;
+	string unitType; //unitType because "unit" is reserved
+	string visual;
+	string description;
+	string attributes;
+	int level;
+	fixed exp;
+	string abils;
+};
+
+const string fRPG_item_types = "weapon armor feet head shield accessory consumable material quest item";
+const string fRPG_item_unit = "4SlotBag";
+const string fRPG_item_icon_default = "Assets\\Textures\\icon-gas.dds";
+
+const string fRPG_abil_types = "oneshot oneshot_beam oneshot_buff buff aoe_caster aoe_target";
+const string fRPG_abil_icon_default = "Assets\\Textures\\icon-gas.dds";
+
+//fRPGbank single bank storage syntax designed for saving space:
+//Values in brackets indiate they can contain spaces
+
+//Section: Items
+//Key: ID "id" TYPE ICON|| Value: {NA ME}
+//Key: ID "nfo" || Value: {DES CRIP TION}
+//Key: ID "cmd" || Value: {COM MANDS}
+//Key: ID "vis" || Value: {COM MANDS}
+
+//Section: Abilities
+//Key: ID "id" TYPE ICON|| Value: {COM MANDS}
+//Key: ID "nfo" {NA ME} || Value: {DES CRIP TION}
+//Key: ID "rng" || Value: RANGE RADIUS
+
+//Section: Attributes
+//Key: ID "nfo" NAME || Value: {DES CRIP TION}
+//Key: ID "parem" [gainINT] ["T"/"F" PASSIVE SIGNIFIER] || Value: {COMM ANDS}
+
+//Section: Heroes
+//Key: ID "_unit" name || Value: {VI SU AL}
+//Key: ID "nfo" || Value: {DES CRIP TION}
+//Key: ID "lvl" [LEVEL] || ValueFIXED: [EXP]
+//Key: ID "atb" id1 id2 id3 || Value: #1 #2 #3
+//Key: ID "abl" ||Value: #1 #2 #3
+
+
+//banks serve primarily for storage. when abils||items||heroes used, values copied into struct
+//with values in global data table
+
+//global data table syntaxes (gID refers to global id, aka custom value):
+//items: "item gID.PROPERTY"
+//abilities: "abil ID.PROPERTY"
+//hero: "hero ID ID.PROPERTY"
+//if $hero spawn ID is used and ID exists on data table, hero is recalled
+//only if $hero remove [-s] is used will data table be removed
+//$hero remove -s saves hero data to bank from data table
+//changing attributes or item properties that hero has on him will not update those
+//hero has
+
+bank[libcrtx_max_players] fRPG_bank;
+int fRPG_global_item_count;
+
+void fRPG_bank_init()
+{
+	int i = 1;
+	
+	while( i < libcrtx_max_players ) {
+		if(PlayerStatus(i) == c_playerStatusActive) {
+			fRPG_bank[i] = BankLoad("fRPGbank", i);
+		}
+		i += 1;
+	}
+	
+	fRPG_global_item_count = 1;
+}

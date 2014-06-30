@@ -1,0 +1,168 @@
+// Cortex Forge Extensions
+// By Xethyr (407)
+//
+// Copyright (C) 2013
+//
+// Cortex Engine by Motive
+// Cortex SC2 Roleplaying Engine
+// Copyright (C) 2009-2011 <http://www.cortexrp.com/>
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; version 2 of the License.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+include "Cortex/CortexUI/CortexCommandsList.galaxy"
+
+int libcrtx_ui_commands;
+int libcrtx_ui_commands_frame;
+
+int libcrtx_ui_commands_list_type;
+int libcrtx_ui_commands_list_cmds;
+
+int libcrtx_ui_command_syntax;
+int libcrtx_ui_command_description;
+int libcrtx_ui_command_example;
+
+int[libcrtx_max_players] libcrtx_ui_selected_category;
+
+void libcrtx_ui_commands_init()
+{	
+	int i;
+	
+	libcrtx_ui_commands_entries_init();
+	
+	DialogCreate(850, 500, c_anchorLeft, 120, -150, true);
+	libcrtx_ui_commands = DialogLastCreated();
+	
+	DialogControlCreate(libcrtx_ui_commands, c_triggerControlTypePortrait);
+	libcrtx_ui_commands_frame = DialogControlLastCreated();
+    DialogControlSetSize(libcrtx_ui_commands_frame, PlayerGroupAll(), 850, 200);
+    DialogControlSetPosition(libcrtx_ui_commands_frame, PlayerGroupAll(), c_anchorBottom, 0, 0);
+    libNtve_gf_SetDialogItemRenderType(DialogControlLastCreated(), c_triggerRenderTypeLDR, PlayerGroupAll());
+	
+	//list - command types
+	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_commands, 200, 50, c_anchorTopLeft, 50, 45, StringToText("<s val=\"CreditsLabel\">Categories:</s>"), ColorWithAlpha(0,0,0,0), false, 0.0);
+    DialogControlCreate(libcrtx_ui_commands, c_triggerControlTypeListBox);
+    libcrtx_ui_commands_list_type = DialogControlLastCreated();
+	DialogControlSetPosition(libcrtx_ui_commands_list_type, PlayerGroupAll(), c_anchorTopLeft, 50, 75);
+    DialogControlSetSize(libcrtx_ui_commands_list_type, PlayerGroupAll(), 175, 180);
+	
+	//list - commands
+	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_commands, 200, 50, c_anchorTopLeft, 250, 45, StringToText("<s val=\"CreditsLabel\">Commands:</s>"), ColorWithAlpha(0,0,0,0), false, 0.0);
+    DialogControlCreate(libcrtx_ui_commands, c_triggerControlTypeListBox);
+    libcrtx_ui_commands_list_cmds = DialogControlLastCreated();
+	DialogControlSetPosition(libcrtx_ui_commands_list_cmds, PlayerGroupAll(), c_anchorTopLeft, 250, 75);
+    DialogControlSetSize(libcrtx_ui_commands_list_cmds, PlayerGroupAll(), 250, 180);
+	
+	//legend - command types
+	DialogControlCreate(libcrtx_ui_commands, c_triggerControlTypeListBox);
+	DialogControlSetPosition(DialogControlLastCreated(), PlayerGroupAll(), c_anchorTopLeft, 525, 75);
+    DialogControlSetSize(DialogControlLastCreated(), PlayerGroupAll(), 125, 180);
+	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_commands, 125, 180, c_anchorTopLeft, 530, 80, StringToText("<s val=\"Header18\">Legend: Prefixes</n>(none) - general</n>@ - unit</n>! - admin</n># - region</n>_ - doodad</n>% - fRPG</s>"), ColorWithAlpha(0,0,0,0), false, 0.0);
+
+	//legend - command vars
+	DialogControlCreate(libcrtx_ui_commands, c_triggerControlTypeListBox);
+	DialogControlSetPosition(DialogControlLastCreated(), PlayerGroupAll(), c_anchorTopLeft, 675, 75);
+    DialogControlSetSize(DialogControlLastCreated(), PlayerGroupAll(), 125, 180);
+	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_commands, 125, 180, c_anchorTopLeft, 680, 80, StringToText("<s val=\"Header18\">Legend: Variables</n>[int] - integer #</n>[real] - real #</n>[str] - string</n>[col] - color</s>"), ColorWithAlpha(0,0,0,0), false, 0.0);
+	
+	//Command Syntax
+	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_commands, 200, 50, c_anchorTopLeft, 50, 35, StringToText("<s val=\"ChatDisplay\">Syntax:</s>"), ColorWithAlpha(0,0,0,0), false, 0.0);
+    DialogControlSetPositionRelative(DialogControlLastCreated(), PlayerGroupAll(), c_anchorLeft, libcrtx_ui_commands_frame, c_anchorLeft, 54, -40);
+	libNtve_gf_SetDialogItemRenderPriority(DialogControlLastCreated(), 1000, PlayerGroupAll());
+	
+	libNtve_gf_CreateDialogItemImage(libcrtx_ui_commands, 700, 50, c_anchorBottomRight, 0, 0, StringToText(""), "Assets\\Textures\\ui_research_frame_outer.dds", c_triggerImageTypeBorder, false, Color(100,100,100), c_triggerBlendModeNormal);
+    DialogControlSetPositionRelative(DialogControlLastCreated(), PlayerGroupAll(), c_anchorRight, libcrtx_ui_commands_frame, c_anchorRight, -15, 50);
+	libNtve_gf_SetDialogItemRenderPriority(DialogControlLastCreated(), 1000, PlayerGroupAll());
+	
+	//Description
+	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_commands, 200, 50, c_anchorTopLeft, 50, 35, StringToText("<s val=\"ChatDisplay\">Description:</s>"), ColorWithAlpha(0,0,0,0), false, 0.0);
+    DialogControlSetPositionRelative(DialogControlLastCreated(), PlayerGroupAll(), c_anchorLeft, libcrtx_ui_commands_frame, c_anchorLeft, 10, 10);
+	libNtve_gf_SetDialogItemRenderPriority(DialogControlLastCreated(), 1000, PlayerGroupAll());
+	
+	libNtve_gf_CreateDialogItemImage(libcrtx_ui_commands, 700, 50, c_anchorBottomRight, 0, 0, StringToText(""), "Assets\\Textures\\ui_research_frame_outer.dds", c_triggerImageTypeBorder, false, Color(100,100,100), c_triggerBlendModeNormal);
+    DialogControlSetPositionRelative(DialogControlLastCreated(), PlayerGroupAll(), c_anchorRight, libcrtx_ui_commands_frame, c_anchorRight, -15, 0);
+	libNtve_gf_SetDialogItemRenderPriority(DialogControlLastCreated(), 1000, PlayerGroupAll());
+	
+	//Usage Example
+	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_commands, 200, 50, c_anchorTopLeft, 50, 35, StringToText("<s val=\"ChatDisplay\">Example:</s>"), ColorWithAlpha(0,0,0,0), false, 0.0);
+    DialogControlSetPositionRelative(DialogControlLastCreated(), PlayerGroupAll(), c_anchorLeft, libcrtx_ui_commands_frame, c_anchorLeft, 37, 60);
+	libNtve_gf_SetDialogItemRenderPriority(DialogControlLastCreated(), 1000, PlayerGroupAll());
+	
+	libNtve_gf_CreateDialogItemImage(libcrtx_ui_commands, 700, 50, c_anchorBottomRight, 0, 0, StringToText(""), "Assets\\Textures\\ui_research_frame_outer.dds", c_triggerImageTypeBorder, false, Color(100,100,100), c_triggerBlendModeNormal);
+    DialogControlSetPositionRelative(DialogControlLastCreated(), PlayerGroupAll(), c_anchorRight, libcrtx_ui_commands_frame, c_anchorRight, -15, -50);
+	libNtve_gf_SetDialogItemRenderPriority(DialogControlLastCreated(), 1000, PlayerGroupAll());
+	
+	
+	//Initially hidden labels for writing the things out
+	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_commands, 700, 50, c_anchorTopLeft, 50, 35, StringToText("<s val=\"Header18\"></s>"), ColorWithAlpha(0,0,0,0), true, 0.3);
+	//libNtve_gf_CreateDialogItemLabel(libcrtx_ui_commands, 700, 50, c_anchorTopLeft, 50, 35, StringToText("<s val=\"ChatDisplay\">This is a @command</s>"), ColorWithAlpha(0,0,0,0), false, 0.0);
+	libcrtx_ui_command_syntax = DialogControlLastCreated();
+    DialogControlSetPositionRelative(libcrtx_ui_command_syntax, PlayerGroupAll(), c_anchorRight, libcrtx_ui_commands_frame, c_anchorRight, -5, -35);
+	
+	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_commands, 700, 50, c_anchorTopLeft, 50, 35, StringToText("<s val=\"Header18\"></s>"), ColorWithAlpha(0,0,0,0), true, 0.3);
+	//libNtve_gf_CreateDialogItemLabel(libcrtx_ui_commands, 700, 50, c_anchorTopLeft, 50, 35, StringToText("<s val=\"ChatDisplay\">This is a description</s>"), ColorWithAlpha(0,0,0,0), false, 0.0);
+	libcrtx_ui_command_description = DialogControlLastCreated();
+    DialogControlSetPositionRelative(libcrtx_ui_command_description, PlayerGroupAll(), c_anchorRight, libcrtx_ui_commands_frame, c_anchorRight, -5, 15);
+
+	libNtve_gf_CreateDialogItemLabel(libcrtx_ui_commands, 700, 50, c_anchorTopLeft, 50, 35, StringToText("<s val=\"Header18\"></s>"), ColorWithAlpha(0,0,0,0), true, 0.3);
+	//libNtve_gf_CreateDialogItemLabel(libcrtx_ui_commands, 700, 50, c_anchorTopLeft, 50, 35, StringToText("<s val=\"ChatDisplay\">This is an example</s>"), ColorWithAlpha(0,0,0,0), false, 0.0);
+	libcrtx_ui_command_example = DialogControlLastCreated();
+    DialogControlSetPositionRelative(libcrtx_ui_command_example, PlayerGroupAll(), c_anchorRight, libcrtx_ui_commands_frame, c_anchorRight, -5, 65);
+
+	
+	
+	//load categories list
+	i = 1;
+	while(StringWord(libcrtx_ui_commands_category, i) != "")
+	{
+		DialogControlAddItem(libcrtx_ui_commands_list_type, PlayerGroupAll(), StringToText(StringWord(libcrtx_ui_commands_category, i)));
+		i += 1;
+	}
+}
+void libcrtx_ui_commands_events_init()
+{
+    TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_category_select"), c_playerAny, libcrtx_ui_commands_list_type, c_triggerControlEventTypeSelectionChanged);
+    TriggerAddEventDialogControl(TriggerCreate("libcrtx_ui_command_select"), c_playerAny, libcrtx_ui_commands_list_cmds, c_triggerControlEventTypeSelectionChanged);
+
+}
+
+bool libcrtx_ui_category_select(bool testConds, bool runActions)
+{
+	int i = 1;
+	
+	libcrtx_ui_selected_category[EventPlayer()] = DialogControlGetSelectedItem(libcrtx_ui_commands_list_type, EventPlayer());
+	
+	DialogControlRemoveAllItems(libcrtx_ui_commands_list_cmds, PlayerGroupSingle(EventPlayer()));
+	
+	while(libcrtx_ui_commands_entry[libcrtx_ui_selected_category[EventPlayer()]][i].cmd != "") {
+		DialogControlAddItem(libcrtx_ui_commands_list_cmds, PlayerGroupSingle(EventPlayer()), StringToText(libcrtx_ui_commands_entry[libcrtx_ui_selected_category[EventPlayer()]][i].cmd));
+		i += 1;
+	}
+	
+	libNtve_gf_SetDialogItemText(libcrtx_ui_command_syntax, StringToText(""), PlayerGroupSingle(EventPlayer()));		
+	libNtve_gf_SetDialogItemText(libcrtx_ui_command_description, StringToText(""), PlayerGroupSingle(EventPlayer()));		
+	libNtve_gf_SetDialogItemText(libcrtx_ui_command_example, StringToText(""), PlayerGroupSingle(EventPlayer()));
+
+	return true;
+}
+bool libcrtx_ui_command_select(bool testConds, bool runActions)
+{
+	int cmd;
+	
+	cmd = DialogControlGetSelectedItem(libcrtx_ui_commands_list_cmds, EventPlayer());
+	
+	libNtve_gf_SetDialogItemText(libcrtx_ui_command_syntax, StringToText(libcrtx_ui_commands_entry[libcrtx_ui_selected_category[EventPlayer()]][cmd].stx), PlayerGroupSingle(EventPlayer()));		
+	libNtve_gf_SetDialogItemStyle(libcrtx_ui_command_syntax, "Header18", PlayerGroupSingle(EventPlayer()));
+	libNtve_gf_SetDialogItemText(libcrtx_ui_command_description, StringToText(libcrtx_ui_commands_entry[libcrtx_ui_selected_category[EventPlayer()]][cmd].nfo), PlayerGroupSingle(EventPlayer()));		
+	libNtve_gf_SetDialogItemStyle(libcrtx_ui_command_description, "Header18", PlayerGroupSingle(EventPlayer()));
+	libNtve_gf_SetDialogItemText(libcrtx_ui_command_example, StringToText(libcrtx_ui_commands_entry[libcrtx_ui_selected_category[EventPlayer()]][cmd].use), PlayerGroupSingle(EventPlayer()));		
+	libNtve_gf_SetDialogItemStyle(libcrtx_ui_command_example, "Header18", PlayerGroupSingle(EventPlayer()));
+
+	return true;
+}

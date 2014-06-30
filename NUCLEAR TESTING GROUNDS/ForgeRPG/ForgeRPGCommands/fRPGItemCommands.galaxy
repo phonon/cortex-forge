@@ -1,0 +1,600 @@
+// Cortex Forge Extensions
+// By Xethyr (407)
+//
+// Copyright (C) 2013
+//
+// Cortex Engine by Motive
+// Cortex SC2 Roleplaying Engine
+// Copyright (C) 2009-2011 <http://www.cortexrp.com/>
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; version 2 of the License.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+include "Cortex/ForgeRPG/ForgeRPGDefinitions.galaxy"
+include "Cortex/Chat/Chat.galaxy"
+
+//all item commands handled by %item
+//
+//if no id or commands given (e.g. %item "4 STR 4 STAM LEATHER BELT")
+//a new item is created in next free slot (if there is one)
+//(quotation marks needed if beginning item name with a number)
+//
+//otherwise item commands follow %item [ID] [Command] [ETC...]
+//[ID] is an integer, and the rest are strings
+//e.g. %item 69 name 4 STR 4 STAM LEATHER BELT or
+//e.g. %item 69 commands @adddamage 45; @tint 420 420 420
+//typing "%item [ID] isFunctional true" adds item to global item array 
+
+void fRPG_item_create(int player, int id, string itemName)
+{
+	BankValueSetFromString(fRPG_bank[player], "Items", IntToString(id) + " item " + fRPG_item_icon_default, itemName);
+	BankSave(fRPG_bank[player]);
+	
+	libcrtx_write(PlayerGroupSingle(player), "Item ID: " + IntToString(id) + " created with name " + itemName);
+}
+void fRPG_item_delete(int player, int id)
+{
+	int count = BankKeyCount(fRPG_bank[player], "Items");
+	
+	while(count >= 0) {
+		if(StringToInt(StringWord(BankKeyName(fRPG_bank[player], "Items", count), 1)) == id) {
+			BankKeyRemove(fRPG_bank[player], "Items", BankKeyName(fRPG_bank[player], "Items", count));
+			BankSave(fRPG_bank[player]);
+			fRPG_item_delete(player, id); //recursive!
+		}
+		count -= 1;
+	}
+}
+void fRPG_item_set_type (int player, int id, string type)
+{
+	int count;
+	int i = 1;
+	string itemType;
+	string s;
+	string commands;
+	string key;
+	
+	while( StringWord(fRPG_item_types, i) != "" ) {
+		if( StringEqual(type, StringWord(fRPG_item_types, i), false) ) {
+			itemType = StringWord(fRPG_item_types, i);
+			i = -1;
+			break;
+		}
+		i += 1; 
+	}
+	
+	if( i != -1 ) {
+		libcrtx_write(PlayerGroupSingle(player), "<c val=\"ff0000\">Error</c>: Invalid item type.<n/>You can obtain a list of item fRPG_item_types by typing <c val=\"00ff00\">%item listfRPG_item_types</c>.");
+		return;
+	}
+	
+	
+	count = BankKeyCount(fRPG_bank[player], "Items");
+	while(count >= 0) {
+		s = BankKeyName(fRPG_bank[player], "Items", count);
+		if(StringToInt(StringWord(s, 1)) == id && StringWord(s, 2) == "id") {
+				commands = BankValueGetAsString(fRPG_bank[player], "Items", s);
+				i = StringFind(s, StringWord(s, 2), false);
+				key = StringReplace(s, itemType, i, i + StringLength(StringWord(s, 2)) - 1);
+				
+				BankKeyRemove(fRPG_bank[player], "Items", s);
+				BankValueSetFromString(fRPG_bank[player], "Items", key, type);
+				BankSave(fRPG_bank[player]);
+				
+				libcrtx_write(PlayerGroupSingle(player), "Item ID: " + IntToString(id) + " item type set to " + itemType);
+				return;
+			}
+		count -= 1;
+	}
+}
+void fRPG_item_set_icon (int player, int id, string icon)
+{
+	int i;
+	int count = BankKeyCount(fRPG_bank[player], "Items");
+	string s;
+	string name;
+	string key;
+	
+	//need to first validate if image path exists
+	//IF ( IMG PATH == "") { AN HERO }
+	while(count >= 0) {
+		s = BankKeyName(fRPG_bank[player], "Items", count);
+		if(StringToInt(StringWord(s, 1)) == id && StringWord(s, 2) != "nfo" && StringWord(s, 2) != "cmd" && StringWord(s, 2) != "vis") { 
+				name = BankValueGetAsString(fRPG_bank[player], "Items", s);
+				i = StringFind(s, StringWord(s, 3), false);
+				key = StringReplace(s, icon, i, i + StringLength(StringWord(s, 3)) - 1);
+				
+				BankKeyRemove(fRPG_bank[player], "Items", s);
+				BankValueSetFromString(fRPG_bank[player], "Items", key, name);
+				BankSave(fRPG_bank[player]);
+				
+				libcrtx_write(PlayerGroupSingle(player), "Item ID: " + IntToString(id) + " icon set.");
+				return;
+			}
+		count -= 1;
+	}
+}
+void fRPG_item_set_name (int player, int id, string name)
+{
+	int i;
+	int count = BankKeyCount(fRPG_bank[player], "Items");
+	string s;
+	string key;
+	
+	while(count >= 0) {
+		s = BankKeyName(fRPG_bank[player], "Items", count);
+		if(StringToInt(StringWord(s, 1)) == id && StringWord(s, 2) != "nfo" && StringWord(s, 2) != "cmd" && StringWord(s, 2) != "vis") {
+				BankValueSetFromString(fRPG_bank[player], "Items", s, name);
+				BankSave(fRPG_bank[player]);
+				
+				libcrtx_write(PlayerGroupSingle(player), "Item ID: " + IntToString(id) + " name set to " + name);
+				return;
+			}
+		count -= 1;
+	}
+
+}
+void fRPG_item_set_description (int player, int id, string description)
+{
+	int count = BankKeyCount(fRPG_bank[player], "Items");
+	
+	if(BankKeyExists(fRPG_bank[player], "Items", IntToString(id) + " nfo")) {
+		while(count >= 0) {
+			if(StringToInt(StringWord(BankKeyName(fRPG_bank[player], "Items", count), 1)) == id && StringWord(BankKeyName(fRPG_bank[player], "Items", count), 2) == "nfo") {
+					
+					BankValueSetFromString(fRPG_bank[player], "Items", BankKeyName(fRPG_bank[player], "Items", count), description);
+					BankSave(fRPG_bank[player]);
+					
+					libcrtx_write(PlayerGroupSingle(player), "Item ID: " + IntToString(id) + " description set.");
+					return;
+			}
+			count -= 1;
+		}
+	}
+	else {
+		BankValueSetFromString(fRPG_bank[player], "Items", IntToString(id) + " nfo", description);
+		BankSave(fRPG_bank[player]);
+		return;
+	}
+}
+void fRPG_item_set_commands(int player, int id, string commands)
+{
+	int count = BankKeyCount(fRPG_bank[player], "Items");
+	
+	if(BankKeyExists(fRPG_bank[player], "Items", IntToString(id) + " cmd")) {
+		while(count >= 0) {
+			if(StringToInt(StringWord(BankKeyName(fRPG_bank[player], "Items", count), 1)) == id && StringWord(BankKeyName(fRPG_bank[player], "Items", count), 2) == "cmd") {
+					BankValueSetFromString(fRPG_bank[player], "Items", BankKeyName(fRPG_bank[player], "Items", count), commands);
+					BankSave(fRPG_bank[player]);
+					
+					libcrtx_write(PlayerGroupSingle(player), "Item ID: " + IntToString(id) + " commands set.");
+					return;
+			}
+			count -= 1;
+		}
+	}
+	else {
+		BankValueSetFromString(fRPG_bank[player], "Items", IntToString(id) + " cmd", commands);
+		BankSave(fRPG_bank[player]);
+	}
+}
+void fRPG_item_set_visual(int player, int id, string visual)
+{
+	int count = BankKeyCount(fRPG_bank[player], "Items");
+	
+	if(BankKeyExists(fRPG_bank[player], "Items", IntToString(id) + " vis")) {
+		while(count >= 0) {
+			if(StringToInt(StringWord(BankKeyName(fRPG_bank[player], "Items", count), 1)) == id 
+				&& StringWord(BankKeyName(fRPG_bank[player], "Items", count), 2) == "vis") {
+					BankValueSetFromString(fRPG_bank[player], "Items", BankKeyName(fRPG_bank[player], "Items", count), visual);
+					BankSave(fRPG_bank[player]);
+					
+					libcrtx_write(PlayerGroupSingle(player), "Item ID: " + IntToString(id) + " visual set.");
+					return;
+			}
+			count -= 1;
+		}
+	}
+	else {
+		BankValueSetFromString(fRPG_bank[player], "Items", IntToString(id) + " vis", visual);
+		BankSave(fRPG_bank[player]);
+	}	
+}
+void fRPG_item_info(int player, int id)
+{
+	int count = BankKeyCount(fRPG_bank[player], "Items");
+	string s;
+	
+	while(count >= 0) {
+		s = BankKeyName(fRPG_bank[player], "Items", count);
+		if(StringToInt(StringWord(s, 1)) == id && StringWord(s, 2) != "nfo" && StringWord(s, 2) != "cmd" && StringWord(s, 2) != "vis") {
+			libcrtx_write(PlayerGroupSingle(player), "Displaying info for item ID: " + StringWord(s, 1) + ":");
+			libcrtx_write(PlayerGroupSingle(player), "<img path=\"" + StringWord(s, 3) + "\"/>");
+			libcrtx_write(PlayerGroupSingle(player), "Name: " + BankValueGetAsString(fRPG_bank[player], "Items", s));
+			libcrtx_write(PlayerGroupSingle(player), "Type: " + StringWord(s, 2));
+
+			break;
+		}
+		count -= 1;
+	}
+	if(BankKeyExists(fRPG_bank[player], "Items", IntToString(id) + " nfo")) {
+		libcrtx_write(PlayerGroupSingle(player), "Description: " + BankValueGetAsString(fRPG_bank[player], "Items", IntToString(id) + " nfo"));
+	}
+	if(BankKeyExists(fRPG_bank[player], "Items", IntToString(id) + " cmd")) {
+		libcrtx_write(PlayerGroupSingle(player), "Commands: " + BankValueGetAsString(fRPG_bank[player], "Items", IntToString(id) + " cmd"));
+	}	
+	if(BankKeyExists(fRPG_bank[player], "Items", IntToString(id) + " vis")) {
+		libcrtx_write(PlayerGroupSingle(player), "Visual: " + BankValueGetAsString(fRPG_bank[player], "Items", IntToString(id) + " vis"));
+	}
+			
+}
+int fRPG_next_free_item (int player)
+{
+	int i = 1;
+	int count;
+
+	//if(BankKeyCount(fRPG_bank[player], "Items") == 0) {
+	//	return 1;
+	//}
+	
+	while(i<101) {
+		count = BankKeyCount(fRPG_bank[player], "Items");
+		while(count >= 0) {
+			if(i == StringToInt(StringWord(BankKeyName(fRPG_bank[player], "Items", count), 1))) {
+				break;
+			}
+			
+			if(count <= 0) {
+				return i;
+			}
+			count -= 1;
+		}
+		i += 1;
+	}
+
+	return -1;
+}
+bool fRPG_isItem (int player, int itemID) 
+{
+	int count = BankKeyCount(fRPG_bank[player], "Items");
+	
+	while(count >= 0) {
+		if(itemID == StringToInt(StringWord(BankKeyName(fRPG_bank[player], "Items", count), 1))) {
+			return true;
+		}
+		count -= 1;
+	}
+	
+	return false;
+}
+
+int[libcrtx_max_players] fRPG_item_search_count;
+int[libcrtx_max_players] fRPG_item_search_number;
+
+void fRPG_item_list (int player, int start, int stop, bool isListing)
+{
+	int count;
+	int maxSearchCount = 10;
+	string s;
+	
+	if(BankKeyCount(fRPG_bank[player], "Items") == 0) {
+		libcrtx_write(PlayerGroupSingle(player), "No items for player exist.");
+		return;
+	}
+	
+	//continuing a search
+	if(isListing) {
+		while(fRPG_item_search_count[player] > 0 && maxSearchCount > 0) {
+			count = BankKeyCount(fRPG_bank[player], "Items");
+			while(count >= 0) {
+				s = BankKeyName(fRPG_bank[player], "Items", count);
+				if(StringToInt(StringWord(s, 1)) == fRPG_item_search_number[player] && StringWord(s,2) != "nfo" && StringWord(s, 2) != "cmd" && StringWord(s, 2) != "vis") {
+					
+					//syntax?:
+					//{ID: X} [Type] Dire Longshaft
+					libcrtx_write(PlayerGroupSingle(player), "{ID: " + StringWord(s, 1) + "} [" + StringWord(s, 2) + "] " + BankValueGetAsString(fRPG_bank[player], "Items", s));
+					break;
+				}
+				count -= 1;
+			}
+			fRPG_item_search_number[player] += 1;
+			fRPG_item_search_count[player] -= 1;
+			maxSearchCount -= 1;
+		}
+		if(fRPG_item_search_count[player] > 0) {
+			libcrtx_write(PlayerGroupSingle(player), "More items to list. Type \"%item list\" to continue.");
+			return;
+		}
+		else {
+			return;
+		}
+		
+		return;
+	}
+	//a new search
+	else {
+		fRPG_item_search_number[player] = start;
+		fRPG_item_search_count[player] = stop - start + 1;
+		
+		libcrtx_write(PlayerGroupSingle(player), "Listing item IDs " + IntToString(fRPG_item_search_number[player]) + " to " + IntToString(fRPG_item_search_number[player] + fRPG_item_search_count[player] - 1));
+		//runs this function again but specifies isSearching == true
+		fRPG_item_list(player, 0, 0, true);
+	}
+}
+void fRPG_item_spawn (int player, int id, int spwnCnt)
+{
+	int count = BankKeyCount(fRPG_bank[player], "Items");
+	int spawnCount = spwnCnt;
+	int i = 0;
+	int x = 5;
+	fixed itemID;
+	string s;
+	string var;
+	unit itemUnit;
+
+	while(count >= 0) {
+		s = BankKeyName(fRPG_bank[player], "Items", count);
+		if(StringToInt(StringWord(s, 1)) == id && StringWord(s, 2) != "nfo" && StringWord(s, 2) != "cmd" && StringWord(s, 2) != "vis") {
+				while(spawnCount > 0) {
+					UnitCreate(1, fRPG_item_unit, c_unitCreateIgnorePlacement, 14, libcrtx_spawn_position(), 270.0);
+					itemUnit = UnitLastCreated();
+					
+					itemID = IntToFixed(fRPG_global_item_count);
+					var = "item." + FixedToString(itemID, 0);
+					libcrtx_variable_assign_group(player, var, libNtve_gf_ConvertUnitToUnitGroup(UnitLastCreated()));
+					
+					//item unit's custom value 1 associates with its value on data table
+					UnitSetCustomValue(itemUnit, 1, itemID);
+					//adds item property strings to global data table
+					//syntax of data table key: "item ID.PROPERTY"
+					DataTableSetString(true, "item " + FixedToString(itemID, 0) + ".name", BankValueGetAsString(fRPG_bank[player], "Items", s));
+					UnitSetInfoTip(itemUnit, StringToText(DataTableGetString(true, "item " + FixedToString(itemID, 0) + ".name")));
+
+					DataTableSetString(true, "item " + FixedToString(itemID, 0) + ".type", StringWord(s, 2));
+					DataTableSetString(true, "item " + FixedToString(itemID, 0) + ".icon", StringWord(s, 3));
+					
+					if(BankKeyExists(fRPG_bank[player], "Items", IntToString(id) + " nfo")) {
+						DataTableSetString(true, "item " + FixedToString(itemID, 0) + ".nfo", BankValueGetAsString(fRPG_bank[player], "Items", IntToString(id) + " nfo"));
+						UnitSetInfoSubTip(itemUnit, StringToText(DataTableGetString(true, "item " + FixedToString(itemID, 0) + ".nfo")));
+					}
+					if(BankKeyExists(fRPG_bank[player], "Items", IntToString(id) + " cmd")) {
+						DataTableSetString(true, "item " + FixedToString(itemID, 0) + ".cmd", BankValueGetAsString(fRPG_bank[player], "Items", IntToString(id) + " cmd"));
+					}
+					if(BankKeyExists(fRPG_bank[player], "Items", IntToString(id) + " vis")) {
+						DataTableSetString(true, "item " + FixedToString(itemID, 0) + ".vis", BankValueGetAsString(fRPG_bank[player], "Items", IntToString(id) + " vis"));
+						libcrtx_chat_parsechat(player, "@context " + var + "; " + DataTableGetString(true, "item " + FixedToString(itemID, 0) + ".vis"), libcrtx_chat_recursion_limit);
+					}
+
+					UnitSetState(itemUnit, c_unitStateSelectable, false);
+					//TextTagCreate(StringToText(DataTableGetString(true, "item " + FixedToString(itemID, 0) + ".name")), 14, UnitGetPosition(itemUnit), .5, true, false, PlayerGroupAll());
+					//TextTagAttachToUnitPoint(TextTagLastCreated(), itemUnit, "Ref_Overhead", 0, 0);
+					
+					//increment global item count so no items spawned have same id
+					fRPG_global_item_count += 1;
+					spawnCount -= 1;
+				}
+				return;
+		}
+		count -= 1;
+	}
+}
+bool libcrtx_command_item (bool checkConds, bool runActions)
+{
+	string s;
+	string subCommand;
+	string parem4;
+	int id;
+	int count;
+	int x;
+	int start;
+	int stop;
+	
+	subCommand = StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 2 );
+	
+	//spawning is complex as the item instance must be adding to global data table
+	//unlike @spawn, the count cant be interchanged with the name
+	//@spawn 2 marine or @spawn marine 2 both worked; will not for %item spawn
+	//syntax: %item spawn [id] #
+	if(subCommand == "spawn") {
+		id = StringToInt(StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 3 ));
+		if(id < 0 || id > 100) {
+			return true;
+		}
+		if(!fRPG_isItem(EventPlayer(), id)) {
+			return true;
+		}
+		
+		if(StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 4 ) == "") {
+			count = 1;
+		}
+		else {
+			count = StringToInt(StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 4 ));
+			//bounds for # of items spawned: 0 < count < 20
+			if(count < 1) {
+				count = 1;
+			}
+			if(count > 20) {
+				count = 20;
+			}
+		}
+		
+		fRPG_item_spawn(EventPlayer(), id, count);
+		
+		return true;
+	}
+	//generates a list of items. syntax: %item list [start] [stop] (in int)
+	//if no start||stop int specified, will act like search
+	if(subCommand == "list") {
+		start = StringToInt(StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 3 ));
+		stop = StringToInt(StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 4 ));
+	
+		if(start < 1 || start > 100) {
+			start = 1;
+		}
+		if(stop < 1 || stop > 100) {
+			stop = 100;
+		}
+		
+		if(StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 3 ) != "" && StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 4 ) == "") {
+			stop = 100;
+		}
+		if(stop < start) {
+			stop = 100;
+		}
+		if(StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 3 ) == "" && StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 4 ) == "") {
+			if(fRPG_item_search_count[EventPlayer()] > 1) {
+				fRPG_item_list(EventPlayer(), 0, 0, true);
+				
+				return true;
+			}
+			else {
+				start = 1;
+				stop = 100;
+			}
+		}
+		
+		fRPG_item_list(EventPlayer(), start, stop, false);
+		
+		return true;
+	}
+	
+	if(subCommand == "create") {
+		if(fRPG_next_free_item(EventPlayer()) == -1) {
+			libcrtx_write(PlayerGroupSingle(EventPlayer()), "<c val=\"ff0000\">Error</c>: No open item slot. Edit or delete an existing item.");
+			return true;
+		}
+		if(StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 3 ) == "") {
+			return true;
+		}
+		
+		x = 3;
+		while(StringWord( libcrtx_chat_get_parse_line(EventPlayer()), x ) != "") {
+			s = s + " " + StringWord( libcrtx_chat_get_parse_line(EventPlayer()), x );
+			x += 1;
+		}
+
+		fRPG_item_create(EventPlayer(), fRPG_next_free_item(EventPlayer()), s);
+			
+		return true;
+	}
+	if(subCommand == "delete") {
+		id = StringToInt(StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 3 ));
+		if(!fRPG_isItem(EventPlayer(), id)) {
+			libcrtx_write(PlayerGroupSingle(EventPlayer()), "<c val=\"ff0000\">Error</c>: Item ID does not exist.");
+			return true;
+		}
+		
+		fRPG_item_delete(EventPlayer(), id);
+		libcrtx_write(PlayerGroupSingle(EventPlayer()), "Item ID: " + IntToString(id) + " was deleted.");
+		
+		return true;
+	}
+	//displays properties of item for player
+	if(subCommand == "info") {
+		id = StringToInt(StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 3 ));
+		if(!fRPG_isItem(EventPlayer(), id)) {
+			libcrtx_write(PlayerGroupSingle(EventPlayer()), "<c val=\"ff0000\">Error</c>: Item ID does not exist.");
+			return true;
+		}
+		fRPG_item_info(EventPlayer(), id);
+		return true;
+	}
+		
+	//if %item command is not create, list, spawn, or does not begin with a "
+	//it is assumed subcommands will be used
+	id = StringToInt(StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 2 ));
+	if(id < 0 || id > 100) {
+		return true;
+	}
+	if(!fRPG_isItem(EventPlayer(), id)) {
+		return true;
+	}
+	
+	subCommand = StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 3 );
+
+	if(subCommand == "name") {
+		parem4 = StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 4 );
+		x = 5;
+		while (StringWord( libcrtx_chat_get_parse_line(EventPlayer()), x ) != "") {
+			parem4 = parem4 + " " + StringWord( libcrtx_chat_get_parse_line(EventPlayer()), x );
+			x += 1;
+		}
+		if (parem4 != "") {
+			fRPG_item_set_name(EventPlayer(), id, parem4);
+		}
+		return true;
+	}	
+	if(subCommand == "type") {
+		parem4 = StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 4 );
+		if (parem4 != "") {
+			fRPG_item_set_type(EventPlayer(), id, parem4);
+		}
+		return true;
+	}
+	if(subCommand == "description") {
+		parem4 = StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 4 );
+		x = 5;
+		while (StringWord( libcrtx_chat_get_parse_line(EventPlayer()), x ) != "") {
+			parem4 = parem4 + " " + StringWord( libcrtx_chat_get_parse_line(EventPlayer()), x );
+			x += 1;
+		}
+		if (parem4 != "") {
+			fRPG_item_set_description(EventPlayer(), id, parem4);
+		}
+		
+		return true;
+	}
+	if(subCommand == "icon") {
+		parem4 = StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 4 );
+		if (parem4 != "") {
+			fRPG_item_set_icon(EventPlayer(), id, parem4);
+		}
+		
+		return true;
+	}
+	if(subCommand == "commands") {
+		parem4 = StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 4 );
+		x = 5;
+		while(StringWord( libcrtx_chat_get_parse_line(EventPlayer()), x) != "") {
+			parem4 = parem4 + " " + StringWord( libcrtx_chat_get_parse_line(EventPlayer()), x );
+			x += 1;
+		}
+		if(parem4 != "") {
+			fRPG_item_set_commands(EventPlayer(), id, parem4);
+		}
+		
+		return true;
+	}
+	if(subCommand == "visual") {
+		parem4 = StringWord( libcrtx_chat_get_parse_line(EventPlayer()), 4 );
+		x = 5;
+		while(StringWord( libcrtx_chat_get_parse_line(EventPlayer()), x) != "") {
+			parem4 = parem4 + " " + StringWord( libcrtx_chat_get_parse_line(EventPlayer()), x );
+			x += 1;
+		}
+		if(parem4 != "") {
+			fRPG_item_set_visual(EventPlayer(), id, parem4);
+		}
+		
+		return true;
+	}
+	
+	return true;
+}
+bool libcrtx_command_item_listtest (bool checkConds, bool runActions)
+{
+	int count = BankKeyCount(fRPG_bank[EventPlayer()], "Items");
+	
+	while(count >= 0) {
+		libcrtx_write(PlayerGroupSingle(EventPlayer()), BankKeyName(fRPG_bank[EventPlayer()], "Items", count));
+		count -= 1;
+	}
+	
+	return true;
+}
