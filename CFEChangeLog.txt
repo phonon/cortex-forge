@@ -1,4 +1,8 @@
-[7/9/2013] Forge Extensions v1.0
+﻿[8/5/2013] Forge Extensions v1.0a (Hotfix)
+• Fixed gamesetups saving and loading "spawner" unit
+• Dynamic unit squad movement fix
+
+[8/4/2013] Forge Extensions v1.0
 GENERAL:
 Added unit cache system:
 • Units now have "caches" in the global data table that store certain commands used on them:

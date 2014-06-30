@@ -189,7 +189,7 @@ bool libcrtx_squad_order(bool testConds, bool runActions)
 					angle = ATan2(PointGetY(newCenter) - UnitGetCustomValue(EventUnit(), 7), PointGetX(newCenter) - UnitGetCustomValue(EventUnit(), 6));
 				}
 				
-				unitOrd = OrderTargetingPoint(action, PointWithOffsetPolar(newCenter, UnitGetCustomValue(EventUnit(), 8), UnitGetCustomValue(EventUnit(), 9) + angle));
+				unitOrd = OrderTargetingPoint(action, PointWithOffsetPolar(newCenter, UnitGetCustomValue(EventUnit(), 8), UnitGetCustomValue(EventUnit(), 9) + angle + 270));
 				DataTableSetOrder(true, "unitOrd " + IntToString(UnitGetTag(EventUnit())), unitOrd);
 
 				UnitIssueOrder(EventUnit(), unitOrd, c_orderQueueReplace);

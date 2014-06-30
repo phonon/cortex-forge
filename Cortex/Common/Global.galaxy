@@ -33,7 +33,7 @@ const string libcrtx_version_hotfix = "";
 const int libcrtx_frg_version_major = 1;
 const int libcrtx_frg_version_minor = 2;
 const int libcrtx_frg_version_bugfix = 0;
-const string libcrtx_frg_version_hotfix = "";
+const string libcrtx_frg_version_hotfix = "a";
 
 // Max players supported by SC2.
 const int libcrtx_max_players = 16;

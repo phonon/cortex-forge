@@ -147,6 +147,11 @@ void libcrtx_gamesetup_save(int player, string gamesetup_name)
 	UnitGroupLoopBegin(g);
 	while(!UnitGroupLoopDone())
 	{
+		if(UnitGetType(UnitGroupLoopCurrent()) == libcrtx_getspawnertype()) { //dont save spawner
+			UnitGroupLoopStep();
+			continue;
+		}
+		
 		unit_id = FixedToString(UnitGetCustomValue(UnitGroupLoopCurrent(), 11), 0);
 		
 		//create the unit properties string
