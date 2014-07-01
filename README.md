@@ -17,21 +17,31 @@ Cortex Forge Extensions are further additions to Cortex after v2.1. There were i
 
 ### Installation ###
 
-1. Go to **File > Dependencies** and use "Add Other" to find and add "Cortex Toolkit" (published under Motive)
-(If adding other Cortex related mods, namely Thrikodias's Mod or Gatorkit--these include the Toolkit, so one can just add this mod instead of the Cortex Toolkit)
+1. Go to **File > Dependencies** and use "Add Other" to find and add "Cortex Toolkit" (published under Motive)  
+If you are adding the Cortex related mods:
+ * Thrikodias's Cortex Expansion Project
+ * Gatorkit (relies on Thrikodias's Content Expansion Project)
+ * Thrikodias's Fantasy Mod
+
+  these mods already include the Toolkit, so you only need to add this mod instead of the Cortex Toolkit.
 
 2. Go to **Modules > Import** (F9) and import all *.galaxy into /Cortex in root (as in, these files should all
 fall under the "Cortex" folder in the root of the import).
-Import GameUIOverride.SC2Layout to be in the root (so not included under /Cortex)
+Import GameUIOverride.SC2Layout to also be in the /Cortex folder.
+The basic imported file hierarchy should look something like the following:  
+![](http://i.imgur.com/x18mUqB.jpg)
 
-3. Go to **Modules > Triggers** (F6) and import trigger library CortexHelper.SC2Lib (right click the triggers list and use Library > Import Library...
+3. Go to **Modules > Triggers** (F6) and import trigger library CortexHelper.SC2Lib (right click the triggers list and use **Library > Import Library...**)  
+The "Map Settings" file contains map variables that you can change.
 
 4. Finally, adjust player properties:  
-**Map > Player Properties** : adjust these add needed, so long as Player 14 is a Computer  
-**Map > Game Variants** : add a variant and adjust the properties as needed  
+  * **Map > Player Properties** : Select Player 14 and set **Control** to Computer. You can enable as many other players as you want; in general you should select all Players 1-13 and set **Control** to User.  
+  * **Map > Game Variants** (Optional) : Deselect the bottom-left box **Use Default Variants**. In the variants box, right click and select **Add**. You can adjust the properties in each tab as needed. If you add multiple variants, different variants can be hosted at the same time, which can help bypass afk lobby hosts or lobby campers.
 
-Further instructions can be found at: http://cortexrp.com/forums/viewtopic.php?f=8&t=1554
-(note that this tutorial is rather outdated)
+5. **Test locally before you publish!** Obviously this isn't needed, but it's good to test your map before you publish onto Battle.net.
+  
+  
+You can ask about any installation issues/questions on this official [Cortex forum board](http://cortexrp.com/forums/viewforum.php?f=8).
 
 
 ### Links ###
