@@ -16,16 +16,16 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
-include "Cortex/CortexUI/ui_About.galaxy"
-include "Cortex/CortexUI/ui_PlayerProfiles.galaxy"
-include "Cortex/CortexUI/ui_Commands.galaxy"
-include "Cortex/CortexUI/ui_Catalogs.galaxy"
-include "Cortex/CortexUI/ui_Previewer.galaxy"
-include "Cortex/CortexUI/ui_Aliases.galaxy"
-include "Cortex/CortexUI/ui_CamsRegs.galaxy"
-include "Cortex/CortexUI/ui_fRPG.galaxy"
-include "Cortex/CortexUI/ui_Perms.galaxy"
-include "Cortex/CortexUI/ui_Toolbar.galaxy"
+include "Cortex/CortexUI/UI_About.galaxy"
+include "Cortex/CortexUI/UI_PlayerProfiles.galaxy"
+include "Cortex/CortexUI/UI_Commands.galaxy"
+include "Cortex/CortexUI/UI_Catalogs.galaxy"
+include "Cortex/CortexUI/UI_Previewer.galaxy"
+include "Cortex/CortexUI/UI_Aliases.galaxy"
+include "Cortex/CortexUI/UI_CamsRegs.galaxy"
+include "Cortex/CortexUI/UI_ChatLog.galaxy"
+include "Cortex/CortexUI/UI_Perms.galaxy"
+include "Cortex/CortexUI/UI_Toolbar.galaxy"
 
 void libcrtx_ui_init()
 {
@@ -35,7 +35,7 @@ void libcrtx_ui_init()
 	libcrtx_ui_previewer_init();
 	libcrtx_ui_aliases_init();
 	libcrtx_ui_camsregs_init();
-	libcrtx_ui_fRPG_init();
+	libcrtx_ui_chatlog_init();
 	libcrtx_ui_perms_init();
 	libcrtx_ui_about_init();
 	libcrtx_ui_toolbar_init();

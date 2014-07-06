@@ -1,0 +1,91 @@
+// Cortex Forge Extensions
+// By Xethyr (407)
+//
+// Copyright (C) 2013
+//
+// Cortex Engine by Motive
+// Cortex SC2 Roleplaying Engine
+// Copyright (C) 2009-2011 <http://www.cortexrp.com/>
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; version 2 of the License.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+int libcrtx_ui_chatlog;
+
+int libcrtx_ui_chatlog_log; // actual chatlog list
+
+const int libcrtx_ui_chatlog_max_lines = 250;
+const int libcrtx_ui_chatlog_max_linechars = 75; // max characters per line to prevent overflow (dialog list is stupid)
+
+
+void libcrtx_ui_chatlog_init()
+{
+	int outer_frame;
+	
+	DialogCreate(850, 500, c_anchorLeft, 120, -150, true);
+	libcrtx_ui_chatlog = DialogLastCreated();
+	
+	DialogControlCreate(libcrtx_ui_chatlog, c_triggerControlTypePortrait);
+	outer_frame = DialogControlLastCreated();
+    DialogControlSetSize(DialogControlLastCreated(), PlayerGroupAll(), 850, 500);
+    DialogControlSetPosition(DialogControlLastCreated(), PlayerGroupAll(), c_anchorBottomLeft, 0, 0);
+    libNtve_gf_SetDialogItemRenderType(DialogControlLastCreated(), c_triggerRenderTypeLDR, PlayerGroupAll());
+
+	DialogControlCreate(libcrtx_ui_chatlog, c_triggerControlTypeListBox);
+    libcrtx_ui_chatlog_log = DialogControlLastCreated();
+    DialogControlSetPositionRelative(libcrtx_ui_chatlog_log, PlayerGroupAll(), c_anchorCenter, outer_frame, c_anchorCenter, 0, 0);
+    DialogControlSetSize(libcrtx_ui_chatlog_log, PlayerGroupAll(), 830, 480);
+	libNtve_gf_SetDialogItemRenderPriority(libcrtx_ui_chatlog_log, 1024, PlayerGroupAll());
+	
+	// add starting message
+	DialogControlAddItem(libcrtx_ui_chatlog_log, PlayerGroupAll(), StringToText(
+		"Welcome to Cortex! This is the chatlog where @say messages are logged."
+	));
+
+}
+
+void libcrtx_ui_chatlog_add_msg ( int player, string msg, text unitName, int unitNameLength )
+{
+	int time = FixedToInt(GameGetMissionTime());
+	string timestamp = "[" + IntToString( time / 3600 ) + ":" + IntToString( ( time % 3600 ) / 60 ) + ":" + IntToString( time % 60 ) + "] ";
+	text logmsg;
+
+	if ( unitNameLength == -1) { unitNameLength = 15; }// default we assume the average-to-max unit name would be around 15 characters.
+	
+	// add first line [timestamp] + [unitname] + [msg]
+	if(DialogControlGetItemCount(libcrtx_ui_chatlog_log, player) > libcrtx_ui_chatlog_max_lines) {
+		DialogControlRemoveItem(libcrtx_ui_chatlog_log, PlayerGroupAll(), 1);
+	}
+	if( StringLength(timestamp) + unitNameLength + StringLength(msg) > libcrtx_ui_chatlog_max_linechars) {
+		logmsg = StringToText(timestamp) + unitName + StringToText( StringSub(msg, 1, libcrtx_ui_chatlog_max_linechars - StringLength(timestamp) - unitNameLength ));
+		msg = StringReplace(msg, "", 1, libcrtx_ui_chatlog_max_linechars - StringLength(timestamp) - unitNameLength);
+	
+		DialogControlAddItem(libcrtx_ui_chatlog_log, PlayerGroupAll(), logmsg);
+		
+		// if the first line > libcrtx_ui_chatlog_max_linechars, add the rest as separate lines
+		while ( msg != "" ) {
+			if ( StringLength(msg) > libcrtx_ui_chatlog_max_linechars ) {
+				logmsg = StringToText( StringSub(msg, 1, libcrtx_ui_chatlog_max_linechars) );
+				msg = StringReplace(msg, "", 1, libcrtx_ui_chatlog_max_linechars);
+			}
+			else {
+				logmsg = StringToText(msg);
+				msg = StringReplace(msg, "", 1, StringLength(msg));
+			}
+			if(DialogControlGetItemCount(libcrtx_ui_chatlog_log, player) > libcrtx_ui_chatlog_max_lines) {
+				DialogControlRemoveItem(libcrtx_ui_chatlog_log, PlayerGroupAll(), 1);
+			}
+			DialogControlAddItem(libcrtx_ui_chatlog_log, PlayerGroupAll(), logmsg);
+		}
+	}
+	else {
+		DialogControlAddItem(libcrtx_ui_chatlog_log, PlayerGroupAll(), StringToText(timestamp) + unitName + StringToText(msg));
+	}
+
+}

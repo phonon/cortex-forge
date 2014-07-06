@@ -16,15 +16,15 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
-include "Cortex/CortexUI/ui_About.galaxy"
-include "Cortex/CortexUI/ui_PlayerProfiles.galaxy"
-include "Cortex/CortexUI/ui_Commands.galaxy"
-include "Cortex/CortexUI/ui_Catalogs.galaxy"
-include "Cortex/CortexUI/ui_Previewer.galaxy"
-include "Cortex/CortexUI/ui_Aliases.galaxy"
-include "Cortex/CortexUI/ui_CamsRegs.galaxy"
-include "Cortex/CortexUI/ui_fRPG.galaxy"
-include "Cortex/CortexUI/ui_Perms.galaxy"
+include "Cortex/CortexUI/UI_About.galaxy"
+include "Cortex/CortexUI/UI_PlayerProfiles.galaxy"
+include "Cortex/CortexUI/UI_Commands.galaxy"
+include "Cortex/CortexUI/UI_Catalogs.galaxy"
+include "Cortex/CortexUI/UI_Previewer.galaxy"
+include "Cortex/CortexUI/UI_Aliases.galaxy"
+include "Cortex/CortexUI/UI_CamsRegs.galaxy"
+include "Cortex/CortexUI/UI_ChatLog.galaxy"
+include "Cortex/CortexUI/UI_Perms.galaxy"
 
 int libcrtx_ui_toolbar;
 int libcrtx_ui_toolbar_logo;
@@ -92,8 +92,8 @@ void libcrtx_ui_toolbar_init()
 	libNtve_gf_SetDialogItemImageType(DialogControlLastCreated(), c_triggerImageTypeBorder, PlayerGroupAll());
 	libcrtx_ui_toolbar_btn[6] = DialogControlLastCreated();
 
-	libNtve_gf_CreateDialogItemImage(libcrtx_ui_toolbar, 41, 41, c_anchorBottomRight, 35, 92, StringToText(""), "Assets\\Textures\\ui_ingame_help_techtree_questionmark.dds", c_triggerImageTypeNormal, false, Color(100,100,100), c_triggerBlendModeNormal);
-	libNtve_gf_CreateDialogItemButton(libcrtx_ui_toolbar, 65, 65, c_anchorBottomRight, 25, 80, StringToText("Unused"), StringToText(""), "Assets\\Textures\\ui_techpurchase_techbutton_available_normaloverpressedover.dds");
+	libNtve_gf_CreateDialogItemImage(libcrtx_ui_toolbar, 41, 41, c_anchorBottomRight, 37, 92, StringToText(""), "Assets\\Textures\\ui_textchatbutton_on.dds", c_triggerImageTypeNormal, false, Color(100,100,100), c_triggerBlendModeNormal);
+	libNtve_gf_CreateDialogItemButton(libcrtx_ui_toolbar, 65, 65, c_anchorBottomRight, 25, 80, StringToText("Unit Chatlog"), StringToText(""), "Assets\\Textures\\ui_techpurchase_techbutton_available_normaloverpressedover.dds");
 	libNtve_gf_SetDialogItemImage(DialogControlLastCreated(), "Assets\\Textures\\ui_techpurchase_techbutton_selected_normalpressed.dds", PlayerGroupAll());
 	libNtve_gf_SetDialogItemImageType(DialogControlLastCreated(), c_triggerImageTypeBorder, PlayerGroupAll());
 	libcrtx_ui_toolbar_btn[7] = DialogControlLastCreated();
@@ -132,7 +132,7 @@ void libcrtx_ui_panels_off()
 	DialogSetVisible(libcrtx_ui_previewer, PlayerGroupSingle(EventPlayer()), false);
 	DialogSetVisible(libcrtx_ui_aliases, PlayerGroupSingle(EventPlayer()), false);
 	DialogSetVisible(libcrtx_ui_camsregs, PlayerGroupSingle(EventPlayer()), false);
-	DialogSetVisible(libcrtx_ui_fRPG, PlayerGroupSingle(EventPlayer()), false);
+	DialogSetVisible(libcrtx_ui_chatlog, PlayerGroupSingle(EventPlayer()), false);
 	DialogSetVisible(libcrtx_ui_perms, PlayerGroupSingle(EventPlayer()), false);
 
 }
@@ -275,14 +275,14 @@ bool libcrtx_ui_toolbar_camsregs(bool testConds, bool runActions)
 bool libcrtx_ui_toolbar_fRPG(bool testConds, bool runActions)
 {
 	if(libcrtx_ui_panel_on[EventPlayer()][7]) {
-		DialogSetVisible(libcrtx_ui_fRPG, PlayerGroupSingle(EventPlayer()), false);
+		DialogSetVisible(libcrtx_ui_chatlog, PlayerGroupSingle(EventPlayer()), false);
 		libcrtx_ui_panel_on[EventPlayer()][7] = false;
 		libcrtx_ui_btn_off(7);
 	}
 	else {
 		libcrtx_ui_panels_off();
 		libcrtx_ui_btn_off_all();
-		DialogSetVisible(libcrtx_ui_fRPG, PlayerGroupSingle(EventPlayer()), true);
+		DialogSetVisible(libcrtx_ui_chatlog, PlayerGroupSingle(EventPlayer()), true);
 		libcrtx_ui_panel_on[EventPlayer()][7] = true;
 		libcrtx_ui_btn_on(7);
 	}

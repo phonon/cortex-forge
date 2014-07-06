@@ -521,10 +521,6 @@ void libcrtx_ui_profile_pic_update (int player)
 		libNtve_gf_SetDialogItemImage(libcrtx_ui_player_img, "Cortex\\CortexUI\\Assets\\Portraits\\azn.dds", PlayerGroupSingle(EventPlayer()));
 		return;	
 	}
-	else if(PlayerHandle(player) == "1-S2-1-1103801") {
-		libNtve_gf_SetDialogItemImage(libcrtx_ui_player_img, "Cortex\\CortexUI\\Assets\\Portraits\\xby.dds", PlayerGroupSingle(EventPlayer()));
-		return;	
-	}
 	else if(BankKeyExists(libcrtx_ui_profile[player], "Profile", "img")) {
 		libNtve_gf_SetDialogItemImage(libcrtx_ui_player_img, libcrtx_ui_profile_portrait[BankValueGetAsInt(libcrtx_ui_profile[player], "Profile", "img")], PlayerGroupSingle(EventPlayer()));
 	}

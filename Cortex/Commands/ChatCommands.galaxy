@@ -57,26 +57,48 @@ text libcrtx_get_name_from_unit(unit u)
 	return StringToText(s);
 }
 
+// returns -1 if the name is default. else, returns length of name
+int libcrtx_get_unit_name_length(unit u)
+{
+	string s;
+	bank b = libcrtx_player_banks[EventPlayer()];
+	if( b == null )
+	{
+		return -1;
+	}
+
+	// Convert to int, then to string so we don't end up with "832.00" which isn't the same as "832" in a string.
+	s = BankValueGetAsString( b, "chat", IntToString(FixedToInt( UnitGetCustomValue(u, libcrtx_unit_custom_value_guid)) ) );
+	if( s == "" ) // no name.
+	{
+		return -1;
+	}
+	
+	return StringLength(s);
+}
+
 bool libcrtx_command_say(bool checkConds, bool runActions)
 {
 	string s;
 	unit u;
 	text unitName;
-	text misc;
+	text msg;
 	unitgroup g = libcrtx_chat_get_context(EventPlayer());
+	
 	UnitGroupLoopBegin(g);
 	while(!UnitGroupLoopDone())
 	{
 		u = UnitGroupLoopCurrent();
 		unitName = libcrtx_color_text_by_player( EventPlayer(), libcrtx_get_name_from_unit(u));
-		
+
 		s = libcrtx_chat_get_parse_line(EventPlayer());
 		s = StringSub( s, StringFind(s, " ", c_stringCase)+1, StringLength(s)); // The remainder of the chat message.
 		s = ": " + s;
-		misc = unitName + StringToText(s);
+		msg = unitName + StringToText(s);
 		
-		libcrtx_write_text(PlayerGroupAll(), misc);
-
+		libcrtx_write_text(PlayerGroupAll(), msg);
+		libcrtx_ui_chatlog_add_msg(EventPlayer(), s, unitName, libcrtx_get_unit_name_length(u));
+		
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();
